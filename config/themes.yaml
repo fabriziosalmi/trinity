@@ -1,0 +1,406 @@
+# Trinity Theme Configuration (YAML)
+#
+# Migrated from themes.json on 2025-11-26 21:19:10
+#
+# Structure:
+#   theme_name:
+#     metadata:
+#       description: Human-readable description
+#       category: Theme category (business, technical, creative, etc.)
+#       color_palette: Main colors used
+#       typography: Font characteristics
+#       use_case: Recommended use cases
+#     classes:
+#       component_name: Tailwind CSS classes
+#
+# Usage:
+#   trinity build --theme brutalist
+#   trinity theme-gen --name my_theme --base brutalist
+#
+# Rules:
+#   - Rule #45: Consistent YAML formatting (2-space indentation)
+#   - Rule #39: Developer-friendly configuration
+#   - Rule #21: Centralized theme logic
+#
+# See: docs/THEMES_GUIDE.md for more information
+
+
+# ARTISTIC_01 Theme
+# Creative gradient design with artistic flair
+artistic_01:
+  metadata:
+    description: Creative gradient design with artistic flair
+    category: creative
+    color_palette: purple, pink, blue, white
+    typography: bold, modern
+    use_case: Creative portfolios, design agencies, artistic projects
+  classes:
+    nav_bg: bg-gradient-to-r from-purple-600 to-pink-500
+    body_bg: bg-gradient-to-bl from-white via-purple-100 to-blue-50
+    text_primary: text-black text-3xl font-bold tracking-wide uppercase
+    text_secondary: text-gray-600 text-lg font-medium leading-relaxed
+    nav_link: no-underline bg-transparent hover:bg-gray-100 transition-colors duration-300
+      rounded transition-all duration-300
+    hero_title: text-7xl font-bold text-black tracking-widest mb-4
+    hero_subtitle: text-3xl font-medium text-gray-700 mb-8
+    card_bg: bg-gray-100 border rounded-lg shadow-md my-8
+    card_title: text-xl font-bold text-black mb-2
+    card_description: text-gray-600 text-lg my-4
+    btn_primary: bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg
+      shadow-md transition-transform duration-300 transform hover:translate-y-1
+    btn_secondary: bg-gray-200 hover:bg-gray-300 text-black font-medium py-2 px-4
+      rounded-lg shadow-md transition-transform duration-300 transform hover:translate-y-1
+    tagline: text-gray-500 text-xl font-light
+
+# ARTISTIC_02 Theme
+# Artistic 02 theme
+artistic_02:
+  metadata:
+    description: Artistic 02 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-gradient-to-r from-[#FF5733] to-[#E74C3C] bg-cover h-20 flex items-center
+      justify-between px-6
+    body_bg: bg-gradient-to-b from-[#2E86C1] to-[#43A047] bg-cover min-h-screen flex
+      items-center justify-center
+    text_primary: text-white text-7xl font-bold uppercase tracking-widest leading-none
+    text_secondary: text-gray-50 text-md font-medium tracking-wide mb-3
+    nav_link: text-white hover:text-black transition-colors duration-200 py-4 px-6
+      no-underline
+    hero_title: text-white text-9xl font-extrabold uppercase tracking-widest leading-none
+      md:text-12xl lg:text-15xl
+    hero_subtitle: text-gray-300 text-md mt-4 font-medium tracking-wide mb-8 md:text-lg
+      lg:text-xl
+    card_bg: bg-[#FF6347] rounded-lg shadow-md p-8 text-white
+    card_title: text-white text-3xl font-bold uppercase tracking-widest mb-2
+    card_description: text-gray-300 text-md font-medium tracking-wide leading-loose
+    btn_primary: bg-[#FF6347] rounded-lg text-white font-bold uppercase tracking-widest
+      py-4 px-6 hover:bg-[#C71533] transition-all duration-200
+    btn_secondary: bg-gray-50 text-black rounded-lg font-bold uppercase tracking-widest
+      py-4 px-6 hover:bg-gray-100 transition-all duration-200
+    tagline: text-white text-lg font-light uppercase tracking-widest mt-10
+
+# BRUTALIST Theme
+# Raw, bold aesthetic with stark contrasts and mono fonts
+brutalist:
+  metadata:
+    description: Raw, bold aesthetic with stark contrasts and mono fonts
+    category: experimental
+    color_palette: yellow, black, cyan
+    typography: monospace, uppercase
+    use_case: Artist portfolios, experimental projects, bold statements
+  classes:
+    nav_bg: bg-yellow-400 border-b-4 border-black
+    text_primary: text-black font-mono uppercase tracking-tighter
+    text_secondary: text-black font-bold
+    nav_link: text-black hover:bg-black hover:text-white rounded-none border-2 border-transparent
+      hover:border-black
+    btn_primary: bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+      hover:translate-y-1 hover:shadow-none transition-all
+    btn_secondary: bg-black text-yellow-400 border-4 border-yellow-400 shadow-[4px_4px_0px_0px_rgba(250,204,21,1)]
+      hover:translate-y-1 hover:shadow-none transition-all
+    hero_bg: bg-cyan-300
+    card_bg: bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
+    heading_primary: text-black font-black uppercase tracking-tight
+    heading_secondary: text-black font-mono uppercase
+    body_text: text-black font-mono
+
+# CHAOTIC_01 Theme
+# Chaotic 01 theme
+chaotic_01:
+  metadata:
+    description: Chaotic 01 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-gradient-to-br from-red-400 to-orange-500
+    body_bg: bg-gradient-to-tr from-purple-900 to-black text-[#FFC52F] tracking-tight
+    text_primary: text-3xl font-bold text-white uppercase
+    text_secondary: text-sm font-medium text-[#9B8B6E]
+    nav_link: cursor-pointer hover:bg-cyan-400 hover:text-black transition duration-300
+    hero_title: text-8xl font-black text-white tracking-tight bg-[#2A1E35] drop-shadow-lg
+      shadow-2xl opacity-70
+    hero_subtitle: text-5xl font-semibold text-white tracking-tight bg-[#362D40] drop-shadow-lg
+      shadow-2xl opacity-70
+    card_bg: bg-[#4B3E58] rounded-lg border-2 border-white shadow-xl z-10
+    card_title: text-xl font-bold text-white tracking-tight bg-[#5A4860] rounded-lg
+      shadow-2xl pb-2 pl-2 opacity-70
+    card_description: text-base font-medium text-white tracking-tight bg-[#695872]
+      rounded-lg border-2 border-white shadow-xl pb-2 opacity-70
+    btn_primary: bg-[#FF504F] text-white font-bold py-2 px-4 rounded-lg shadow-xl
+      cursor-pointer hover:bg-cyan-400 hover:text-black transition duration-300
+    btn_secondary: bg-[#8D6E92] text-white font-bold py-2 px-4 rounded-lg shadow-xl
+      cursor-pointer hover:bg-cyan-400 hover:text-black transition duration-300
+    tagline: text-sm font-medium text-white tracking-tight bg-[#B4A3C1] rounded-lg
+      border-2 border-white shadow-xl pb-2 pl-2 opacity-70
+
+# CHAOTIC_02 Theme
+# Chaotic 02 theme
+chaotic_02:
+  metadata:
+    description: Chaotic 02 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-red-700
+    body_bg: bg-[#333] text-white
+    text_primary: text-blue-500 font-bold tracking-wide
+    text_secondary: text-yellow-300 font-light
+    nav_link: hover:bg-red-900 hover:text-white transition-colors duration-200
+    hero_title: text-[#FF5733] text-9xl font-extrabold uppercase tracking-widest
+    hero_subtitle: text-[#FFC300] text-6xl font-bold mb-8 tracking-widest
+    card_bg: bg-[#FFF8E1] rounded-xl shadow-lg p-4
+    card_title: text-[#333] text-2xl font-semibold mb-4
+    card_description: text-[#555] text-lg font-normal
+    btn_primary: bg-[#C70039] text-white rounded-lg py-4 px-8 shadow-xl hover:bg-[#E74C3C]
+      transition-colors duration-300
+    btn_secondary: bg-white text-[#C70039] rounded-lg py-4 px-8 shadow-md hover:bg-[#F27400]
+      transition-colors duration-300
+    tagline: text-[#FF5733] text-2xl font-bold tracking-widest
+
+# EDITORIAL Theme
+# Magazine-style layout with serif fonts and elegant typography
+editorial:
+  metadata:
+    description: Magazine-style layout with serif fonts and elegant typography
+    category: content
+    color_palette: stone, red, white
+    typography: serif, italic
+    use_case: Blogs, editorial sites, content-heavy portfolios
+  classes:
+    nav_bg: bg-stone-50 border-b border-stone-200
+    text_primary: font-serif text-stone-900
+    text_secondary: text-stone-600 font-serif
+    nav_link: font-serif italic hover:underline decoration-red-900 underline-offset-4
+      text-stone-800
+    btn_primary: bg-red-900 text-stone-50 font-serif rounded-full px-6 hover:bg-red-800
+    btn_secondary: bg-stone-50 text-red-900 border-2 border-red-900 font-serif rounded-full
+      px-6 hover:bg-stone-100
+    hero_bg: bg-stone-100
+    card_bg: bg-white border-l-4 border-red-900 shadow-sm
+    heading_primary: font-serif text-4xl italic text-red-900
+    heading_secondary: font-serif text-2xl text-stone-800
+    body_text: font-serif text-stone-700 leading-relaxed
+
+# ENTERPRISE Theme
+# Clean, professional design for corporate portfolios
+enterprise:
+  metadata:
+    description: Clean, professional design for corporate portfolios
+    category: business
+    color_palette: blue, slate, white
+    typography: sans-serif, modern
+    use_case: Corporate websites, professional portfolios, B2B landing pages
+  classes:
+    nav_bg: bg-white border-b border-gray-200
+    text_primary: text-slate-900
+    text_secondary: text-slate-500
+    nav_link: text-slate-600 hover:text-slate-900
+    btn_primary: bg-blue-600 hover:bg-blue-700 text-white shadow-sm
+    btn_secondary: bg-white hover:bg-gray-50 text-blue-600 border border-blue-600
+    hero_bg: bg-gradient-to-br from-slate-50 to-slate-100
+    card_bg: bg-white border border-gray-200 shadow-sm hover:shadow-md
+    heading_primary: text-slate-900 font-bold
+    heading_secondary: text-slate-700 font-semibold
+    body_text: text-slate-600
+
+# HISTORICAL_01 Theme
+# Historical 01 theme
+historical_01:
+  metadata:
+    description: Historical 01 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-gradient-to-r from-amber-500 via-slate-800 to-gray-900 shadow-lg
+    body_bg: bg-[#2E3440] text-white
+    text_primary: text-white text-5xl font-bold tracking-wide uppercase
+    text_secondary: text-gray-400 text-xl italic
+    nav_link: hover:bg-slate-900 hover:text-amber-500 duration-300 transition-all
+      ease-out text-white
+    hero_title: text-[6rem] font-black mb-4 uppercase tracking-tight
+    hero_subtitle: text-white text-lg italic mb-8 mt-2 tracking-wide
+    card_bg: bg-black rounded-pill text-white p-6 shadow-lg
+    card_title: text-[4rem] font-black uppercase mb-2 tracking-wide
+    card_description: text-gray-400 text-lg italic
+    btn_primary: bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg
+      shadow-md transition-all duration-500 ease-in-out
+    btn_secondary: bg-transparent hover:bg-slate-700 text-white font-bold py-3 px-6
+      rounded-lg shadow-md transition-all duration-500 ease-in-out
+    tagline: text-white text-lg italic mb-8 mt-4
+
+# HISTORICAL_02 Theme
+# Historical 02 theme
+historical_02:
+  metadata:
+    description: Historical 02 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-[#7957D5] bg-gradient-to-r from-[#E84366] to-[#F1C40F]
+    body_bg: bg-[#D9E6FF]
+    text_primary: text-black text-5xl lg:text-7xl font-bold drop-shadow-lg
+    text_secondary: text-[#6C757D] text-xl lg:text-2xl font-medium
+    nav_link: bg-[#7957D5] hover:bg-[#B23AEE] text-white py-4 px-8 rounded-lg transition-all
+      duration-300
+    hero_title: text-black text-9xl lg:text-12xl font-extrabold uppercase tracking-tight
+    hero_subtitle: text-[#6C757D] text-4xl lg:text-6xl font-medium
+    card_bg: bg-white rounded-lg shadow-lg border-gray-300 border-2 mb-8 p-6
+    card_title: text-black text-xl lg:text-2xl font-bold mb-4
+    card_description: text-[#6C757D] text-base lg:text-lg
+    btn_primary: bg-[#7957D5] text-white py-4 px-8 rounded-lg shadow-md hover:bg-[#B23AEE]
+      transition-all duration-300
+    btn_secondary: bg-[#E84366] hover:bg-red-500 text-white py-4 px-8 rounded-lg shadow-md
+      transition-all duration-300
+    tagline: text-black text-lg font-medium border-gray-300 border-l-8 pl-4 mb-6
+
+# PROFESSIONAL_01 Theme
+# Professional 01 theme
+professional_01:
+  metadata:
+    description: Professional 01 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-shades-of-navy-blue
+    body_bg: bg-[#464B53]
+    text_primary: text-white text-xl font-bold tracking-tight
+    text_secondary: text-gray-300 text-lg font-medium tracking-wide
+    nav_link: text-white hover:text-gray-200 transition-colors duration-300
+    hero_title: text-white text-[4rem] font-bold tracking-tight leading-none uppercase
+    hero_subtitle: text-white text-lg font-medium tracking-wide mx-auto mt-4 max-w-[600px]
+    card_bg: bg-black border border-[#3B3E42] rounded-lg shadow-md
+    card_title: text-white text-[1.5rem] font-bold uppercase tracking-wide
+    card_description: text-white text-sm mt-2 leading-relaxed
+    btn_primary: bg-blue-500 text-white rounded-lg px-6 py-3 shadow-md hover:bg-blue-700
+      transition-all duration-300
+    btn_secondary: bg-gray-200 text-black rounded-lg px-6 py-3 shadow-md hover:bg-gray-100
+      transition-all duration-300
+    tagline: text-white text-2xl font-semibold tracking-wide mt-8
+
+# PROFESSIONAL_02 Theme
+# Professional 02 theme
+professional_02:
+  metadata:
+    description: Professional 02 theme
+    category: custom
+    color_palette: custom
+    typography: custom
+    use_case: Custom theme
+  classes:
+    nav_bg: bg-white py-4
+    body_bg: bg-gray-100 text-gray-700 dark:text-white
+    text_primary: text-neutral-900 dark:text-gray-300 max-w-7xl mx-auto text-center
+      font-serif tracking-wide
+    text_secondary: text-neutral-500 dark:text-gray-400 tracking-wide
+    nav_link: text-primary text-sm hover:bg-transparent hover:text-blue-500 transition-colors
+      duration-300
+    hero_title: text-primary text-4xl md:text-5xl font-extrabold tracking-wide mb-4
+    hero_subtitle: text-neutral-600 dark:text-white text-md max-w-4xl mx-auto tracking-wide
+      mb-8
+    card_bg: bg-white rounded-lg shadow-md p-6 max-w-xs mx-auto text-center
+    card_title: text-primary text-lg font-bold mb-2
+    card_description: text-neutral-900 dark:text-gray-300 text-sm mb-4
+    btn_primary: bg-primary text-white py-3 px-6 rounded-lg shadow-md hover:bg-blue-700
+      transition-colors duration-300
+    btn_secondary: bg-gray-100 text-primary py-3 px-6 rounded-lg shadow-md hover:text-white
+      hover:bg-gray-700 transition-colors duration-300
+    tagline: text-primary text-sm md:text-base font-semibold tracking-wide mb-8
+
+# RETRO_ARCADE Theme
+# 80s arcade game aesthetic with neon colors and pixel vibes
+retro_arcade:
+  metadata:
+    description: 80s arcade game aesthetic with neon colors and pixel vibes
+    category: retro
+    color_palette: pink, cyan, purple, blue
+    typography: bold, uppercase
+    use_case: Gaming portfolios, retro projects, fun personal sites
+  classes:
+    nav_bg: bg-gradient-to-r from-blue-500 to-purple-600
+    body_bg: bg-gradient-to-r from-pink-500 to-cyan-400
+    text_primary: text-white text-8xl font-bold tracking-widest uppercase
+    text_secondary: text-white/70 text-2xl font-medium tracking-wide
+    nav_link: text-white hover:text-blue-500 duration-200 transition-colors
+    hero_title: text-white text-8xl font-bold tracking-widest uppercase opacity-75
+      hover:opacity-100 transition-opacity
+    hero_subtitle: text-white text-4xl font-medium tracking-wide opacity-60 hover:opacity-80
+      transition-opacity
+    card_bg: bg-black/30 border-gray-500 hover:border-blue-500 rounded-lg shadow-lg
+      transition-shadow
+    card_title: text-white text-6xl font-extrabold tracking-tighter uppercase
+    card_description: text-white/70 text-base font-medium tracking-wide opacity-50
+      hover:opacity-80 transition-opacity
+    btn_primary: bg-blue-500 hover:bg-violet-500 text-white rounded-lg p-4 shadow-xl
+      transition-all duration-300
+    btn_secondary: bg-gray-500 hover:bg-transparent text-white rounded-lg p-4 shadow-xl
+      transition-all duration-300
+    tagline: text-white/75 text-lg font-light tracking-wide opacity-70 hover:opacity-100
+      transition-opacity
+
+# TECH_01 Theme
+# Hacker terminal aesthetic with green-on-dark theme
+tech_01:
+  metadata:
+    description: Hacker terminal aesthetic with green-on-dark theme
+    category: technical
+    color_palette: green, blue, gray-900
+    typography: monospace, technical
+    use_case: Developer portfolios, tech blogs, terminal-style sites
+  classes:
+    nav_bg: bg-gradient-to-r from-green-700 to-blue-500
+    body_bg: bg-gray-900 text-white
+    text_primary: text-green-200 font-mono text-lg leading-relaxed
+    text_secondary: text-green-300 font-mono text-sm leading-relaxed
+    nav_link: text-green-200 hover:text-green-400 transition-colors duration-300
+    hero_title: text-green-200 font-mono text-9xl leading-relaxed uppercase tracking-widest
+    hero_subtitle: text-green-300 font-mono text-4xl leading-relaxed uppercaser tracking-normal
+    card_bg: bg-blue-500 text-white rounded-lg p-[15px] hover:bg-green-700
+    card_title: text-white font-mono text-xl leading-relaxed uppercase tracking-tight
+    card_description: text-white font-mono text-base leading-relaxed tracking-normal
+    btn_primary: bg-green-200 hover:bg-green-400 text-white font-mono text-lg rounded-full
+      p-[15px] shadow-md transition-all duration-300
+    btn_secondary: bg-transparent hover:bg-green-400 text-green-200 font-mono text-lg
+      rounded-full p-[15px] shadow-md transition-all duration-300
+    tagline: text-green-200 font-mono text-sm leading-relaxed tracking-normal
+
+# TECH_02 Theme
+# Retro-futuristic tech design with amber gradients
+tech_02:
+  metadata:
+    description: Retro-futuristic tech design with amber gradients
+    category: technical
+    color_palette: amber, orange, blue
+    typography: typewriter, uppercase
+    use_case: Tech startups, developer portfolios, sci-fi themes
+  classes:
+    nav_bg: bg-gradient-to-r from-amber-600 to-orange-500
+    body_bg: bg-gradient-to-r from-amber-700 to-orange-900
+    text_primary: text-xl text-white font-typewriter tracking-widest uppercase
+    text_secondary: text-sm text-gray-400 font-light
+    nav_link: hover:text-black hover:bg-amber-600 transition-opacity duration-200
+      opacity-90
+    hero_title: text-6xl text-white font-typewriter tracking-widest uppercase
+    hero_subtitle: text-2xl text-gray-300 font-light tracking-wide
+    card_bg: bg-gradient-to-r from-blue-600 to-green-500 drop-shadow-xl rounded-lg
+    card_title: text-5xl text-white font-typewriter tracking-widest uppercase
+    card_description: text-2xl text-gray-400 font-light tracking-widest uppercase
+    btn_primary: py-3 px-5 text-white font-typewriter tracking-widest uppercase bg-gradient-to-r
+      from-blue-700 to-green-600 rounded-lg drop-shadow-xl hover:bg-gradient-to-r
+      from-blue-800 to-green-700 transition-all duration-300 opacity-95
+    btn_secondary: py-2 px-4 text-blue-600 font-typewriter tracking-widest uppercase
+      hover:bg-gray-100 transition-opacity duration-200 opacity-95
+    tagline: text-lg text-white font-typewriter tracking-widest uppercase

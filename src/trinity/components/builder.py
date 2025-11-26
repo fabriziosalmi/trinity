@@ -11,6 +11,11 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
 
+try:
+    import yaml
+except ImportError:
+    raise ImportError("PyYAML required. Install with: pip install PyYAML")
+
 from trinity.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -18,7 +23,8 @@ logger = get_logger(__name__)
 # Rule #8: No Magic Numbers/Strings
 DEFAULT_TEMPLATE_DIR = "library"
 OUTPUT_DIR = "output"
-THEMES_CONFIG_PATH = "config/themes.json"
+THEMES_CONFIG_PATH = "config/themes.yaml"  # Migrated from JSON to YAML (Phase 6, Task 3)
+THEMES_CONFIG_PATH_LEGACY = "config/themes.json"  # Backward compatibility
 
 
 class SiteBuilderError(Exception):
@@ -81,6 +87,8 @@ class SiteBuilder:
         """
         Load CSS class mappings for specified theme.
         
+        Supports both YAML (preferred) and JSON (legacy) formats.
+        
         Args:
             theme_name: Theme identifier (e.g., "enterprise", "brutalist")
             
@@ -89,29 +97,51 @@ class SiteBuilder:
             
         Raises:
             ThemeNotFoundError: If theme doesn't exist in config
-            FileNotFoundError: If themes.json is missing
+            FileNotFoundError: If neither themes.yaml nor themes.json exists
         """
         # Rule #7: Catch specific errors
-        config_path = Path(THEMES_CONFIG_PATH)
+        # Try YAML first (new format)
+        yaml_path = Path(THEMES_CONFIG_PATH)
+        json_path = Path(THEMES_CONFIG_PATH_LEGACY)
+        
+        config_path = yaml_path if yaml_path.exists() else json_path
         
         if not config_path.exists():
-            raise FileNotFoundError(f"Theme configuration not found: {config_path}")
+            raise FileNotFoundError(
+                f"Theme configuration not found. Expected: {yaml_path} or {json_path}"
+            )
             
         try:
             with open(config_path, "r", encoding="utf-8") as f:
-                themes = json.load(f)
+                if config_path.suffix == ".yaml" or config_path.suffix == ".yml":
+                    themes = yaml.safe_load(f)
+                    logger.debug(f"Loaded themes from YAML: {config_path}")
+                else:
+                    themes = json.load(f)
+                    logger.warning(
+                        f"Loading from legacy JSON format. "
+                        f"Consider migrating to YAML: python scripts/migrate_themes_to_yaml.py"
+                    )
             
             if theme_name not in themes:
                 available = ", ".join(themes.keys())
                 raise ThemeNotFoundError(
                     f"Theme '{theme_name}' not found. Available: {available}"
                 )
-                 
-            logger.info(f"Loaded theme: {theme_name}")
-            return themes[theme_name]
             
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in themes.json: {e}")
+            # Extract classes from YAML structure (has metadata) or use direct mapping (JSON)
+            theme_config = themes[theme_name]
+            if isinstance(theme_config, dict) and "classes" in theme_config:
+                # YAML format with metadata
+                logger.info(f"Loaded theme: {theme_name} (YAML)")
+                return theme_config["classes"]
+            else:
+                # JSON format (legacy)
+                logger.info(f"Loaded theme: {theme_name} (JSON legacy)")
+                return theme_config
+            
+        except (yaml.YAMLError, json.JSONDecodeError) as e:
+            logger.error(f"Invalid theme config format: {e}")
             raise SiteBuilderError(f"Failed to parse theme config: {e}")
 
     def build_page(
