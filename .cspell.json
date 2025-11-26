@@ -1,0 +1,55 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "AAAAAAAAAAAA",
+    "brutalist",
+    "Centuria",
+    "cyberpunk",
+    "dataminer",
+    "datetime",
+    "DOCTYPE",
+    "docstrings",
+    "Healer",
+    "Jinja",
+    "joblib",
+    "mlops",
+    "ONNX",
+    "Pydantic",
+    "Pylance",
+    "pyproject",
+    "Qwen",
+    "sklearn",
+    "Tailwind",
+    "techdoc",
+    "toml",
+    "trinityuser",
+    "TypeError",
+    "ValueError",
+    "yourproject",
+    "yourusername",
+    "yourdomain"
+  ],
+  "ignoreWords": [
+    "venv",
+    "virtualenv",
+    "urllib3"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    "**/*.pkl",
+    "**/*.pyc",
+    "__pycache__/**",
+    "*.egg-info/**",
+    ".pytest_cache/**",
+    "output/**",
+    "models/**"
+  ],
+  "flagWords": [
+    "hte",
+    "teh",
+    "todo",
+    "fixme"
+  ]
+}
