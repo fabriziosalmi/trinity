@@ -25,20 +25,19 @@
 ## 🎥 Quick Demo
 
 <p align="center">
+  <a href="https://asciinema.org/a/TVeqwLxJvZEDN3zize8QaKZ8l" target="_blank">
+    <img src="https://asciinema.org/a/TVeqwLxJvZEDN3zize8QaKZ8l.svg" width="800" alt="Trinity Core Demo"/>
+  </a>
+</p>
+
+<p align="center">
   <i>See Trinity in action - from configuration to deployment in 60 seconds</i>
 </p>
 
 ```bash
 # Try it yourself!
 ./scripts/demo.sh
-
-# Or record your own:
-# 1. Install asciinema: brew install asciinema
-# 2. Record: asciinema rec -c "./scripts/demo.sh"
-# 3. See docs/RECORDING_GUIDE.md for details
 ```
-
-> **🎬 Recording instructions:** See [`docs/RECORDING_GUIDE.md`](docs/RECORDING_GUIDE.md) for creating and embedding terminal recordings.
 
 ---
 
