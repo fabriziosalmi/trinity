@@ -40,8 +40,8 @@ class TestCSSOverrideMerging:
         output_path = builder.build_page(mock_content, theme="enterprise")
         
         assert output_path is not None
-        assert Path(output_path).exists()
-        assert output_path.endswith(".html")
+        assert output_path.exists()
+        assert str(output_path).endswith(".html")
     
     def test_build_with_style_overrides(self, builder, mock_content):
         """Test build with CSS overrides merges classes correctly"""
@@ -57,7 +57,7 @@ class TestCSSOverrideMerging:
         )
         
         assert output_path is not None
-        assert Path(output_path).exists()
+        assert output_path.exists()
         
         # Read generated HTML and verify CSS classes are merged
         with open(output_path, 'r') as f:
@@ -94,7 +94,7 @@ class TestCSSOverrideMerging:
         )
         
         assert output_path is not None
-        assert Path(output_path).exists()
+        assert output_path.exists()
 
 
 class TestThemeLoading:

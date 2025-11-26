@@ -51,7 +51,12 @@ class TestSelfHealingLoop:
         }
         mock_guardian_class.return_value = mock_guardian
         
-        result = engine.build_with_self_healing(mock_content, theme="enterprise")
+        result = engine.build_with_self_healing(
+            mock_content, 
+            theme="enterprise",
+            output_filename="test_output.html",
+            enable_guardian=True
+        )
         
         assert isinstance(result, BuildResult)
         assert result.status == BuildStatus.SUCCESS
@@ -93,7 +98,12 @@ class TestSelfHealingLoop:
         ]
         mock_healer_class.return_value = mock_healer
         
-        result = engine.build_with_self_healing(mock_content, theme="brutalist", enable_guardian=True)
+        result = engine.build_with_self_healing(
+            mock_content, 
+            theme="brutalist",
+            output_filename="test_healing.html",
+            enable_guardian=True
+        )
         
         assert result.status == BuildStatus.SUCCESS
         assert result.attempts == 3
@@ -120,6 +130,7 @@ class TestSelfHealingLoop:
             result = engine.build_with_self_healing(
                 mock_content, 
                 theme="enterprise",
+                output_filename="test_max_retries.html",
                 enable_guardian=True
             )
             
@@ -134,7 +145,8 @@ class TestBuildResultModel:
         """Test creating SUCCESS BuildResult"""
         result = BuildResult(
             status=BuildStatus.SUCCESS,
-            output_path="/path/to/output.html",
+            output_path=Path("/path/to/output.html"),
+            theme="enterprise",
             attempts=1,
             guardian_report=None,
             fixes_applied=[]
@@ -148,7 +160,8 @@ class TestBuildResultModel:
         """Test creating REJECTED BuildResult"""
         result = BuildResult(
             status=BuildStatus.REJECTED,
-            output_path="/path/to/BROKEN_output.html",
+            output_path=Path("/path/to/BROKEN_output.html"),
+            theme="brutalist",
             attempts=3,
             guardian_report={"approved": False, "reason": "Unfixable"},
             fixes_applied=["css_break_word", "font_shrink", "css_truncate"]
@@ -200,10 +213,15 @@ class TestStyleOverrideAccumulation:
         
         # Mock Builder to track style_overrides passed to it
         mock_builder = Mock()
-        mock_builder.build_page.return_value = "/tmp/test.html"
+        mock_builder.build_page.return_value = Path("/tmp/test.html")
         mock_builder_class.return_value = mock_builder
         
-        result = engine.build_with_self_healing(mock_content, theme="enterprise", enable_guardian=True)
+        result = engine.build_with_self_healing(
+            mock_content, 
+            theme="enterprise",
+            output_filename="test_accumulate.html",
+            enable_guardian=True
+        )
         
         # Verify builder.build_page was called with accumulated overrides
         # On attempt 3 (final successful build), should have both overrides
