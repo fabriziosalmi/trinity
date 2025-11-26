@@ -1,0 +1,19 @@
+{
+    "brand_name": "Neural AI Labs",
+    "tagline": "Advanced Machine Learning Research & Development",
+    "hero": {
+        "title": "Building Next-Generation Machine Learning Infrastructure for Large-Scale Distributed Computing Systems",
+        "subtitle": "A comprehensive technical guide to modern ML architectures, deployment strategies, and scalability patterns",
+        "cta": "Start Learning"
+    },
+    "cards": [
+        {
+            "title": "Advanced Neural Network Optimization Techniques for Production Environments",
+            "description": "Deep dive into state-of-the-art optimization algorithms, gradient descent variants, adaptive learning rate methods, and memory-efficient training strategies for large-scale deep learning models in production systems."
+        },
+        {
+            "title": "Distributed Training at Scale",
+            "description": "Learn how to efficiently train massive neural networks across multiple GPUs and nodes using data parallelism, model parallelism, pipeline parallelism, and cutting-edge distributed training frameworks."
+        }
+    ]
+}
