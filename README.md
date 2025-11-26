@@ -83,18 +83,23 @@ Trinity Core v0.5.0:
 - Theme-aware prompts
 - Pydantic schema validation
 
-**3. Predictor (Neural - NEW in v0.3.0)**
+**3. Predictor (Neural - v0.3.0)**
 - Random Forest classifier (100 estimators)
 - Predicts layout breakage **before rendering**
 - F1-Score: 0.918 (91.8% accuracy)
 - Trained on 700+ real build events
 
-**4. Healer (Autonomic Repair)**
-- **ML-Guided:** Applies optimal strategy based on prediction
-- **Strategy 1:** CSS_BREAK_WORD - Inject `break-all`, `overflow-wrap`
-- **Strategy 2:** FONT_SHRINK - Reduce font sizes (`text-5xl` → `text-3xl`)
-- **Strategy 3:** CSS_TRUNCATE - Add ellipsis (`truncate`, `line-clamp`)
-- **Strategy 4:** CONTENT_CUT - Nuclear option (truncate strings)
+**4. Healer (Generative Neural - NEW in v0.5.0)**
+- **Neural Healer (LSTM):** Generates optimal CSS from learned patterns
+  - 270K parameter Seq2Seq model
+  - Context-aware generation (theme + error_type + content_length)
+  - Learns from successful fixes across 100+ themes (Transfer Learning)
+  - Example: `"text-sm break-all overflow-hidden line-clamp-2"`
+- **SmartHealer (Heuristic Fallback):** Fixed strategies if model unavailable
+  - Strategy 1: CSS_BREAK_WORD - Inject `break-all`, `overflow-wrap`
+  - Strategy 2: FONT_SHRINK - Reduce font sizes (`text-5xl` → `text-3xl`)
+  - Strategy 3: CSS_TRUNCATE - Add ellipsis (`truncate`, `line-clamp`)
+  - Strategy 4: CONTENT_CUT - Nuclear option (truncate strings)
 
 **5. Guardian (Visual QA - Optional)**
 - Playwright headless browser
@@ -155,6 +160,91 @@ Attempt 3: CSS_TRUNCATE → Adding ellipsis
 ```
 
 **For normal content:** 95% of issues are fixed by CSS strategies alone!
+
+---
+
+## 🧠 Neural Healer Activation (v0.5.0)
+
+### The Final Cut: See the Brain in Action
+
+You have the code, you have the integration. Now **turn on the lights** and watch the neurons fire.
+
+#### 1. Tabula Rasa (Reset Data)
+
+The old dataset lacks the `style_overrides_raw` column. Start fresh:
+
+```bash
+rm data/training_dataset.csv
+```
+
+#### 2. Feed the Beast (Generate Training Data v2)
+
+Generate data containing real CSS fixes to train the LSTM:
+
+```bash
+poetry run trinity mine-generate --count 300 --guardian
+```
+
+**What happens:** Each build logs the actual CSS classes that successfully fixed layout issues.
+
+#### 3. Train the Brain (LSTM Training)
+
+Launch the training script that teaches the LSTM to write CSS:
+
+```bash
+python -m trinity.components.generative_trainer
+```
+
+**Expected output:**
+```
+📊 Loaded 150 successful fixes from training_dataset.csv
+🔨 Building vocabulary from training data...
+✅ Vocabulary built: 87 tokens (min_freq=2)
+🧠 Training LSTM Style Generator...
+Epoch 1/50: Loss 3.245
+Epoch 2/50: Loss 2.891
+Epoch 3/50: Loss 2.567
+...
+✅ Best model saved: models/generative/style_generator_best.pth
+```
+
+**Watch for:** Loss should decrease steadily. Training takes ~5-10 minutes on CPU.
+
+#### 4. The Neural Chaos Test (Grand Finale)
+
+Launch chaos test with the neural brain activated:
+
+```bash
+poetry run trinity chaos --neural
+```
+
+**What to look for in logs:**
+```
+🧠 Neural Healer activated (LSTM-based CSS generation)
+🔮 Neural Predictor: High risk (78%)
+👁️  Guardian inspecting layout...
+❌ Guardian REJECTED: DOM overflow detected
+🧠 Neural Healer generating fix for context...
+   Theme: brutalist | Error: overflow | Attempt: 1
+✨ Generated CSS: "break-all text-sm overflow-hidden"
+🎨 Applying neural CSS overrides...
+✅ Guardian APPROVED: Layout passed all checks
+```
+
+**Success indicators:**
+- ✅ `🧠 Neural Healer generating fix...`
+- ✅ `✨ Generated CSS: "..."` (not heuristic strategies)
+- ✅ Guardian approval after neural fix
+
+#### Fallback Safety
+
+If the model isn't trained or generates invalid CSS:
+```
+⚠️  Neural model unavailable, using SmartHealer fallback
+🚑 SmartHealer applied strategy: CSS_BREAK_WORD
+```
+
+**This is by design:** Neural Healer gracefully falls back to proven heuristics.
 
 ---
 
