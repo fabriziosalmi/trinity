@@ -39,11 +39,15 @@ def extract_python_snippets(markdown_path: Path) -> List[Tuple[int, str]]:
         line_num = content[:match.start()].count('\n') + 1
         
         # Skip bash commands (we'll validate trinity CLI separately)
-        if code.strip().startswith(('trinity ', '# ', 'poetry ', 'git ', 'docker ')):
+        if code.strip().startswith(('trinity ', '# ', 'poetry ', 'git ', 'docker ', 'pip ', 'cd ', 'source ')):
             continue
             
         # Skip output examples (lines starting with $ or #)
         if any(line.strip().startswith(('$ ', '# ', '>>> ')) for line in code.split('\n')):
+            continue
+        
+        # Skip commit message examples (feat:, fix:, docs:, etc.)
+        if any(line.strip().startswith(('feat:', 'fix:', 'docs:', 'refactor:', 'test:', 'chore:', 'ci:')) for line in code.split('\n')):
             continue
             
         snippets.append((line_num, code))

@@ -112,6 +112,8 @@ Trinity Core v0.3.0:
 - **[Centuria Factory](docs/CENTURIA_FACTORY_SUMMARY.md)** - Theme generation system
 - **[Docker Setup](DOCKER_README.md)** - Container deployment
 - **[Contributing](CONTRIBUTING.md)** - Development setup and guidelines
+- **[Security Policy](SECURITY.md)** - Vulnerability reporting and security considerations
+- **[Changelog](CHANGELOG.md)** - Version history and release notes
 
 ---
 
