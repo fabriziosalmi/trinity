@@ -8,7 +8,8 @@ Rule #5: Type safety and error handling
 import sys
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, List, Any
+import os
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -29,6 +30,31 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+
+def apply_emergency_truncate(data: Any, max_len: int = 60) -> Any:
+    """
+    Recursively truncate all strings in a nested data structure.
+    
+    This is the Self-Healing mechanism: when Guardian detects content overflow,
+    we apply aggressive truncation to all text content and retry the build.
+    
+    Args:
+        data: Dictionary, list, string, or other data type
+        max_len: Maximum string length before truncation
+        
+    Returns:
+        Deep copy of data with all strings truncated to max_len
+    """
+    if isinstance(data, dict):
+        return {k: apply_emergency_truncate(v, max_len) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [apply_emergency_truncate(i, max_len) for i in data]
+    elif isinstance(data, str):
+        if len(data) > max_len:
+            return data[:max_len] + "..."
+        return data
+    return data
 
 
 def build_site_from_mock_data(theme: str = "enterprise", enable_guardian: bool = False, guardian_dom_only: bool = False) -> Path:
@@ -369,22 +395,37 @@ Examples:
                 print(f"❌ Invalid content schema: {e}")
                 return 1
             
-            # Build
+            # Self-Healing Loop
+            max_retries = 3
+            attempt = 0
+            current_content = content  # Working copy
             builder = SiteBuilder()
-            output_path = builder.build_page(
-                content=content,
-                theme=args.theme,
-                output_filename=f"index_{args.theme}_chaos.html"
-            )
+            filename = f"index_{args.theme}_chaos.html"
+            output_path = None
             
-            print(f"✓ Page built: {output_path}")
-            
-            # Guardian QA
-            if args.guardian:
+            while attempt < max_retries:
+                print(f"\n🔄 Build Attempt {attempt + 1}/{max_retries}...")
+                
+                # 1. Build page
+                output_path = builder.build_page(
+                    content=current_content,
+                    theme=args.theme,
+                    output_filename=filename
+                )
+                print(f"✓ Page built: {output_path}")
+                
+                # 2. If Guardian is disabled, exit early
+                if not args.guardian:
+                    print(f"\nOpen in browser: file://{output_path.absolute()}")
+                    return 0
+                
+                # 3. Guardian Audit
                 try:
-                    logger.info("👁️  Activating Guardian for layout inspection...")
+                    print("👁️  Guardian is inspecting...")
+                    abs_path = output_path.resolve()
+                    
                     guardian = TrinityGuardian(enable_vision_ai=not args.guardian_only_dom)
-                    report = guardian.audit_layout(str(output_path.resolve()))
+                    report = guardian.audit_layout(str(abs_path))
                     
                     print("\n" + "=" * 60)
                     print("GUARDIAN AUDIT REPORT")
@@ -393,6 +434,10 @@ Examples:
                     if report["approved"]:
                         print(f"✅ STATUS: APPROVED")
                         print(f"Reason: {report['reason']}")
+                        print("=" * 60)
+                        print(f"\n🏆 Success! Layout passed Guardian QA.")
+                        print(f"\nOpen in browser: file://{output_path.absolute()}")
+                        return 0
                     else:
                         print(f"❌ STATUS: REJECTED")
                         print(f"Reason: {report['reason']}")
@@ -401,13 +446,32 @@ Examples:
                             for i, issue in enumerate(report['issues'], 1):
                                 print(f"  {i}. {issue}")
                         print(f"\n🛠️  Suggested Fix: {report['fix_suggestion'].upper()}")
-                    
-                    print("=" * 60)
+                        print("=" * 60)
+                        
+                        # Self-Healing Logic
+                        if attempt < max_retries - 1:
+                            fix = report['fix_suggestion'].upper()
+                            print(f"\n🚑 Self-Healing: Applying '{fix}' to content...")
+                            
+                            # Apply aggressive truncation
+                            current_content = apply_emergency_truncate(current_content, max_len=50)
+                            attempt += 1
+                            print(f"   → All strings truncated to 50 characters")
+                            print(f"   → Retrying build with fixed content...\n")
+                        else:
+                            print("\n💀 Max retries reached. Giving up.")
+                            # Rename broken file
+                            broken_path = output_path.parent / f"BROKEN_{filename}"
+                            os.rename(str(output_path), str(broken_path))
+                            print(f"   → Broken layout saved as: {broken_path}")
+                            print(f"\nOpen broken file: file://{broken_path.absolute()}")
+                            return 1
                     
                 except GuardianError as e:
                     logger.error(f"Guardian QA failed: {e}")
+                    print(f"❌ Guardian error: {e}")
+                    return 1
             
-            print(f"\nOpen in browser: file://{output_path.absolute()}")
             return 0
         
         # Build with static input (legacy)

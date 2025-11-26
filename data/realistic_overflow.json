@@ -1,0 +1,39 @@
+{
+  "brand_name": "Trinity Portfolio",
+  "tagline": "A modern developer portfolio showcasing exceptional projects and innovative solutions",
+  "menu_items": [
+    {"label": "Projects", "url": "#projects"},
+    {"label": "About", "url": "#about"},
+    {"label": "Contact", "url": "#contact"}
+  ],
+  "cta": {"label": "Get in Touch", "url": "#contact"},
+  "hero": {
+    "title": "Welcome to My Portfolio - A comprehensive showcase of my professional development work and open source contributions",
+    "subtitle": "This is a realistic test case where the title is slightly too long and might cause minor layout issues depending on screen size and font rendering. The Guardian should detect this during DOM inspection and suggest truncation as a fix.",
+    "cta_primary": {"label": "View Projects", "url": "#projects"},
+    "cta_secondary": {"label": "Read More About Me", "url": "#about"}
+  },
+  "repos": [
+    {
+      "name": "awesome-machine-learning-pipeline",
+      "description": "A comprehensive end-to-end machine learning pipeline for data processing, model training, evaluation, and deployment with automated CI/CD integration and comprehensive monitoring capabilities built on modern cloud infrastructure",
+      "url": "https://github.com/example/ml-pipeline",
+      "tags": ["Python", "TensorFlow", "Docker", "Kubernetes", "MLOps"],
+      "stars": 234
+    },
+    {
+      "name": "react-dashboard-template",
+      "description": "Modern React dashboard with beautiful UI components, TypeScript support, and comprehensive documentation",
+      "url": "https://github.com/example/react-dashboard",
+      "tags": ["React", "TypeScript", "Tailwind"],
+      "stars": 89
+    },
+    {
+      "name": "api-gateway-service",
+      "description": "High-performance API gateway built with Go, featuring rate limiting, authentication, and advanced routing",
+      "url": "https://github.com/example/api-gateway",
+      "tags": ["Go", "Microservices", "REST"],
+      "stars": 156
+    }
+  ]
+}
