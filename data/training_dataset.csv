@@ -146,3 +146,28 @@ timestamp,theme,input_char_len,input_word_count,css_signature,active_strategy,is
 2025-11-26T16:04:52.321237,enterprise,54,9,NONE,NONE,1,,
 2025-11-26T16:04:53.465899,brutalist,54,9,NONE,NONE,1,,
 2025-11-26T16:04:54.601930,enterprise,54,9,NONE,NONE,1,,
+2025-11-26T16:06:23.218378,brutalist,54,9,NONE,NONE,1,,
+2025-11-26T16:07:20.582135,enterprise,54,9,NONE,NONE,1,,
+2025-11-26T16:07:20.630397,brutalist,54,9,NONE,NONE,0,Overflow,
+2025-11-26T16:07:20.631205,brutalist,54,9,e66016f322d7,css_break_word,0,Still overflow,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:07:20.631850,brutalist,54,9,bfa225f091d2,font_shrink,1,,"{""heading_primary"": ""text-3xl""}"
+2025-11-26T16:07:20.675310,enterprise,54,9,NONE,NONE,0,Persistent overflow,
+2025-11-26T16:07:20.675916,enterprise,54,9,b02e70c54cc6,css_break_word,0,Persistent overflow,"{""body_text"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""card_description"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""card_title"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""heading_primary"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""heading_secondary"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""hero_subtitle"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""hero_title"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""tagline"": ""break-all whitespace-normal overflow-wrap-anywhere""}"
+2025-11-26T16:07:20.707936,enterprise,54,9,NONE,NONE,0,Issue,
+2025-11-26T16:07:20.708269,enterprise,54,9,e66016f322d7,css_break_word,0,Issue,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:07:20.708470,enterprise,54,9,41d26a38a889,font_shrink,1,,"{""body_text"": ""text-xl"", ""heading_primary"": ""break-all""}"
+2025-11-26T16:07:31.270102,brutalist,54,9,NONE,NONE,0,Overflow,
+2025-11-26T16:07:31.270902,brutalist,54,9,e66016f322d7,css_break_word,0,Still overflow,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:07:31.271488,brutalist,54,9,bfa225f091d2,font_shrink,1,,"{""heading_primary"": ""text-3xl""}"
+2025-11-26T16:07:41.952053,brutalist,54,9,NONE,NONE,0,Overflow,
+2025-11-26T16:07:41.952790,brutalist,54,9,e66016f322d7,css_break_word,0,Still overflow,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:07:41.953373,brutalist,54,9,bfa225f091d2,font_shrink,1,,"{""heading_primary"": ""text-3xl""}"
+2025-11-26T16:08:07.476747,enterprise,54,9,NONE,NONE,1,,
+2025-11-26T16:08:07.527312,brutalist,54,9,NONE,NONE,0,Overflow,
+2025-11-26T16:08:07.527931,brutalist,54,9,e66016f322d7,css_break_word,0,Still overflow,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:08:07.528450,brutalist,54,9,bfa225f091d2,font_shrink,1,,"{""heading_primary"": ""text-3xl""}"
+2025-11-26T16:08:07.574112,enterprise,54,9,NONE,NONE,0,Persistent overflow,
+2025-11-26T16:08:07.574721,enterprise,54,9,b02e70c54cc6,css_break_word,0,Persistent overflow,"{""body_text"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""card_description"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""card_title"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""heading_primary"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""heading_secondary"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""hero_subtitle"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""hero_title"": ""break-all whitespace-normal overflow-wrap-anywhere"", ""tagline"": ""break-all whitespace-normal overflow-wrap-anywhere""}"
+2025-11-26T16:08:07.608660,enterprise,54,9,NONE,NONE,0,Issue,
+2025-11-26T16:08:07.608903,enterprise,54,9,e66016f322d7,css_break_word,0,Issue,"{""heading_primary"": ""break-all""}"
+2025-11-26T16:08:07.609066,enterprise,54,9,41d26a38a889,font_shrink,1,,"{""body_text"": ""text-xl"", ""heading_primary"": ""break-all""}"

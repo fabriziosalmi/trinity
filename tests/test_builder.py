@@ -46,8 +46,8 @@ class TestCSSOverrideMerging:
     def test_build_with_style_overrides(self, builder, mock_content):
         """Test build with CSS overrides merges classes correctly"""
         style_overrides = {
-            "hero_title": "break-all overflow-wrap-anywhere",
-            "card_description": "line-clamp-2 truncate"
+            "heading_primary": "break-all overflow-wrap-anywhere",
+            "heading_secondary": "line-clamp-2 truncate"
         }
         
         output_path = builder.build_page(
@@ -69,7 +69,7 @@ class TestCSSOverrideMerging:
     def test_overrides_preserve_original_classes(self, builder, mock_content):
         """Test that CSS overrides append to original classes"""
         style_overrides = {
-            "hero_title": "text-3xl"  # Override
+            "heading_primary": "text-3xl"  # Override
         }
         
         output_path = builder.build_page(
