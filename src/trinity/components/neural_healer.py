@@ -151,14 +151,17 @@ class NeuralHealer:
         Convert context into feature vector for LSTM.
         
         Must match the format used during training.
+        CRITICAL: Use same theme list as training (brutalist, editorial, enterprise).
         """
-        # Theme one-hot (simplified - use actual theme list in production)
-        themes = ["enterprise", "brutalist", "editorial", "other"]
+        # Theme one-hot - MUST match training data exactly!
+        # Training uses: brutalist, editorial, enterprise (alphabetical order from dataset)
+        themes = ["brutalist", "editorial", "enterprise"]
         theme_vec = [0] * len(themes)
         if theme in themes:
             theme_vec[themes.index(theme)] = 1
         else:
-            theme_vec[-1] = 1  # "other"
+            # Fallback to enterprise if unknown theme
+            theme_vec[themes.index("enterprise")] = 1
         
         # Content length normalized
         content_len_norm = min(content_length, 1000) / 1000.0
@@ -174,10 +177,10 @@ class NeuralHealer:
         # Attempt normalized
         attempt_norm = min(attempt, 5) / 5.0
         
-        # Combine
+        # Combine: 3 (themes) + 1 (content) + 1 (attempt) + 4 (errors) = 9 dimensions
         context_vector = theme_vec + [content_len_norm, attempt_norm] + error_vec
         
-        return torch.FloatTensor(context_vector).unsqueeze(0)  # [1, context_dim]
+        return torch.FloatTensor(context_vector).unsqueeze(0)  # [1, 9]
     
     def _validate_generated_css(self, css_classes: List[str]) -> List[str]:
         """
@@ -251,11 +254,14 @@ class NeuralHealer:
         # Generate CSS fix
         self.model.eval()
         with torch.no_grad():
+            # Clamp top_k to vocab size (avoid index out of range)
+            effective_top_k = min(20, self.tokenizer.vocab_size - 1)  # -1 to exclude PAD
+            
             generated_sequences = self.model.generate(
                 context=context_tensor,
                 max_length=15,
                 temperature=0.8,  # Balanced creativity
-                top_k=20,  # Anti-hallucination
+                top_k=effective_top_k,  # Anti-hallucination (clamped to vocab size)
                 sos_token_idx=self.tokenizer.token2idx[self.tokenizer.SOS_TOKEN],
                 eos_token_idx=self.tokenizer.token2idx[self.tokenizer.EOS_TOKEN],
             )

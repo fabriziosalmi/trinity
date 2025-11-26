@@ -267,11 +267,28 @@ class GenerativeStyleTrainer:
     
     def _build_vocabulary(self) -> None:
         """Build tokenizer vocabulary from successful CSS fixes."""
+        import json
         df = pd.read_csv(self.dataset_path)
         df = df[df['is_valid'] == 1]
         
-        css_sequences = df['css_overrides'].dropna().tolist()
-        self.tokenizer.build_vocab(css_sequences, min_freq=2)
+        # Parse JSON CSS overrides and extract all classes
+        css_sequences = []
+        for css_raw in df['style_overrides_raw'].dropna():
+            try:
+                css_dict = json.loads(css_raw)
+                all_classes = []
+                for component, classes in css_dict.items():
+                    if classes and classes.strip():
+                        all_classes.extend(classes.split())
+                unique_classes = list(dict.fromkeys(all_classes))
+                css_string = " ".join(unique_classes)
+                if css_string:
+                    css_sequences.append(css_string)
+            except (json.JSONDecodeError, AttributeError):
+                # Skip invalid entries
+                continue
+        
+        self.tokenizer.build_vocab(css_sequences, min_freq=1)  # Lower threshold for small datasets
     
     def train(
         self,
