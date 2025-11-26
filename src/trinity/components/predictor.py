@@ -14,6 +14,11 @@ Architecture:
         → Apply CSS_BREAK_WORD immediately
         → Save 1-2 seconds per risky build
 
+⚠️  SECURITY WARNING (Rule #6):
+    This module loads pickle-serialized models (.pkl files).
+    NEVER load models from untrusted sources - pickle can execute arbitrary code.
+    Verify model integrity and source before loading in production.
+
 Rule #7: Graceful degradation if model unavailable (fallback to heuristics).
 Rule #66: Load model once per execution (Singleton pattern).
 """
@@ -81,6 +86,10 @@ class LayoutRiskPredictor:
         )
         
         logger.info(f"🔮 Loading ML model: {latest_model.name}")
+        
+        # ⚠️  SECURITY WARNING: Pickle files can execute arbitrary code
+        # Only load models from trusted sources. Verify model integrity before loading.
+        logger.warning("⚠️  SECURITY: Loading pickle model. Only load from trusted sources.")
         
         # Load model
         self.model = joblib.load(latest_model)

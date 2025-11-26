@@ -1,5 +1,17 @@
 """
-Trinity ML Model Training - The Neural Core
+⚠️  DEPRECATED SCRIPT - DO NOT USE
+
+This early-phase prototype has been superseded by:
+    - src/trinity/components/trainer.py (LayoutRiskTrainer)
+    - src/trinity/components/predictor.py (LayoutRiskPredictor)
+    - trinity train command (CLI entry point)
+
+Use the CLI instead:
+    poetry run trinity train --csv data/training_dataset.csv --output models/
+
+---
+
+Trinity ML Model Training - The Neural Core (Historical Documentation)
 
 This script trains predictive models on the collected dataset to enable
 data-driven self-healing instead of heuristic strategies.

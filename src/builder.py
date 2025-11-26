@@ -8,6 +8,7 @@ Rule #28: Structured logging
 import logging
 import json
 from pathlib import Path
+from datetime import datetime
 from typing import Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
 
@@ -159,7 +160,7 @@ class SiteBuilder:
                 meta={
                     "generator": "Trinity Core v1.0",
                     "theme": theme,
-                    "build_date": "2025-11-26"  # TODO: Use datetime
+                    "build_date": datetime.utcnow().strftime("%Y-%m-%d")
                 }
             )
             

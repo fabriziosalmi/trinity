@@ -10,7 +10,13 @@ Architecture:
 This module focuses on Phase 2: Training a Random Forest classifier to predict
 layout breakage from content metrics and CSS features.
 
+⚠️  SECURITY WARNING (Rule #6):
+    This module uses joblib (pickle-based) for model serialization.
+    NEVER load models from untrusted sources - pickle can execute arbitrary code.
+    In production: Use ONNX format or cryptographically sign models.
+    
 Anti-Vibecoding Rules Applied:
+    - Rule #6: Security-first design (pickle warning)
     - Rule #8: No magic numbers (all hyperparameters in constants)
     - Rule #7: Explicit error handling (no silent failures)
     - Rule #28: Structured logging (JSON-compatible metadata)
@@ -431,8 +437,10 @@ class LayoutRiskTrainer:
         model_filename = f"layout_risk_predictor_{timestamp}.pkl"
         model_path = output_dir / model_filename
         
-        # Save model
+        # ⚠️  SECURITY WARNING: Pickle files can execute arbitrary code
+        # Only load models from trusted sources. For production, consider ONNX format.
         logger.info(f"💾 Saving model: {model_path}")
+        logger.warning("⚠️  SECURITY: Model uses pickle format. Only load from trusted sources.")
         joblib.dump(model, model_path)
         
         # Save metadata (Rule #28: Structured Logging)

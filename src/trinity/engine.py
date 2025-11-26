@@ -156,9 +156,18 @@ class TrinityEngine:
                 if recommendation["skip_none_strategy"]:
                     logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_score:.0%})")
                     # Apply CSS_BREAK_WORD immediately (skip NONE attempt)
-                    preemptive_fix = self.healer.apply_strategy(
+                    # Create a mock guardian report to trigger CSS_BREAK_WORD strategy
+                    mock_report = {
+                        "approved": False,
+                        "status": "fail",
+                        "reason": "ML predicted high risk",
+                        "issues": ["Predicted layout overflow"],
+                        "fix_suggestion": "break-word"
+                    }
+                    preemptive_fix = self.healer.heal_layout(
+                        guardian_report=mock_report,
                         content=content,
-                        strategy=HealingStrategy.CSS_BREAK_WORD
+                        attempt=1  # Force CSS_BREAK_WORD
                     )
                     if preemptive_fix.style_overrides:
                         current_style_overrides = preemptive_fix.style_overrides

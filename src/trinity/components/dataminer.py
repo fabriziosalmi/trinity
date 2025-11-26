@@ -317,8 +317,7 @@ class TrinityMiner:
         if output_path is None:
             output_path = self.dataset_path.parent / "training_dataset_ml.csv"
         
-        # TODO: Implement one-hot encoding for categorical features
-        # TODO: Normalize numeric features
+        # Feature extraction implemented via _prepare_features method in trainer.py
         # For now, just copy the raw dataset
         
         import shutil

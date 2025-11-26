@@ -19,6 +19,12 @@ from pydantic import BaseModel, Field, ValidationError
 
 from trinity.utils.logger import get_logger
 
+# Optional import for text processing
+try:
+    from trinity.utils.text_processor import TextProcessor
+except ImportError:
+    TextProcessor = None
+
 logger = get_logger(__name__)
 
 # Rule #8: No magic strings (these should come from config/settings.py in production)
@@ -100,8 +106,8 @@ class ContentEngine:
         # Initialize OpenAI-compatible client
         self.client = OpenAI(base_url=base_url, api_key=api_key)
         
-        # Initialize TextProcessor
-        if self.enable_text_processing:
+        # Initialize TextProcessor (optional)
+        if self.enable_text_processing and TextProcessor is not None:
             try:
                 self.text_processor = TextProcessor()
                 logger.info("TextProcessor loaded (The Enforcer is active)")
@@ -110,6 +116,8 @@ class ContentEngine:
                 self.text_processor = None
         else:
             self.text_processor = None
+            if self.enable_text_processing:
+                logger.info("TextProcessor not available (continuing without text processing)")
         
         logger.info(f"ContentEngine initialized: {base_url} (model: {model_id})")
     
@@ -333,8 +341,144 @@ class ContentEngine:
                 continue
         
         # All retries failed
-        raise ContentEngineError(
+                raise ContentEngineError(
             f"Failed to generate content after {self.max_retries} attempts. "
+            f"Last error: {last_error}"
+        )
+    
+    def generate_theme_from_vibe(self, vibe_description: str) -> Dict[str, str]:
+        """
+        Generate a complete theme configuration from a vibe/style description.
+        
+        This is the "Text-to-Theme" engine for mass theme generation.
+        Enables data augmentation by creating 100+ diverse themes automatically.
+        
+        Args:
+            vibe_description: Natural language style description 
+                            (e.g., "90s Hacker Terminal", "Vaporwave aesthetic")
+        
+        Returns:
+            Dictionary of Tailwind CSS classes for all theme components
+            
+        Raises:
+            ContentEngineError: If theme generation fails after retries
+        
+        Example:
+            >>> brain = ContentEngine()
+            >>> theme = brain.generate_theme_from_vibe("Cyberpunk neon city")
+            >>> print(theme["nav_bg"])  # "bg-black border-b-2 border-cyan-400"
+        """
+        system_prompt = """You are a TailwindCSS Design Engine with expert knowledge of:
+- Color theory and accessibility
+- Typography hierarchy
+- Modern UI/UX patterns
+- CSS utility classes
+
+Your task: Convert a visual style description into a complete TailwindCSS theme configuration.
+
+CRITICAL RULES:
+1. Output ONLY valid JSON (no markdown, no explanations)
+2. Use real Tailwind classes (bg-blue-500, text-xl, rounded-lg, etc.)
+3. Use arbitrary values [#hex] for custom colors if needed
+4. Be BOLD and CREATIVE - embrace the vibe fully
+5. Ensure contrast between backgrounds and text colors
+
+REQUIRED JSON STRUCTURE:
+{
+  "nav_bg": "background classes for navigation",
+  "body_bg": "background classes for body",
+  "text_primary": "main text color and size",
+  "text_secondary": "secondary text color and size",
+  "nav_link": "navigation link styles (hover effects welcome)",
+  "hero_title": "hero title styles (font size, weight, spacing)",
+  "hero_subtitle": "hero subtitle styles",
+  "card_bg": "card/container background and borders",
+  "card_title": "card title styles",
+  "card_description": "card description styles",
+  "btn_primary": "primary button styles (rounded, shadow, hover)",
+  "btn_secondary": "secondary button styles",
+  "tagline": "site tagline styles"
+}
+
+Examples of valid values:
+- "bg-gradient-to-r from-purple-600 to-pink-500"
+- "text-white text-6xl font-black uppercase tracking-tight"
+- "bg-[#FF00FF] border-4 border-[#00FFFF] shadow-2xl"
+- "hover:bg-cyan-400 hover:text-black transition-all duration-300"
+
+Output ONLY the JSON object."""
+
+        logger.info(f"🎨 Generating theme from vibe: {vibe_description}")
+        
+        last_error = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                logger.info(f"Theme generation attempt {attempt}/{self.max_retries}")
+                
+                response = self.client.chat.completions.create(
+                    model=self.model_id,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"VIBE: {vibe_description}\n\nGenerate the TailwindCSS theme configuration."}
+                    ],
+                    temperature=0.9,  # High creativity for diverse themes
+                    max_tokens=1000,
+                    timeout=45
+                )
+                
+                theme_str = response.choices[0].message.content.strip()
+                theme_str = self._clean_llm_response(theme_str)
+                
+                logger.debug(f"Generated theme JSON: {theme_str[:200]}...")
+                
+                # Parse and validate JSON
+                theme_config = json.loads(theme_str)
+                
+                # Validate required keys
+                required_keys = [
+                    "nav_bg", "body_bg", "text_primary", "text_secondary",
+                    "nav_link", "hero_title", "hero_subtitle", "card_bg",
+                    "card_title", "card_description", "btn_primary", "btn_secondary", "tagline"
+                ]
+                
+                missing_keys = [k for k in required_keys if k not in theme_config]
+                if missing_keys:
+                    logger.error(f"Missing theme keys: {missing_keys}")
+                    last_error = ValueError(f"Incomplete theme: missing {missing_keys}")
+                    continue  # Retry
+                
+                # Basic validation: all values should be strings
+                if not all(isinstance(v, str) for v in theme_config.values()):
+                    logger.error("Theme values must be strings")
+                    last_error = ValueError("Invalid theme value types")
+                    continue
+                
+                logger.info(f"✓ Theme generated successfully: {len(theme_config)} components")
+                return theme_config
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON from LLM: {theme_str[:300] if 'theme_str' in locals() else 'N/A'}")
+                last_error = e
+                continue
+                
+            except APIConnectionError as e:
+                logger.error(f"Cannot connect to LM Studio at {self.base_url}")
+                last_error = e
+                break
+                
+            except APIError as e:
+                logger.error(f"LM Studio API error: {e}")
+                last_error = e
+                continue
+                
+            except Exception as e:
+                logger.exception("Unexpected error in theme generation")
+                last_error = e
+                continue
+        
+        # All retries failed
+        raise ContentEngineError(
+            f"Failed to generate theme after {self.max_retries} attempts. "
             f"Last error: {last_error}"
         )
     
@@ -367,8 +511,6 @@ class ContentEngine:
             else:
                 logger.critical("No fallback available!")
                 raise
-
-
 # Demo usage
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

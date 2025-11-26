@@ -4,6 +4,7 @@ Trinity Core CLI - Modern Command Line Interface
 Built with Typer for excellent UX and type safety.
 """
 import json
+import re
 from pathlib import Path
 from typing import Optional
 import typer
@@ -681,6 +682,134 @@ def train(
         
     except Exception as e:
         console.print(f"\n[red]❌ Training failed[/red]: {e}\n")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def theme_gen(
+    description: str = typer.Argument(
+        ...,
+        help="Visual style description (e.g., 'Cyberpunk neon city', 'Victorian steampunk')"
+    ),
+    name: str = typer.Option(
+        ...,
+        "--name",
+        "-n",
+        help="Theme name (lowercase, no spaces)"
+    ),
+    output: str = typer.Option(
+        "config/themes.json",
+        "--output",
+        "-o",
+        help="Path to themes.json file"
+    ),
+):
+    """
+    Generate a new theme from a style description using LLM.
+    
+    This is the "Text-to-Theme" engine for the Centuria Factory.
+    It uses AI to convert natural language vibes into complete TailwindCSS configurations.
+    
+    Examples:
+        # Generate a cyberpunk theme
+        trinity theme-gen "Cyberpunk neon city with pink and cyan" --name cyberpunk
+        
+        # Generate a retro theme
+        trinity theme-gen "1980s arcade game aesthetic" --name retro_arcade
+        
+        # Generate a minimalist theme
+        trinity theme-gen "Japanese minimalism, white space, subtle grays" --name zen
+    
+    The generated theme will be automatically added to config/themes.json
+    and can be used immediately with: trinity build --theme <name>
+    """
+    from pathlib import Path
+    from trinity.components.brain import ContentEngine, ContentEngineError
+    
+    # Validate theme name (lowercase, alphanumeric + underscores)
+    if not re.match(r'^[a-z0-9_]+$', name):
+        console.print(f"[red]Error:[/red] Theme name must be lowercase alphanumeric with underscores only")
+        console.print(f"[yellow]Invalid:[/yellow] '{name}'")
+        console.print(f"[green]Valid:[/green] 'cyberpunk', 'retro_80s', 'dark_mode'")
+        raise typer.Exit(code=1)
+    
+    output_path = Path(output)
+    
+    console.print(f"\n[bold cyan]🎨 Trinity Theme Generator[/bold cyan]\n")
+    console.print(f"Vibe: [yellow]{description}[/yellow]")
+    console.print(f"Name: [magenta]{name}[/magenta]\n")
+    
+    # Initialize ContentEngine
+    try:
+        brain = ContentEngine()
+    except Exception as e:
+        console.print(f"[red]Error:[/red] Failed to initialize ContentEngine: {e}")
+        console.print("\n[yellow]Check:[/yellow] Is LM Studio running?")
+        raise typer.Exit(code=1)
+    
+    # Generate theme
+    try:
+        with console.status("[bold green]Generating theme with LLM...") as status:
+            theme_config = brain.generate_theme_from_vibe(description)
+            status.update("[bold green]Theme generated!")
+        
+        console.print("[green]✓[/green] Theme configuration created\n")
+        
+        # Display preview
+        console.print("[bold]Preview:[/bold]")
+        preview_keys = ["nav_bg", "hero_title", "card_bg", "btn_primary"]
+        for key in preview_keys:
+            if key in theme_config:
+                value = theme_config[key][:60] + "..." if len(theme_config[key]) > 60 else theme_config[key]
+                console.print(f"  [cyan]{key}:[/cyan] {value}")
+        
+    except ContentEngineError as e:
+        console.print(f"\n[red]❌ Theme generation failed[/red]: {e}\n")
+        console.print("[yellow]Troubleshooting:[/yellow]")
+        console.print("  1. Verify LM Studio is running")
+        console.print("  2. Check TRINITY_LM_STUDIO_URL environment variable")
+        console.print("  3. Try a simpler description")
+        raise typer.Exit(code=1)
+    
+    # Load existing themes
+    if output_path.exists():
+        try:
+            with open(output_path, "r", encoding="utf-8") as f:
+                themes = json.load(f)
+        except json.JSONDecodeError:
+            console.print(f"[red]Error:[/red] Invalid JSON in {output_path}")
+            raise typer.Exit(code=1)
+    else:
+        themes = {}
+        console.print(f"[yellow]Note:[/yellow] Creating new themes file at {output_path}")
+    
+    # Check for duplicates
+    if name in themes:
+        console.print(f"\n[yellow]⚠️  Warning:[/yellow] Theme '{name}' already exists")
+        overwrite = typer.confirm("Overwrite existing theme?", default=False)
+        if not overwrite:
+            console.print("[dim]Operation cancelled[/dim]\n")
+            raise typer.Exit(code=0)
+    
+    # Add new theme
+    themes[name] = theme_config
+    
+    # Save to file
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(themes, f, indent=2)
+        
+        console.print(f"\n[bold green]✅ Theme saved successfully![/bold green]")
+        console.print(f"Location: [cyan]{output_path}[/cyan]")
+        console.print(f"Total themes: [magenta]{len(themes)}[/magenta]\n")
+        
+        # Usage hint
+        console.print(f"[bold]Try it now:[/bold]")
+        console.print(f"  [cyan]trinity build --theme {name}[/cyan]\n")
+        
+    except Exception as e:
+        console.print(f"\n[red]❌ Failed to save theme[/red]: {e}\n")
         raise typer.Exit(code=1)
 
 
