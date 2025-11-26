@@ -1,0 +1,32 @@
+{
+  "name": "trinity-core-docs",
+  "version": "0.7.0",
+  "description": "Trinity Core Documentation - AI-powered portfolio generator",
+  "scripts": {
+    "docs:dev": "vitepress dev docs_v2",
+    "docs:build": "vitepress build docs_v2",
+    "docs:preview": "vitepress preview docs_v2"
+  },
+  "keywords": [
+    "documentation",
+    "trinity",
+    "ai",
+    "portfolio",
+    "generator",
+    "vitepress"
+  ],
+  "author": "Fabrizio Salmi",
+  "license": "MIT",
+  "devDependencies": {
+    "vitepress": "^1.0.0",
+    "vue": "^3.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fabriziosalmi/trinity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fabriziosalmi/trinity/issues"
+  },
+  "homepage": "https://github.com/fabriziosalmi/trinity#readme"
+}

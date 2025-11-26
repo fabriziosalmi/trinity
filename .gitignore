@@ -107,3 +107,4 @@ data/**/*.parquet
 mlruns/
 mlflow.db
 mlartifacts/
+node_modules/
