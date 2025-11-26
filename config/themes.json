@@ -1,4 +1,21 @@
 {
+  "//": "=== TRINITY CORE THEME CONFIGURATION ===",
+  "//": "Theme definitions map component keys to Tailwind CSS classes.",
+  "//": "SmartHealer uses these keys to target specific UI elements during self-healing.",
+  "//": "",
+  "//": "KEY COMPONENT MAPPINGS (for SmartHealer):",
+  "//": "  - hero_title: Main hero heading (primary target for overflow fixes)",
+  "//": "  - hero_subtitle: Hero subheading (secondary target)",
+  "//": "  - card_title: Repository/project card titles",
+  "//": "  - card_description: Card descriptions (common overflow source)",
+  "//": "  - tagline: Site tagline/slogan",
+  "//": "",
+  "//": "STANDARD KEYS (for all themes):",
+  "//": "  - nav_bg, text_primary, text_secondary, nav_link",
+  "//": "  - btn_primary, btn_secondary",
+  "//": "  - hero_bg, card_bg",
+  "//": "  - heading_primary, heading_secondary, body_text",
+
   "enterprise": {
     "nav_bg": "bg-white border-b border-gray-200",
     "text_primary": "text-slate-900",
@@ -12,6 +29,7 @@
     "heading_secondary": "text-slate-700 font-semibold",
     "body_text": "text-slate-600"
   },
+  
   "brutalist": {
     "nav_bg": "bg-yellow-400 border-b-4 border-black",
     "text_primary": "text-black font-mono uppercase tracking-tighter",
@@ -25,6 +43,7 @@
     "heading_secondary": "text-black font-mono uppercase",
     "body_text": "text-black font-mono"
   },
+  
   "editorial": {
     "nav_bg": "bg-stone-50 border-b border-stone-200",
     "text_primary": "font-serif text-stone-900",
@@ -39,3 +58,4 @@
     "body_text": "font-serif text-stone-700 leading-relaxed"
   }
 }
+

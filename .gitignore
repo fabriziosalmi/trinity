@@ -13,10 +13,18 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv
 build/
 dist/
 *.egg-info/
 .eggs/
+MANIFEST
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 
 # IDE
 .vscode/
@@ -30,18 +38,41 @@ dist/
 logs/*.log
 logs/*.json
 *.log
+trinity.log
 
 # Output
 output/*
 !output/.gitkeep
+BROKEN_*.html
 
 # Testing
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 .tox/
+.nox/
+
+# Type Checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# Docker
+docker-compose.override.yml
+
+# Playwright
+.playwright/
+test-results/
+playwright-report/
+
+# Jupyter Notebook
+.ipynb_checkpoints
 
 # Temporary files
 *.tmp
 *.bak
 *~
+tmp/
+temp/
