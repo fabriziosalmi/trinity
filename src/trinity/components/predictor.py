@@ -20,6 +20,7 @@ Rule #66: Load model once per execution (Singleton pattern).
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 import json
+import numpy as np
 import joblib
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
@@ -97,7 +98,8 @@ class LayoutRiskPredictor:
             if "label_encoders" in self.metadata:
                 for feature, classes in self.metadata["label_encoders"].items():
                     encoder = LabelEncoder()
-                    encoder.classes_ = classes
+                    encoder.classes_ = np.array(classes)  # Convert list back to numpy array
+                    self.label_encoders[feature] = encoder
                     self.label_encoders[feature] = encoder
         
         self.is_loaded = True

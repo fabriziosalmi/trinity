@@ -189,6 +189,18 @@ class TrinityEngine:
             # 2. If Guardian disabled, return success
             if not enable_guardian:
                 logger.info("✅ Build complete (Guardian disabled)")
+                
+                # Log successful build to training dataset (positive sample without Guardian check)
+                current_strategy = fixes_applied[-1].split(" ")[0] if fixes_applied else "NONE"
+                self.miner.log_build_event(
+                    theme=theme,
+                    content=current_content,
+                    strategy=current_strategy,
+                    guardian_verdict=True,  # Assume success (no Guardian = pass)
+                    guardian_reason="",
+                    css_overrides=current_style_overrides if current_style_overrides else None
+                )
+                
                 return BuildResult(
                     status=BuildStatus.SUCCESS,
                     output_path=output_path,

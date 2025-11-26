@@ -36,7 +36,13 @@ import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
+from sklearn.metrics import (
+    precision_score, 
+    recall_score, 
+    f1_score, 
+    accuracy_score,
+    classification_report
+)
 
 from trinity.utils.logger import get_logger
 
@@ -361,11 +367,15 @@ class LayoutRiskTrainer:
         precision = precision_score(y_test, y_pred, zero_division=0)
         recall = recall_score(y_test, y_pred, zero_division=0)
         f1 = f1_score(y_test, y_pred, zero_division=0)
+        accuracy = accuracy_score(y_test, y_pred)
         
         metrics = {
             "precision": round(precision, 4),
             "recall": round(recall, 4),
-            "f1_score": round(f1, 4)
+            "f1_score": round(f1, 4),
+            "accuracy": round(accuracy, 4),
+            "train_samples": len(self._X_train) if hasattr(self, '_X_train') else 0,
+            "test_samples": len(y_test)
         }
         
         # Log metrics
@@ -373,6 +383,7 @@ class LayoutRiskTrainer:
         logger.info(f"      Precision: {metrics['precision']:.4f}")
         logger.info(f"      Recall:    {metrics['recall']:.4f}")
         logger.info(f"      F1-Score:  {metrics['f1_score']:.4f}")
+        logger.info(f"      Accuracy:  {metrics['accuracy']:.4f}")
         
         # Detailed classification report
         logger.debug("\n" + classification_report(y_test, y_pred, zero_division=0))
@@ -457,8 +468,8 @@ class LayoutRiskTrainer:
     
     def train_from_csv(
         self,
-        csv_path: Path,
-        output_dir: Path
+        csv_path: str,
+        output_dir: str
     ) -> Tuple[RandomForestClassifier, Dict[str, float]]:
         """
         End-to-end training pipeline from CSV to saved model.
@@ -466,8 +477,8 @@ class LayoutRiskTrainer:
         This is the main entry point for training.
         
         Args:
-            csv_path: Path to training_dataset.csv
-            output_dir: Directory to save trained model
+            csv_path: Path to training_dataset.csv (string)
+            output_dir: Directory to save trained model (string)
         
         Returns:
             Tuple of (trained model, metrics dictionary)
@@ -477,10 +488,16 @@ class LayoutRiskTrainer:
             DataValidationError: Invalid data
             ModelPerformanceError: Model quality below threshold
         """
+        from pathlib import Path
+        
         logger.info("🚀 Starting training pipeline...")
         
+        # Convert strings to Path objects
+        csv_file = Path(csv_path)
+        out_dir = Path(output_dir)
+        
         # Load and prepare data
-        X, y = self.load_and_prep_data(csv_path)
+        X, y = self.load_and_prep_data(str(csv_file))
         
         # Train model
         model = self.train_model(X, y)
@@ -489,6 +506,9 @@ class LayoutRiskTrainer:
         metrics = self._evaluate_model(model, self._X_test, self._y_test)
         
         # Save model
-        self.save_model(model, output_dir, metrics)
+        model_path = self.save_model(model, out_dir, metrics)
+        
+        # Add model_path to metrics for CLI display
+        metrics["model_path"] = str(model_path)
         
         return model, metrics

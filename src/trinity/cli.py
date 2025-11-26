@@ -466,14 +466,15 @@ def mine_generate(
     console.print(f"\n[bold cyan]⛏️  Trinity Data Mining Mode[/bold cyan]\n")
     console.print(f"Target: {count} random builds")
     console.print(f"Themes: {', '.join(theme_list)}")
-    console.print(f"Guardian: {'Enabled' if enable_guardian else 'Disabled'}\n")
+    console.print(f"Guardian: {'Enabled' if enable_guardian else 'Disabled'}")
+    console.print(f"Pathological Ratio: {pathological_ratio:.0%}\n")
     
     def random_text(min_len=10, max_len=200):
         """Generate random text of varying length."""
-        length = random.randint(min_len, max_len)
-        # Mix of normal words and pathological patterns
+        # Use MUCH shorter lengths for safe content
         if random.random() < pathological_ratio:
-            # Pathological pattern (AAAA..., long URLs, etc.)
+            # Pathological: Use full range (generates failures)
+            length = random.randint(min_len, max_len)
             patterns = [
                 "A" * length,
                 "https://example.com/" + "x" * length,
@@ -481,11 +482,16 @@ def mine_generate(
             ]
             return random.choice(patterns)[:length]
         else:
-            # Normal text with random length
+            # Safe: Use 20-50% of max_len (realistic content)
+            safe_max = int(max_len * 0.5)
+            safe_min = min(min_len, safe_max // 2)
+            length = random.randint(safe_min, safe_max)
+            
+            # Generate normal words
             words = []
             current_len = 0
             while current_len < length:
-                word_len = random.randint(3, 12)
+                word_len = random.randint(3, 10)
                 word = ''.join(random.choices(string.ascii_lowercase, k=word_len))
                 words.append(word)
                 current_len += word_len + 1  # +1 for space
