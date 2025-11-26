@@ -131,19 +131,51 @@ class CSSFixDataset(Dataset):
         """
         Extract target CSS sequences from dataframe.
         
-        Uses the 'css_overrides' column which contains successful fixes.
+        v0.5.0: Uses 'style_overrides_raw' column (JSON serialized CSS overrides).
+        Falls back to legacy behavior if column doesn't exist.
         """
         targets = []
         
-        for _, row in df.iterrows():
-            css_override = row.get('css_overrides', '')
-            
-            # Handle empty or invalid overrides
-            if pd.isna(css_override) or not css_override.strip():
-                css_override = "text-sm truncate"  # Fallback
-            
-            targets.append(css_override)
+        # Check if v0.5.0 schema exists
+        if 'style_overrides_raw' in df.columns:
+            for _, row in df.iterrows():
+                css_raw = row.get('style_overrides_raw', '')
+                
+                if pd.isna(css_raw) or not css_raw.strip():
+                    # No CSS override (probably failed build)
+                    targets.append("text-sm truncate")  # Fallback
+                else:
+                    # Parse JSON: {"hero_title": "break-all", "card": "truncate"}
+                    try:
+                        import json
+                        css_dict = json.loads(css_raw)
+                        # Combine all CSS classes from overrides
+                        all_classes = []
+                        for component, classes in css_dict.items():
+                            if classes.strip():
+                                all_classes.extend(classes.split())
+                        
+                        # Deduplicate and join
+                        unique_classes = list(dict.fromkeys(all_classes))  # Preserve order
+                        css_string = " ".join(unique_classes)
+                        
+                        targets.append(css_string if css_string else "text-sm truncate")
+                    
+                    except json.JSONDecodeError:
+                        # Invalid JSON, use as-is
+                        targets.append(css_raw if css_raw.strip() else "text-sm truncate")
+        else:
+            # Legacy: try 'css_overrides' column (old schema)
+            logger.warning("⚠️  Using legacy CSS extraction (upgrade dataset to v0.5.0)")
+            for _, row in df.iterrows():
+                css_override = row.get('css_overrides', '')
+                
+                if pd.isna(css_override) or not css_override.strip():
+                    css_override = "text-sm truncate"
+                
+                targets.append(css_override)
         
+        logger.info(f"✅ Extracted {len(targets)} CSS target sequences")
         return targets
     
     def __len__(self) -> int:

@@ -90,6 +90,11 @@ def build(
         "--predictive/--no-predictive",
         help="Enable ML predictive healing (Phase 3)"
     ),
+    neural: bool = typer.Option(
+        False,
+        "--neural/--no-neural",
+        help="Use Neural Healer (v0.5.0 LSTM-based) instead of heuristic SmartHealer"
+    ),
     log_level: str = typer.Option(
         "INFO",
         "--log-level",
@@ -122,7 +127,7 @@ def build(
     config.guardian_vision_ai = guardian_vision
     config.predictive_enabled = predictive
     config.default_theme = theme
-    engine = TrinityEngine(config)
+    engine = TrinityEngine(config, use_neural_healer=neural)
     
     try:
         if use_llm:
@@ -183,6 +188,11 @@ def chaos(
         "--guardian/--no-guardian",
         help="Enable/disable Guardian (enabled by default)"
     ),
+    neural: bool = typer.Option(
+        False,
+        "--neural/--no-neural",
+        help="Use Neural Healer (v0.5.0 LSTM-based) for chaos testing"
+    ),
 ):
     """
     Run chaos test with intentionally broken content.
@@ -206,7 +216,7 @@ def chaos(
     
     # Build with Guardian
     config.guardian_enabled = guardian
-    engine = TrinityEngine(config)
+    engine = TrinityEngine(config, use_neural_healer=neural)
     
     result = engine.build_with_self_healing(
         content=content,

@@ -78,10 +78,29 @@ class TrinityMiner:
         """Create dataset file with headers if it doesn't exist."""
         self.dataset_path.parent.mkdir(parents=True, exist_ok=True)
         
+        # Check if migration needed (v0.5.0: add style_overrides_raw column)
+        needs_migration = False
+        if self.dataset_path.exists():
+            with open(self.dataset_path, 'r', encoding='utf-8') as f:
+                header = f.readline().strip()
+                if 'style_overrides_raw' not in header:
+                    needs_migration = True
+                    logger.warning("⚠️  Dataset schema outdated - migration needed")
+        
+        if needs_migration:
+            # Backup old file
+            backup_path = self.dataset_path.with_suffix('.csv.backup')
+            import shutil
+            shutil.copy(self.dataset_path, backup_path)
+            logger.info(f"📦 Backed up old dataset: {backup_path}")
+            
+            # Migrate: add new column with empty values
+            self._migrate_schema()
+        
         if not self.dataset_path.exists():
             with open(self.dataset_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
-                # Write header row
+                # Write header row (v0.5.0 schema with style_overrides_raw)
                 writer.writerow([
                     'timestamp',
                     'theme',
@@ -90,7 +109,8 @@ class TrinityMiner:
                     'css_signature',
                     'active_strategy',
                     'is_valid',
-                    'failure_reason'
+                    'failure_reason',
+                    'style_overrides_raw'  # NEW: Actual CSS strings for LSTM training
                 ])
             logger.info(f"✅ Created new training dataset: {self.dataset_path}")
     
@@ -144,9 +164,13 @@ class TrinityMiner:
             css_sig = self._generate_css_signature(css_overrides)
             is_valid = 1 if guardian_verdict else 0
             
+            # v0.5.0: Serialize actual CSS overrides for LSTM training
+            style_overrides_raw = self._serialize_css_overrides(css_overrides)
+            
             # Write to CSV (thread-safe append)
+            # Use QUOTE_ALL to properly escape JSON strings
             with open(self.dataset_path, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
+                writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
                 writer.writerow([
                     timestamp,
                     theme,
@@ -155,7 +179,8 @@ class TrinityMiner:
                     css_sig,
                     strategy,
                     is_valid,
-                    guardian_reason
+                    guardian_reason,
+                    style_overrides_raw  # NEW: Raw CSS string for training
                 ])
             
             # Log summary
@@ -250,6 +275,53 @@ class TrinityMiner:
         # Generate MD5 hash (short and fast)
         hash_obj = hashlib.md5(css_string.encode('utf-8'))
         return hash_obj.hexdigest()[:12]  # First 12 chars sufficient
+    
+    def _serialize_css_overrides(self, css_overrides: Optional[Dict[str, str]]) -> str:
+        """
+        Serialize CSS overrides to a string for LSTM training.
+        
+        v0.5.0 Feature: This is the Target (y) for neural style generation.
+        Extracts the actual CSS class strings from the overrides dictionary.
+        
+        Args:
+            css_overrides: Dictionary mapping components to CSS classes
+                          e.g., {"hero_title": "text-sm break-all", "card": "truncate"}
+        
+        Returns:
+            JSON string of overrides, or empty string if none
+        
+        Example:
+            {"hero_title": "break-all overflow-hidden"} 
+            -> '{"hero_title": "break-all overflow-hidden"}'
+        """
+        if not css_overrides:
+            return ""
+        
+        # Store as JSON for easy parsing during training
+        return json.dumps(css_overrides, sort_keys=True)
+    
+    def _migrate_schema(self):
+        """Migrate old CSV schema to v0.5.0 (add style_overrides_raw column)."""
+        import pandas as pd
+        
+        try:
+            # Read old data
+            df = pd.read_csv(self.dataset_path)
+            
+            # Add new column with empty values
+            if 'style_overrides_raw' not in df.columns:
+                df['style_overrides_raw'] = ''
+            
+            # Save migrated data
+            df.to_csv(self.dataset_path, index=False)
+            logger.info("✅ Schema migrated to v0.5.0")
+        
+        except Exception as e:
+            logger.error(f"❌ Schema migration failed: {e}")
+            logger.warning("⚠️  Starting fresh dataset instead")
+            # Delete corrupted file and recreate
+            self.dataset_path.unlink()
+            self._ensure_dataset_exists()
     
     def get_dataset_stats(self) -> Dict[str, Any]:
         """

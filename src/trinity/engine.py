@@ -15,6 +15,7 @@ from trinity.components.builder import SiteBuilder
 from trinity.components.brain import ContentEngine
 from trinity.components.guardian import TrinityGuardian
 from trinity.components.healer import SmartHealer, HealingResult, HealingStrategy
+from trinity.components.neural_healer import NeuralHealer
 from trinity.components.dataminer import TrinityMiner
 from trinity.components.predictor import LayoutRiskPredictor
 from trinity.utils.validators import ContentValidator, ValidationError
@@ -57,19 +58,29 @@ class TrinityEngine:
     - Self-healing (Healer)
     """
     
-    def __init__(self, config: Optional[TrinityConfig] = None):
+    def __init__(self, config: Optional[TrinityConfig] = None, use_neural_healer: bool = False):
         """
         Initialize Trinity Engine.
         
         Args:
             config: Trinity configuration (uses defaults if None)
+            use_neural_healer: Use Neural Healer (v0.5.0) instead of SmartHealer
         """
         self.config = config or TrinityConfig()
+        self.use_neural_healer = use_neural_healer
         
         # Initialize components
         self.builder = SiteBuilder(template_dir=str(self.config.templates_path))
         self.validator = ContentValidator()
-        self.healer = SmartHealer(truncate_length=self.config.truncate_length)
+        
+        # Healer: Neural (v0.5.0 LSTM) or Smart (heuristic)
+        if use_neural_healer:
+            self.healer = NeuralHealer.from_default_paths(fallback_to_heuristic=True)
+            logger.info("🧠 Neural Healer activated (LSTM-based CSS generation)")
+        else:
+            self.healer = SmartHealer(truncate_length=self.config.truncate_length)
+            logger.info("🚑 SmartHealer activated (heuristic strategies)")
+        
         self.miner = TrinityMiner()  # ML dataset collector
         
         # Guardian is lazy-loaded when needed
@@ -262,13 +273,38 @@ class TrinityEngine:
                     # Check if we can retry
                     if attempt < max_retries:
                         # Apply progressive healing strategy
-                        healing_result = self.healer.heal_layout(
-                            guardian_report=report,
-                            content=current_content,
-                            attempt=attempt
-                        )
+                        # v0.5.0: Pass context to Neural Healer if enabled
+                        if self.use_neural_healer:
+                            # Extract error type from Guardian report
+                            error_type = "overflow"  # Default
+                            if "overflow" in report.get("reason", "").lower():
+                                error_type = "overflow"
+                            elif "text" in report.get("reason", "").lower():
+                                error_type = "text_too_long"
+                            elif "layout" in report.get("reason", "").lower():
+                                error_type = "layout_shift"
+                            
+                            healing_context = {
+                                "theme": theme,
+                                "error_type": error_type
+                            }
+                            
+                            healing_result = self.healer.heal_layout(
+                                guardian_report=report,
+                                content=current_content,
+                                attempt=attempt,
+                                context=healing_context
+                            )
+                        else:
+                            # SmartHealer (heuristic)
+                            healing_result = self.healer.heal_layout(
+                                guardian_report=report,
+                                content=current_content,
+                                attempt=attempt
+                            )
                         
-                        logger.info(f"🚑 Applied strategy: {healing_result.strategy.value}")
+                        healer_type = "🧠 Neural" if self.use_neural_healer else "🚑 Smart"
+                        logger.info(f"{healer_type} Applied strategy: {healing_result.strategy.value}")
                         logger.info(f"   {healing_result.description}")
                         
                         # Update state based on healing result
