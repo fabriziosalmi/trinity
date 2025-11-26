@@ -107,13 +107,19 @@ class LayoutRiskPredictor:
             if "label_encoders" in self.metadata:
                 for feature, classes in self.metadata["label_encoders"].items():
                     encoder = LabelEncoder()
-                    encoder.classes_ = np.array(classes)  # Convert list back to numpy array
-                    self.label_encoders[feature] = encoder
+                    encoder.classes_ = np.array(classes, dtype=object)  # Convert list to numpy array
                     self.label_encoders[feature] = encoder
         
         self.is_loaded = True
-        logger.info(f"✅ Model loaded successfully")
-        logger.info(f"   F1-Score: {self.metadata.get('f1_score', 'N/A'):.3f}")
+        logger.info("✅ Model loaded successfully")
+        
+        # Safe F1-Score logging
+        metrics = self.metadata.get('metrics', {})
+        f1_score = metrics.get('f1_score', 'N/A') if isinstance(metrics, dict) else 'N/A'
+        if isinstance(f1_score, (int, float)):
+            logger.info(f"   F1-Score: {f1_score:.3f}")
+        else:
+            logger.info(f"   F1-Score: {f1_score}")
     
     def _prepare_features(
         self, 
