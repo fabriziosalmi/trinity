@@ -5,8 +5,8 @@
     "<EOS>": 2,
     "<UNK>": 3,
     "break-all": 4,
-    "whitespace-normal": 5,
-    "overflow-wrap-anywhere": 6,
+    "overflow-wrap-anywhere": 5,
+    "whitespace-normal": 6,
     "text-3xl": 7,
     "text-xl": 8
   },
