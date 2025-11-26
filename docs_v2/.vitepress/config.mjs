@@ -5,6 +5,9 @@ export default defineConfig({
   title: "Trinity Core",
   description: "AI-powered portfolio generator with self-healing layouts",
   
+  // GitHub Pages base path
+  base: '/trinity/',
+  
   // Ignore dead links during development
   ignoreDeadLinks: true,
   
