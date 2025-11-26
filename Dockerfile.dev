@@ -1,0 +1,44 @@
+# Dockerfile.dev - Development Environment for Trinity Core
+# Rule #96: No clever one-liners, explicit logic
+# Uses Microsoft's official Playwright image with Python + Chromium pre-installed
+
+FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies for Python builds
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files first (layer caching optimization)
+COPY requirements.txt .
+
+# Install Python dependencies
+# Using --no-cache-dir to reduce image size
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install watchdog for auto-rebuild capabilities
+RUN pip install --no-cache-dir watchdog
+
+# Copy application code
+# (In dev mode, this is overridden by volume mount)
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p logs output
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Health check - verify Python and Playwright are ready
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; from playwright.sync_api import sync_playwright; sys.exit(0)"
+
+# Keep container alive for exec commands
+# In dev mode, we use docker-compose exec to run builds
+CMD ["tail", "-f", "/dev/null"]

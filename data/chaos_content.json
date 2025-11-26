@@ -1,0 +1,42 @@
+{
+  "brand_name": "CHAOS_MODE_ACTIVATED",
+  "tagline": "Breaking layouts since 2025",
+  "menu_items": [
+    {"label": "Chaos", "url": "#chaos"},
+    {"label": "Destruction", "url": "#destruction"},
+    {"label": "Recovery", "url": "#recovery"}
+  ],
+  "cta": {"label": "ABORT", "url": "#abort"},
+  "hero": {
+    "title": "THIS_IS_A_VERY_LONG_STRING_WITHOUT_SPACES_THAT_WILL_DEFINITELY_BREAK_THE_VIEWPORT_AND_CAUSE_HORIZONTAL_SCROLL_ISSUES_BECAUSE_CSS_IS_HARD_AND_WE_NEED_TO_TEST_THE_GUARDIAN_MODULE_WITH_EXTREME_EDGE_CASES",
+    "subtitle": "Layout destruction sequence initiated. This test verifies that our Guardian AI can detect visual anomalies and report them accurately.",
+    "cta_primary": {"label": "DO NOT CLICK", "url": "#"},
+    "cta_secondary": {"label": "EMERGENCY EXIT", "url": "#exit"}
+  },
+  "repos": [
+    {
+      "name": "BROKEN-REPO-EXTREME-OVERFLOW-TEST",
+      "stars": 999999,
+      "language": "Brainfuck",
+      "description": "This description is intentionally extremely long and repetitive to test if the card container expands correctly or if the text just bleeds out into the nothingness of the DOM causing visual glitches that only an AI Vision model could detect. Testing overflow behavior with maximum allowed length.",
+      "url": "#broken",
+      "tags": ["chaos", "overflow", "test", "extreme", "edge-case", "guardian-test"]
+    },
+    {
+      "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "stars": 42,
+      "language": "Assembly",
+      "description": "Repository name designed to break flex layouts and cause horizontal scrolling issues in card grids.",
+      "url": "#overflow",
+      "tags": ["AAAAA", "BBBBB", "CCCCC"]
+    },
+    {
+      "name": "normal-repo",
+      "stars": 10,
+      "language": "Python",
+      "description": "This one is fine, just here to prove Guardian can differentiate between broken and working elements.",
+      "url": "#normal",
+      "tags": ["python", "safe"]
+    }
+  ]
+}

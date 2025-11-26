@@ -11,6 +11,9 @@ requests==2.32.3
 httpx==0.27.2
 openai>=1.54.0
 
+# Vision QA
+playwright>=1.48.0
+
 # Validation & Quality
 html5lib==1.1
 beautifulsoup4==4.12.3

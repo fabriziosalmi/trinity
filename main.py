@@ -17,6 +17,7 @@ from src.builder import SiteBuilder, SiteBuilderError
 from src.validator import ContentValidator, ValidationError
 from src.llm_client import LLMClient, LLMClientError
 from src.content_engine import ContentEngine, ContentEngineError
+from src.guardian import TrinityGuardian, GuardianError
 
 # Configure logging
 logging.basicConfig(
@@ -30,13 +31,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def build_site_from_mock_data(theme: str = "enterprise") -> Path:
+def build_site_from_mock_data(theme: str = "enterprise", enable_guardian: bool = False, guardian_dom_only: bool = False) -> Path:
     """
     Build site using mock data (no LLM required).
     Useful for testing templates and themes.
     
     Args:
         theme: Theme name to apply
+        enable_guardian: Run Guardian QA after build
+        guardian_dom_only: Use DOM-only checks (no Vision AI)
         
     Returns:
         Path to generated HTML
@@ -109,6 +112,24 @@ def build_site_from_mock_data(theme: str = "enterprise") -> Path:
     except ValidationError as e:
         logger.warning(f"Post-build validation warning: {e}")
     
+    # Guardian QA (if enabled)
+    if enable_guardian:
+        try:
+            logger.info("👁️  Activating Guardian for layout inspection...")
+            guardian = TrinityGuardian(enable_vision_ai=not guardian_dom_only)
+            report = guardian.audit_layout(str(output_path.resolve()))
+            
+            if report["approved"]:
+                logger.info(f"✅ Guardian Approved: {report['reason']}")
+            else:
+                logger.warning(f"❌ Guardian Rejected: {report['reason']}")
+                if report['issues']:
+                    for issue in report['issues']:
+                        logger.warning(f"  Issue: {issue}")
+                logger.info(f"🛠️  Suggested Fix: {report['fix_suggestion']}")
+        except GuardianError as e:
+            logger.error(f"Guardian QA failed: {e}")
+    
     return output_path
 
 
@@ -138,13 +159,15 @@ def build_all_themes():
     print("=" * 60)
 
 
-def build_with_llm(input_data_path: str, theme: str = "enterprise"):
+def build_with_llm(input_data_path: str, theme: str = "enterprise", enable_guardian: bool = False, guardian_dom_only: bool = False):
     """
     Build site using LLM to generate content.
     
     Args:
         input_data_path: Path to raw portfolio data
         theme: Theme to apply
+        enable_guardian: Run Guardian QA after build
+        guardian_dom_only: Use DOM-only checks (no Vision AI)
     """
     logger.info("🧠 Building site with LLM content generation...")
     
@@ -173,6 +196,30 @@ def build_with_llm(input_data_path: str, theme: str = "enterprise"):
         )
         
         logger.info(f"✓ LLM-generated page created: {output_path}")
+        
+        # Guardian QA (if enabled)
+        if enable_guardian:
+            try:
+                logger.info("👁️  Activating Guardian for layout inspection...")
+                guardian = TrinityGuardian(enable_vision_ai=not guardian_dom_only)
+                report = guardian.audit_layout(str(output_path.resolve()))
+                
+                if report["approved"]:
+                    logger.info(f"✅ Guardian Approved: {report['reason']}")
+                else:
+                    logger.warning(f"❌ Guardian Rejected: {report['reason']}")
+                    if report['issues']:
+                        for issue in report['issues']:
+                            logger.warning(f"  Issue: {issue}")
+                    logger.info(f"🛠️  Suggested Fix: {report['fix_suggestion']}")
+                    
+                    # TODO: Self-healing logic
+                    # if report['fix_suggestion'] == 'truncate':
+                    #     Apply more aggressive content_rules and rebuild
+                    
+            except GuardianError as e:
+                logger.error(f"Guardian QA failed: {e}")
+        
         return output_path
         
     except ContentEngineError as e:
@@ -230,13 +277,31 @@ Examples:
         '--input',
         type=str,
         default='data/raw_portfolio.txt',
-        help='Input file with raw portfolio data (for LLM generation)'
+        help='Input file with raw portfolio data (for LLM) or JSON content (for static build)'
     )
     
     parser.add_argument(
         '--use-llm',
         action='store_true',
         help='Use LLM to generate content from raw data'
+    )
+    
+    parser.add_argument(
+        '--static-json',
+        action='store_true',
+        help='Use static JSON content directly (for testing/chaos mode)'
+    )
+    
+    parser.add_argument(
+        '--guardian',
+        action='store_true',
+        help='Enable Guardian vision-based layout QA (requires Qwen VL)'
+    )
+    
+    parser.add_argument(
+        '--guardian-only-dom',
+        action='store_true',
+        help='Use Guardian with DOM checks only (faster, no Vision AI)'
     )
     
     parser.add_argument(
@@ -266,16 +331,83 @@ Examples:
         
         # Build single demo
         if args.demo:
-            output = build_site_from_mock_data(theme=args.theme)
+            output = build_site_from_mock_data(
+                theme=args.theme,
+                enable_guardian=args.guardian,
+                guardian_dom_only=args.guardian_only_dom
+            )
             print(f"\n✓ Demo page generated: {output}")
             print(f"  Open in browser: file://{output.absolute()}")
             return 0
         
         # Build with LLM
         if args.use_llm:
-            output = build_with_llm(args.input, theme=args.theme)
+            output = build_with_llm(
+                args.input,
+                theme=args.theme,
+                enable_guardian=args.guardian,
+                guardian_dom_only=args.guardian_only_dom
+            )
             print(f"\n🧠 LLM-generated page created: {output}")
             print(f"  Open in browser: file://{output.absolute()}")
+            return 0
+        
+        # Build with static JSON (chaos mode)
+        if args.static_json:
+            import json
+            print(f"📄 Loading static JSON content from: {args.input}")
+            
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = json.load(f)
+            
+            # Validate
+            validator = ContentValidator()
+            try:
+                validator.validate_content_schema(content)
+            except ValidationError as e:
+                logger.error(f"Content validation failed: {e}")
+                print(f"❌ Invalid content schema: {e}")
+                return 1
+            
+            # Build
+            builder = SiteBuilder()
+            output_path = builder.build_page(
+                content=content,
+                theme=args.theme,
+                output_filename=f"index_{args.theme}_chaos.html"
+            )
+            
+            print(f"✓ Page built: {output_path}")
+            
+            # Guardian QA
+            if args.guardian:
+                try:
+                    logger.info("👁️  Activating Guardian for layout inspection...")
+                    guardian = TrinityGuardian(enable_vision_ai=not args.guardian_only_dom)
+                    report = guardian.audit_layout(str(output_path.resolve()))
+                    
+                    print("\n" + "=" * 60)
+                    print("GUARDIAN AUDIT REPORT")
+                    print("=" * 60)
+                    
+                    if report["approved"]:
+                        print(f"✅ STATUS: APPROVED")
+                        print(f"Reason: {report['reason']}")
+                    else:
+                        print(f"❌ STATUS: REJECTED")
+                        print(f"Reason: {report['reason']}")
+                        if report['issues']:
+                            print(f"\nIssues Found ({len(report['issues'])}):")
+                            for i, issue in enumerate(report['issues'], 1):
+                                print(f"  {i}. {issue}")
+                        print(f"\n🛠️  Suggested Fix: {report['fix_suggestion'].upper()}")
+                    
+                    print("=" * 60)
+                    
+                except GuardianError as e:
+                    logger.error(f"Guardian QA failed: {e}")
+            
+            print(f"\nOpen in browser: file://{output_path.absolute()}")
             return 0
         
         # Build with static input (legacy)

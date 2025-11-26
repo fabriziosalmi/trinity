@@ -1,0 +1,66 @@
+# docker-compose.yml - Trinity Core Development Stack
+# Rule #28: Structured logging and clear service separation
+
+version: '3.9'
+
+services:
+  # Builder Service - Python + Playwright + LLM Client
+  trinity-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: trinity-builder
+    volumes:
+      # Live code sync for development
+      - .:/app
+      # Persist logs outside container
+      - ./logs:/app/logs
+      # Named volume for Python cache (performance)
+      - python-cache:/root/.cache/pip
+    environment:
+      # LM Studio connection via host machine
+      # host.docker.internal = Docker's magic hostname for host network
+      LM_STUDIO_URL: http://host.docker.internal:1234/v1
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+    networks:
+      - trinity-net
+    # Healthcheck to verify service is ready
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Web Service - Nginx static file server
+  trinity-web:
+    image: nginx:alpine
+    container_name: trinity-web
+    ports:
+      # External:Internal port mapping
+      - "8080:80"
+    volumes:
+      # Read-only mount of generated HTML files
+      - ./output:/usr/share/nginx/html:ro
+    networks:
+      - trinity-net
+    depends_on:
+      - trinity-builder
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  # Isolated network for Trinity services
+  trinity-net:
+    driver: bridge
+
+volumes:
+  # Persistent Python package cache
+  python-cache:
+    driver: local

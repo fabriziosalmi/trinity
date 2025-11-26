@@ -1,0 +1,65 @@
+# .dockerignore - Exclude files from Docker build context
+# Rule #96: Explicit patterns, no wildcards without reason
+
+# Python artifacts
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (we mount these as volumes)
+logs/*.log
+
+# Output (mounted as volume in docker-compose)
+# output/
+
+# Environment
+.env
+.env.local
+
+# Documentation (not needed in runtime)
+README.md
+docs/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Development scripts
+dev.sh
+dev.bat
