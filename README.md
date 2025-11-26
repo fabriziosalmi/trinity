@@ -169,6 +169,21 @@ Attempt 3: CSS_TRUNCATE → Adding ellipsis
 
 You have the code, you have the integration. Now **turn on the lights** and watch the neurons fire.
 
+#### Quick Start (Automated)
+
+```bash
+# One-command activation (handles all 4 steps)
+bash scripts/activate_neural_healer.sh
+```
+
+**What it does:**
+1. Backs up old dataset
+2. Generates 300 training samples (~15 min)
+3. Trains LSTM model (~5-10 min)
+4. Tests neural chaos mode
+
+#### Manual Steps (For Learning)
+
 #### 1. Tabula Rasa (Reset Data)
 
 The old dataset lacks the `style_overrides_raw` column. Start fresh:
