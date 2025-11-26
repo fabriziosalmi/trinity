@@ -7,10 +7,131 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- ONNX model export for safer serialization
-- Unit test coverage >80%
-- Theme preview server (live reload)
+### Planned (Phase 6: v0.6.x → v0.8.0)
+See [PHASE6_ROADMAP.md](docs/PHASE6_ROADMAP.md) for details.
+
+**v0.7.0 - Performance & Caching:**
+- Async/await for ContentEngine (6x throughput improvement)
+- LLM response caching (Redis + filesystem, 40% cost reduction)
+- Structured logging for mining pipeline
+
+**v0.7.5 - DX & Testing:**
+- Mock LLM responses in CI/CD (deterministic, fast tests)
+- Makefile for simplified commands
+- Optional Playwright dependency
+
+**v0.8.0 - Architecture & Polish:**
+- Complete vibe engine migration to YAML
+- Simplified README (value-first, not architecture-first)
+- Refactor engine.py God Object into focused classes
+
+---
+
+## [0.6.0] - 2025-11-26 (Phase 5.5: Production-Ready Architecture)
+
+### Added - Architecture Refactoring
+- **Immutable Configuration** (`src/trinity/config_v2.py`)
+  - Frozen Pydantic models prevent mutation at runtime
+  - Dependency injection pattern for better testability
+  - `create_config()` factory for consistent initialization
+  
+- **Custom Exception Hierarchy** (`src/trinity/exceptions.py`)
+  - 15+ domain-specific exception types
+  - `TrinityError` base class with context details
+  - Type-safe error handling across codebase
+  
+- **Circuit Breaker Pattern** (`src/trinity/utils/circuit_breaker.py`)
+  - 3 states: CLOSED, OPEN, HALF_OPEN
+  - Prevents cascading failures for LLM/Playwright calls
+  - Statistics tracking and monitoring
+  - Registry for managing multiple breakers
+  
+- **Idempotency Manager** (`src/trinity/utils/idempotency.py`)
+  - Hash-based key generation (SHA256)
+  - In-memory + persistent storage with TTL
+  - Reduces duplicate LLM calls on retries
+  - `@idempotent` decorator for easy integration
+  
+- **Secrets Management** (`src/trinity/utils/secrets.py`)
+  - System keyring integration (macOS Keychain, Windows Credential Manager, Linux Secret Service)
+  - Multi-backend support: keyring → environment → .env
+  - Secure API key storage without hardcoding
+
+### Added - Externalized Configuration
+- **Prompts in YAML** (`config/prompts.yaml`)
+  - All LLM prompts and "vibe" definitions extracted from code
+  - Editable without redeployment
+  - Schema validation with examples
+
+### Added - MLOps Infrastructure
+- **DVC Setup Guide** (`docs/MLOPS_SETUP.md`)
+  - Model versioning with DVC + Git
+  - S3/GCS/Azure remote storage
+  - CI/CD integration examples
+  
+- **Updated .gitignore**
+  - Exclude `.pkl` model files (use DVC instead)
+  - Exclude `.csv` datasets
+  - Keep metadata files for tracking
+
+### Added - Testing
+- **Property-Based Tests** (`tests/test_properties.py`)
+  - Hypothesis framework for edge cases
+  - Tests for idempotency, circuit breaker, config
+  
+- **pytest Configuration** (`pyproject.toml`)
+  - Coverage targets: 60%+
+  - pytest-cov, mypy, black, ruff integration
+
+### Added - Documentation
+- `REFACTORING_SUMMARY.md` - Complete implementation summary
+- `REFACTORING_ANNOUNCEMENT.md` - v0.6.0 feature announcement
+- `REFACTORING_INDEX.md` - Documentation navigation
+- `docs/REFACTORING_GUIDE.md` - Architectural guide
+- `docs/MIGRATION_GUIDE.md` - v0.5.0 → v0.6.0 migration
+- `docs/SECRETS_MANAGEMENT.md` - Keyring integration guide
+- `examples/refactored_usage.py` - Complete working example
+
+### Changed
+- **Dependencies Added:**
+  - `PyYAML==6.0.2` - Prompt configuration
+  - `keyring>=25.0.0` - Secrets management
+  - `dvc[s3]>=3.0.0` - Model versioning
+  - `mlflow>=2.0.0` - Experiment tracking
+  - `hypothesis>=6.100.0` - Property-based testing
+  - `torch>=2.0.0` - Neural network framework
+
+- **Configuration:**
+  - All hardcoded IPs replaced with `localhost` (was: 192.168.100.12)
+  - Environment variable defaults for LM_STUDIO_URL
+  - `.env.example` updated with LM Studio configuration
+
+### Security
+- **Removed Hardcoded Secrets:**
+  - Cleaned 192.168.100.12 IP from 20+ files
+  - Added `scripts/cleanup-git-history.sh` for history sanitization
+  - Added `docs/GIT_HISTORY_CLEANUP.md` guide
+  - All sensitive defaults moved to `.env.example`
+
+### Developer Experience
+- **Demo Script** (`scripts/demo.sh`)
+  - Complete terminal demo showcasing all v0.6.0 features
+  - Auto-activates venv
+  - Recorded at https://asciinema.org/a/TVeqwLxJvZEDN3zize8QaKZ8l
+  
+- **Recording Guide** (`docs/RECORDING_GUIDE.md`)
+  - Instructions for creating terminal GIFs
+  - asciinema, terminalizer, ttygif examples
+
+### Breaking Changes
+None - v0.6.0 is backward compatible with v0.5.0. New infrastructure is opt-in.
+
+### Migration Notes
+See `docs/MIGRATION_GUIDE.md` for:
+- How to adopt immutable config
+- Circuit breaker integration
+- Secrets manager setup
+- Idempotency usage
 
 ---
 

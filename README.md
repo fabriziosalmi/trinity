@@ -9,7 +9,8 @@
   <a href="#the-trinity-solution">✨ Features</a> •
   <a href="#quick-start">🚀 Quick Start</a> •
   <a href="docs/">📚 Documentation</a> •
-  <a href="REFACTORING_SUMMARY.md">🔧 v0.6.0 Refactoring</a>
+  <a href="REFACTORING_SUMMARY.md">🔧 v0.6.0 Refactoring</a> •
+  <a href="docs/PHASE6_ROADMAP.md">🗺️ Phase 6 Roadmap</a>
 </p>
 
 <p align="center">
