@@ -26,6 +26,9 @@ colorama==0.4.6
 # Machine Learning
 torch>=2.0.0  # Neural network framework (for neural healer)
 
+# Caching (Optional)
+redis[hiredis]>=5.0.0  # High-performance async Redis client
+
 # Secrets Management (Optional)
 keyring>=25.0.0  # System keyring integration
 
