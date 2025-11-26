@@ -24,7 +24,7 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: '🏗️ Architecture',
+        text: 'Architecture',
         collapsed: false,
         items: [
           { 
@@ -38,7 +38,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '🛠️ Development',
+        text: 'Development',
         collapsed: false,
         items: [
           { 
@@ -52,7 +52,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '✨ Features',
+        text: 'Features',
         collapsed: false,
         items: [
           { 
@@ -66,7 +66,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '🤖 LLM & Caching',
+        text: 'LLM & Caching',
         collapsed: false,
         items: [
           { 
@@ -76,7 +76,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '📚 Reference',
+        text: 'Reference',
         collapsed: true,
         items: [
           { text: 'CHANGELOG', link: '/CHANGELOG' },
@@ -115,8 +115,42 @@ export default defineConfig({
 
   // Markdown configuration
   markdown: {
-    theme: 'material-theme-palenight',
+    theme: {
+      light: 'github-light',
+      dark: 'github-dark'
+    },
     lineNumbers: true
+  },
+  
+  // Custom theme colors
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `
+            :root {
+              --vp-c-brand-1: #2563eb;
+              --vp-c-brand-2: #1d4ed8;
+              --vp-c-brand-3: #1e40af;
+              --vp-c-text-1: #1f2937;
+              --vp-c-text-2: #374151;
+              --vp-code-bg: #f9fafb;
+              --vp-code-block-bg: #f3f4f6;
+            }
+            
+            .dark {
+              --vp-c-brand-1: #60a5fa;
+              --vp-c-brand-2: #3b82f6;
+              --vp-c-brand-3: #2563eb;
+              --vp-c-text-1: #f3f4f6;
+              --vp-c-text-2: #e5e7eb;
+              --vp-code-bg: #1f2937;
+              --vp-code-block-bg: #111827;
+            }
+          `
+        }
+      }
+    }
   },
 
   // Build configuration

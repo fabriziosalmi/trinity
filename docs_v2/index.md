@@ -17,28 +17,22 @@ hero:
       link: https://github.com/fabriziosalmi/trinity
 
 features:
-  - icon: 🤖
-    title: AI-Powered Content
+  - title: AI-Powered Content
     details: Generate compelling content with local LLMs (Ollama, LlamaCPP) or cloud providers (OpenAI, Claude, Gemini). 40% cost savings with multi-tier caching.
   
-  - icon: 🎨
-    title: 14 Professional Themes
+  - title: 14 Professional Themes
     details: Built-in themes powered by Tailwind CSS. Enterprise, Brutalist, Editorial, Minimalist, and more. Dark mode included.
   
-  - icon: 🔧
-    title: Self-Healing Layouts
+  - title: Self-Healing Layouts
     details: LSTM neural network detects and fixes CSS issues automatically. 95% success rate with progressive fallback strategies.
   
-  - icon: ⚡
-    title: 6x Faster Builds
+  - title: 6x Faster Builds
     details: Async/await with HTTP/2 multiplexing. Concurrent LLM requests. Sub-millisecond cache hits. Production-ready performance.
   
-  - icon: 🛡️
-    title: Production-Ready
+  - title: Production-Ready
     details: Circuit breakers, idempotency, structured logging (JSON), visual QA validation. Enterprise-grade reliability.
   
-  - icon: 📊
-    title: Full Observability
+  - title: Full Observability
     details: Structured JSON logs ready for ELK/Datadog/CloudWatch. Correlation IDs for distributed tracing. Performance metrics built-in.
 ---
 
