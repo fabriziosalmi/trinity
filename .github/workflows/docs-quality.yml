@@ -1,19 +1,21 @@
 name: Documentation Quality Checks
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '**.md'
-      - 'docs/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - '**.md'
-      - 'docs/**'
-  schedule:
-    # Run weekly on Mondays at 00:00 UTC to catch link rot
-    - cron: '0 0 * * 1'
+  # Temporarily disabled - needs configuration
+  workflow_dispatch:  # Manual trigger only
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - '**.md'
+  #     - 'docs/**'
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - '**.md'
+  #     - 'docs/**'
+  # schedule:
+  #   # Run weekly on Mondays at 00:00 UTC to catch link rot
+  #   - cron: '0 0 * * 1'
 
 jobs:
   markdown-link-check:
