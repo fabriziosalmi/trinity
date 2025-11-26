@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+{# 
+  BASE LAYOUT - Trinity Core
+  Rule #94: Semantic HTML5 structure
+  Rule #95: Accessibility (lang, meta, ARIA)
+  Rule #71: Responsive viewport
+  Rule #13: No hardcoded CDN paths (inline Tailwind via CDN for demo)
+  
+  Required Context:
+  - content (dict): All page content
+  - theme_classes (dict): CSS class mappings
+  - meta (dict): Build metadata
+#}
+<html lang="en">
+<head>
+  <!-- Rule #95: Charset and viewport meta tags -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- SEO Meta Tags -->
+  <title>{{ content.brand_name }}{% if content.tagline %} - {{ content.tagline }}{% endif %}</title>
+  <meta name="description" content="{% if content.hero and content.hero.subtitle %}{{ content.hero.subtitle }}{% else %}{{ content.tagline or 'Welcome' }}{% endif %}">
+  <meta name="generator" content="{{ meta.generator }}">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ content.brand_name }}">
+  <meta property="og:description" content="{{ content.tagline or 'Welcome' }}">
+  <meta property="og:type" content="website">
+  
+  <!-- Favicon (placeholder) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔺</text></svg>">
+  
+  <!-- Tailwind CSS via CDN (for rapid prototyping - replace with build step in production) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Theme Overrides (optional) -->
+  <style>
+    /* Rule #71: Smooth scrolling for accessibility */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Focus visible for keyboard navigation */
+    *:focus-visible {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+    }
+    
+    /* Prevent FOUC (Flash of Unstyled Content) */
+    body {
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in forwards;
+    }
+    
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col">
+  
+  <!-- Skip to main content (Rule #95: Accessibility) -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded">
+    Skip to main content
+  </a>
+  
+  <!-- Header / Navigation -->
+  <header role="banner">
+    {% include 'organisms/navbar_v1.html' %}
+  </header>
+  
+  <!-- Main Content -->
+  <main id="main-content" role="main" class="flex-grow">
+    
+    <!-- Hero Section -->
+    {% include 'organisms/hero_v1.html' %}
+    
+    <!-- Repository Grid -->
+    {% include 'organisms/repo_grid_v1.html' %}
+    
+  </main>
+  
+  <!-- Footer -->
+  <footer class="w-full {{ theme_classes.nav_bg }} mt-auto" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="text-center {{ theme_classes.text_secondary }} text-sm">
+        <p>
+          &copy; {{ meta.build_date[:4] }} {{ content.brand_name }}. 
+          Built with <a href="#" class="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded">Trinity Core</a>.
+        </p>
+        <p class="mt-2 text-xs">
+          Generated on {{ meta.build_date }} | Theme: {{ meta.theme }}
+        </p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Mobile Menu Toggle Script (Progressive Enhancement) -->
+  <script>
+    // Rule #64: Simple, safe DOM manipulation (no eval)
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileMenuButton = document.querySelector('[aria-controls="mobile-menu"]');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          mobileMenu.classList.toggle('hidden');
+        });
+      }
+    });
+  </script>
+  
+</body>
+</html>

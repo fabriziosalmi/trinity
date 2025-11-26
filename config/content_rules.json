@@ -1,0 +1,86 @@
+{
+  "brutalist": {
+    "description": "Raw, aggressive, technical style with uppercase and truncation",
+    "transformations": {
+      "text_fields": {
+        "force_uppercase": true,
+        "max_length": 65,
+        "strip_extra_punctuation": true,
+        "suffix": "",
+        "remove_fluff_words": ["really", "very", "quite", "just", "actually"]
+      },
+      "title_fields": {
+        "force_uppercase": true,
+        "max_length": 50,
+        "strip_extra_punctuation": true
+      }
+    },
+    "field_mapping": {
+      "hero.title": "title_fields",
+      "hero.subtitle": "text_fields",
+      "repos[].description": "text_fields",
+      "tagline": "text_fields"
+    }
+  },
+  "editorial": {
+    "description": "Sophisticated, narrative style with proper capitalization",
+    "transformations": {
+      "text_fields": {
+        "title_case": false,
+        "min_length": 40,
+        "force_punctuation": ".",
+        "capitalize_first": true,
+        "padding_suffix": " Learn more about this innovative approach."
+      },
+      "title_fields": {
+        "title_case": true,
+        "min_length": 20,
+        "force_punctuation": "",
+        "capitalize_first": true
+      }
+    },
+    "field_mapping": {
+      "hero.title": "title_fields",
+      "hero.subtitle": "text_fields",
+      "repos[].description": "text_fields",
+      "tagline": "text_fields"
+    }
+  },
+  "enterprise": {
+    "description": "Professional, benefit-driven style with clean language",
+    "transformations": {
+      "text_fields": {
+        "capitalize_first": true,
+        "force_punctuation": ".",
+        "profanity_filter": true,
+        "replace_casual_terms": {
+          "hack": "develop",
+          "kill": "terminate",
+          "crazy": "innovative",
+          "insane": "exceptional"
+        }
+      },
+      "title_fields": {
+        "title_case": true,
+        "capitalize_first": true,
+        "profanity_filter": true
+      }
+    },
+    "field_mapping": {
+      "hero.title": "title_fields",
+      "hero.subtitle": "text_fields",
+      "repos[].description": "text_fields",
+      "tagline": "text_fields"
+    }
+  },
+  "_meta": {
+    "version": "1.0",
+    "description": "Content transformation rules for Trinity Core themes",
+    "notes": [
+      "Add new themes by defining transformation rules",
+      "field_mapping uses dot notation for nested fields",
+      "repos[] indicates array iteration",
+      "All transformations are applied post-LLM generation"
+    ]
+  }
+}

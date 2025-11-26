@@ -1,0 +1,89 @@
+{# 
+  NAVBAR V1 - Enterprise-Grade Navigation Component
+  Rule #94: Semantic HTML (<nav>, <ul>, <li>)
+  Rule #95: Accessibility (ARIA labels, keyboard navigation, focus states)
+  Rule #13: No hardcoded paths (Dynamic URL injection)
+  Rule #71: Mobile-first responsive design
+  
+  Required Context Variables:
+  - content.brand_name (str): Logo/Brand text
+  - content.menu_items (list): [{"label": str, "url": str}, ...]
+  - content.cta (dict|None): {"label": str, "url": str}
+  - theme_classes (dict): CSS class mappings
+#}
+<nav class="w-full z-50 transition-all duration-300 {{ theme_classes.nav_bg }}" aria-label="Main Navigation" role="navigation">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      
+      <!-- Logo Section -->
+      <div class="flex-shrink-0 flex items-center">
+        <a href="/" 
+           class="text-2xl font-bold {{ theme_classes.text_primary }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md px-2 py-1"
+           aria-label="Home">
+          {{ content.brand_name }}
+        </a>
+      </div>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex md:items-center md:space-x-8">
+        {% if content.menu_items %}
+        <ul class="flex items-center space-x-6" role="menubar">
+          {% for item in content.menu_items %}
+          <li role="none">
+            <a href="{{ item.url }}" 
+               role="menuitem"
+               class="{{ theme_classes.nav_link }} px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              {{ item.label }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        
+        <!-- CTA Button -->
+        {% if content.cta %}
+        <a href="{{ content.cta.url }}" 
+           class="{{ theme_classes.btn_primary }} ml-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+           {{ content.cta.label }}
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile Menu Button (Hamburger) -->
+      <div class="-mr-2 flex items-center md:hidden">
+        <button type="button" 
+                class="bg-transparent inline-flex items-center justify-center p-2 rounded-md {{ theme_classes.text_secondary }} hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 min-w-[44px] min-h-[44px]" 
+                aria-controls="mobile-menu" 
+                aria-expanded="false"
+                aria-label="Toggle navigation menu">
+          <span class="sr-only">Open main menu</span> <!-- Rule #95: Screen reader support -->
+          <!-- Icon: Menu (Heroicons) -->
+          <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu (Hidden by default, toggle with JS) -->
+  <div class="hidden md:hidden" id="mobile-menu">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+      {% if content.menu_items %}
+      {% for item in content.menu_items %}
+      <a href="{{ item.url }}" 
+         class="{{ theme_classes.nav_link }} block px-3 py-2 rounded-md text-base font-medium min-h-[44px] flex items-center">
+        {{ item.label }}
+      </a>
+      {% endfor %}
+      {% endif %}
+      
+      {% if content.cta %}
+      <a href="{{ content.cta.url }}" 
+         class="{{ theme_classes.btn_primary }} block px-3 py-2 rounded-md text-base font-medium text-center mt-4 min-h-[44px] flex items-center justify-center">
+        {{ content.cta.label }}
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>

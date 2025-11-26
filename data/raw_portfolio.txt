@@ -1,0 +1,632 @@
+
+fabriziosalmi // Holo-Dashboard
+
+Operational status of all repositories.
+Activity Timeline
+
+Drag to select date range and filter repositories
+
+💡 Tip: Click and drag on the chart to filter by date range
+Language Distribution
+
+Click to filter repositories
+✨ Smart Insights
+🏆 Milestone: patterns
+
+Reached 250 stars! Next goal: 500 stars
+certmate
+
+SSL Certificate Management System (API + UI)
+Python
+898
+53
+Updated 27 days ago
+caddy-waf
+
+Caddy WAF (Regex Rules, IP and DNS filtering, Rate Limiting, GeoIP, Tor, Anomaly Detection)
+Go
+660
+22
+Updated about 1 month ago
+patterns
+
+Automated OWASP CRS and Bad Bot Detection for Nginx, Apache, Traefik and HaProxy
+Python
+296
+7
+Updated 11 days ago
+UglyFeed
+
+Retrieve, aggregate, filter, evaluate, rewrite and serve RSS feeds using Large Language Models for fun, research and learning purposes
+Python
+285
+17
+Updated 5 months ago
+proxmox-vm-autoscale
+
+Automatically scale virtual machines resources on Proxmox hosts
+Python
+273
+22
+Updated 11 days ago
+proxmox-lxc-autoscale
+
+Automatically scale LXC containers resources on Proxmox hosts
+Python
+217
+9
+Updated 11 days ago
+wildbox
+
+An open-source security platform for the community. Unified SIEM, SOAR, WAF, and more in a single, self-hosted solution.
+Python
+88
+3
+Updated 10 days ago
+DevGPT
+
+Code togheter, right now! GPT powered code assistant to build project in minutes
+N/A
+70
+6
+Updated 2 months ago
+lws
+
+Unified command line interface for Proxmox, LXC and Docker.
+Python
+68
+7
+Updated 12 days ago
+websites-monitor
+
+Websites monitoring via GitHub Actions/API (expiration, security, performances, privacy, SEO)
+Python
+56
+20
+Updated 11 days ago
+brandkit
+
+Yet another brand assets generator
+HTML
+40
+3
+Updated 11 days ago
+blacklists
+
+Hourly updated domains blacklist 🚫
+Python
+39
+1
+Updated 17 days ago
+caddy-mib
+
+Track and ban client IPs generating repetitive errors on Caddy
+Go
+38
+3
+Updated about 2 months ago
+iamnotacoder
+
+AI code generation and improvement
+Python
+33
+4
+Updated 3 months ago
+cf-box
+
+cf-box is a set of Python tools to play with API and multiple Cloudflare accounts.
+Python
+28
+6
+Updated 10 days ago
+zonecontrol
+
+Cloudflare Zones Settings Automation using GitHub Actions
+Python
+27
+3
+Updated 3 months ago
+proxmox-lxc-autoscale-ml
+
+Automatically scale the LXC containers resources on Proxmox hosts with AI
+Python
+26
+3
+Updated 3 months ago
+secure-proxy-manager
+
+Secure proxy solution with filtering, real-time monitoring and a modern web UI.
+HTML
+21
+3
+Updated 11 days ago
+dnscontrol-actions
+
+Automate DNS updates and rollbacks across multiple providers using DNSControl and GitHub Actions
+JavaScript
+19
+4
+Updated 7 months ago
+limits
+
+Automated rate limits implementation for web servers
+Python
+19
+3
+Updated 11 days ago
+csv-anonymizer
+
+CSV fuzzer/anonymizer
+JavaScript
+10
+0
+Updated 3 months ago
+pdf-ocr
+
+Converts scanned PDF documents to multiple formats using Optical Character Recognition
+HTML
+10
+0
+Updated 3 months ago
+newsgator
+
+Yet another RSS feed aggregator with LLM powers.
+Python
+9
+0
+Updated 3 months ago
+nginx-waf-ai
+
+Automatically detect threats and deploy WAF rules using machine learning
+Python
+9
+3
+Updated 11 days ago
+proxmox-cluster-balancer
+
+Balance, scale, migrate your LXC fleet across your Proxmox nodes
+Python
+8
+3
+Updated 3 months ago
+webtek
+
+WebTeK: the worldwide streaming teknival ꩜ https://webtek.live
+HTML
+8
+4
+Updated 3 months ago
+wafcontrol
+
+Cloudflare WAF Settings Automation using GitHub Actions
+Python
+7
+1
+Updated 3 months ago
+ethical-ai
+
+Automate LLM ethical self-assessments
+Python
+6
+1
+Updated 7 months ago
+repos
+
+My repositories
+Python
+6
+0
+Updated 10 days ago
+bootstrap-w3c-seo
+
+Sleek, intuitive, and powerful front-end framework for faster and easier web development.
+PHP
+5
+2
+Updated about 9 years ago
+caddy-adf
+
+Yet another caddy WAF exploration
+Go
+5
+0
+Updated 3 months ago
+fqdn-model
+
+Tiny and fast FQDN classifier to detect malicious domains
+Python
+5
+0
+Updated 17 days ago
+awesomeness
+
+List of awesome open source projects
+N/A
+4
+0
+Updated 3 months ago
+linux
+
+Linux Scripts & Snippets Collection
+Jupyter Notebook
+4
+0
+Updated 3 months ago
+proxima-ui
+
+A simple web interface to manage Proxmox hosts, vm and containers
+HTML
+4
+1
+Updated 3 months ago
+tubeconv
+
+Convert social videos to high-quality MP3 files
+JavaScript
+4
+0
+Updated 3 months ago
+You-Know-What-AI-Mean
+
+A comprehensive hallucination through the multifaceted landscape of artificial intelligence ethics and responsibility
+HTML
+4
+1
+Updated 3 months ago
+reverse-proxy-manager
+
+Centralized proxy management system for distributed proxy nodes
+Python
+3
+0
+Updated 3 months ago
+shortlist
+
+Decentralized broadcasting system that uses Git as a coordination backend
+Python
+3
+0
+Updated about 1 month ago
+WP-Search-Blacklist
+
+A useful function to filter out (404) some spamming and explicit keywords in the WordPress search feature.
+PHP
+3
+3
+Updated over 4 years ago
+audiogen
+
+AI-Powered Sound Generation & Classification.
+Python
+2
+1
+Updated 3 months ago
+caddy-feeds
+
+IP blacklist, DNS blacklist and OWASP rules daily updated for caddy-waf
+Python
+2
+0
+Updated 10 months ago
+cloudflare-backup-actions
+
+Cloudflare zones and records backup via Github Actions
+N/A
+2
+3
+Updated 3 months ago
+mtls-cloudflare-aws
+
+mTLS implementation between Cloudflare and AWS
+Shell
+2
+1
+Updated 3 months ago
+open-video-watermark
+
+A video watermarking web application
+Python
+2
+0
+Updated 3 months ago
+proximity
+
+An immersive management layer for Proxmox based personal infrastructure.
+Python
+2
+0
+Updated 17 days ago
+sci-fi
+
+Simple Code Improver - Framework & Interface
+Python
+2
+0
+Updated 3 months ago
+any-to-mp4
+
+Convert any kind of file to video.
+N/A
+1
+1
+Updated almost 6 years ago
+betcracker
+
+Machine learning pipeline for sports betting prediction
+Python
+1
+0
+Updated about 2 months ago
+blockchain-poc
+
+Utilizing blockchain technology to retrieve, process, and display domain blacklists through Python and a web interface
+Python
+1
+0
+Updated 3 months ago
+dnsmate
+
+Yet another web interface for PowerDNS
+HTML
+1
+0
+Updated about 1 month ago
+extreme-content-detector
+
+Strumento per l'analisi dei contenuti online
+JavaScript
+1
+0
+Updated about 1 month ago
+freeundergroundtekno
+
+Free Underground Tekno Radio since 2008.
+JavaScript
+1
+0
+Updated 10 days ago
+gradios
+
+Enhanced GPT Response Generator (CoT, ToT, ensemble models and voting quorum)
+Python
+1
+0
+Updated 3 months ago
+llm-benchmarks
+
+benchmarking large language models (LLMs) with a focus on their mathematical capabilities
+Python
+1
+1
+Updated 3 months ago
+nexus-mcp-server
+
+Yet another MCP server with custom tools support.
+Python
+1
+0
+Updated 28 days ago
+repolizer
+
+GitHub Repository Health Analyzer
+HTML
+1
+0
+Updated 3 months ago
+rivoluzioneinformatica-website
+
+https://www.rivoluzioneinformatica.org
+HTML
+1
+0
+Updated about 1 year ago
+secbeat
+
+Protection against sophisticated Layer 4 (TCP/UDP) and Layer 7 (HTTP/S) DDoS attacks
+Rust
+1
+1
+Updated 17 days ago
+test-aws-terraform
+
+Terraform WordPress Deployment on AWS
+HCL
+1
+0
+Updated 3 months ago
+uglyfeed-cdn
+
+🌍 UglyFeed RSS feeds
+Python
+1
+0
+Updated 10 days ago
+zitto.net
+
+A massively scalable, real-time distributed system for connecting millions of simultaneous users in a shared, persistent state of "silence".
+Elixir
+1
+0
+Updated 3 months ago
+advanced-trading-framework
+
+A trading framework with machine learning capabilities, real-time portfolio management, and a comprehensive Streamlit UI.
+HTML
+0
+0
+Updated about 2 months ago
+ai-chatbot-encryption
+
+Encrypt your AI powered chatbot sessions
+N/A
+0
+1
+Updated 3 months ago
+audiolibri
+
+https://audiolibri.org - Raccolta di audiolibri gratis in Italiano
+Python
+0
+0
+Updated about 1 month ago
+audiolibri-editor
+
+audiolibri.org data editor
+HTML
+0
+0
+Updated 2 months ago
+certmate-website
+
+CertMate website powered by GitHub pages.
+HTML
+0
+0
+Updated 3 months ago
+crosswords
+
+Interactive Crossword Puzzle Generator
+JavaScript
+0
+0
+Updated about 2 months ago
+dgrid
+
+Decentralized Git-Relay Infrastructure for Distributed Tasks
+Python
+0
+0
+Updated about 1 month ago
+domainsblacklists
+
+domainsblacklists.com website
+CSS
+0
+1
+Updated 3 months ago
+fabriziosalmi
+
+my own github profile
+N/A
+0
+0
+Updated 10 days ago
+github-games
+
+Web based games hosted on GitHub Pages
+N/A
+0
+0
+Updated 9 months ago
+iGPT
+
+iGPT: the fastest fLLM out there 🚀🚀🚀
+HTML
+0
+1
+Updated 3 months ago
+k8s
+
+Kubernetes Homelab Scripts 🛠️ (k8s)
+Shell
+0
+0
+Updated 6 months ago
+metatoken
+
+LLM reasearch
+Jupyter Notebook
+0
+0
+Updated about 2 months ago
+nanocoder
+
+A beautiful local-first coding agent running in your terminal - built by the community for the community ⚒
+N/A
+0
+0
+Updated 14 days ago
+navigator
+
+The Sentient Interface SDK. Navigate the web with gesture, voice, and predictive AI.
+TypeScript
+0
+0
+Updated 10 days ago
+notransformers
+
+Can we automatically discover architectures without relying on Transformers?
+Python
+0
+0
+Updated about 1 month ago
+rot
+
+real-time ASCII art visualizations
+Rust
+0
+0
+Updated about 2 months ago
+shortlist-log
+
+log repo for shortlist project
+N/A
+0
+0
+Updated about 2 months ago
+synapse-ng
+
+A decentralized, scalable, and intelligent digital organism built on WebRTC and P2P principles
+Python
+0
+0
+Updated 30 days ago
+synapse-state
+
+A decentralized, collaborative live stream powered by YouTube and GitHub.
+Python
+0
+0
+Updated about 2 months ago
+tensorflow-poc
+
+MNIST PoC using TensorFlow
+Python
+0
+0
+Updated about 2 years ago
+text-boundaries
+
+A Python-based tool for preprocessing, cleaning, and analyzing text datasets, designed to filter, deduplicate, sort data, and generate statistical insights.
+Python
+0
+1
+Updated 25 days ago
+transversal
+
+Transversalpuntozero website
+HTML
+0
+0
+Updated 6 months ago
+unuseful
+
+Un archivio cognitivo di pattern digitali.
+Python
+0
+0
+Updated 2 months ago
+versiontracker
+
+generate reports of your latest published versions across GitHub repositories
+Python
+0
+0
+Updated 27 days ago
+web-kick
+
+Automatic Bass Drum Kick Generator
+JavaScript
+0
+0
+Updated 3 months ago
