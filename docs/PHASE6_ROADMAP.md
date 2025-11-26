@@ -7,13 +7,13 @@
 
 ## Overview
 
-Phase 6 focuses on **production readiness, performance, and developer experience**. Building on the solid architectural foundation from v0.6.0 (immutable config, circuit breakers, idempotency), we now optimize for scale and maintainability.
+Phase 6 focuses on **performance, scalability, and developer experience**. Building on the solid architectural foundation from v0.6.0 (immutable config, circuit breakers, idempotency), we now optimize for scale and maintainability.
 
 ---
 
 ## 🎯 Goals
 
-1. **Scale to Production** - Handle high throughput with async operations
+1. **Improve Performance** - Handle high throughput with async operations
 2. **Reduce Costs** - Cache LLM responses, avoid duplicate work
 3. **Improve DX** - Simplify workflows, better tooling
 4. **Enhance Testing** - Deterministic, fast CI/CD
@@ -480,7 +480,7 @@ Lead with value, not architecture:
 1. Generate content with LLMs (GPT, Claude, local models)
 2. Apply responsive themes (enterprise, brutalist, editorial)
 3. Detect and fix layout issues (overflow, broken grids)
-4. Output production-ready HTML
+4. Output validated HTML
 
 **Why it's different:**
 - 🔧 Self-healing: Automatically fixes CSS issues
@@ -611,7 +611,7 @@ class TrinityPipeline:
 - ✅ Task 3: Vibe engine to YAML (finish migration)
 - ✅ Task 8: Simplify README
 - ✅ Task 9: Refactor engine.py God Object
-- 🎯 **Target:** Production-ready codebase
+- 🎯 **Target:** Maintainable, scalable codebase
 
 ---
 
@@ -718,7 +718,7 @@ from trinity.pipeline import TrinityPipeline
 ## 🎯 Phase 6 Summary
 
 **What we're building:**
-A production-ready, scalable, cost-effective static site generator that's easy to use and maintain.
+A scalable, cost-effective static site generator that's easy to use and maintain.
 
 **Key improvements:**
 1. **6x faster** with async operations

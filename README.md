@@ -1,7 +1,7 @@
 # 🏛️ Trinity Core
 
 <p align="center">
-  <strong>AI-Powered Static Site Generator with Production-Ready Architecture</strong>
+  <strong>AI-Powered Static Site Generator with Enterprise-Grade Architecture</strong>
 </p>
 
 <p align="center">
@@ -44,7 +44,7 @@
 
 > **A self-healing static site generator with ML-powered CSS generation and enterprise-grade architecture.**
 
-Trinity Core v0.6.0 combines **LSTM neural networks for self-healing layouts** with **production-ready infrastructure**: immutable configuration, circuit breakers, idempotency, and secrets management.
+Trinity Core v0.6.0 combines **LSTM neural networks for self-healing layouts** with **robust infrastructure**: immutable configuration, circuit breakers, idempotency, and secrets management.
 
 ---
 
