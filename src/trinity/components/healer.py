@@ -103,24 +103,33 @@ class SmartHealer:
         """
         Strategy 1: Add CSS classes to force word breaking.
         
-        Injects: break-all, overflow-wrap-anywhere, word-break-break-all
-        """
-        logger.info("📊 Strategy 1: CSS_BREAK_WORD - Adding break-all classes")
+        NUCLEAR FIX (v0.5.0): break-all is extremely aggressive - breaks mid-word if needed.
+        This handles pathological strings like "AAAAAAAAAAAAA..." without spaces.
         
-        # Apply to all potentially long text components
+        Injects: break-all, whitespace-normal, overflow-wrap-anywhere
+        """
+        logger.info("📊 Strategy 1: CSS_BREAK_WORD - Adding nuclear break-all classes")
+        
+        # Apply nuclear CSS to all text components
+        # break-all: Forces breaking even mid-word (no mercy)
+        # whitespace-normal: Ensures whitespace can wrap
+        # overflow-wrap-anywhere: Backup for extreme cases
+        nuclear_css = "break-all whitespace-normal overflow-wrap-anywhere"
+        
         overrides = {
-            "hero_title": "break-all overflow-wrap-anywhere word-break-break-all",
-            "hero_subtitle": "break-all overflow-wrap-anywhere",
-            "card_title": "break-all overflow-wrap-anywhere",
-            "card_description": "break-words",
-            "tagline": "break-words overflow-wrap-anywhere",
+            "hero_title": nuclear_css,
+            "hero_subtitle": nuclear_css,
+            "card_title": nuclear_css,
+            "card_description": nuclear_css,
+            "tagline": nuclear_css,
+            "body_text": nuclear_css,  # Catch-all
         }
         
         return HealingResult(
             strategy=HealingStrategy.CSS_BREAK_WORD,
             style_overrides=overrides,
             content_modified=False,
-            description="Injected break-all and overflow-wrap classes to all text components"
+            description="Injected NUCLEAR break-all (mid-word breaking) to all text components"
         )
     
     def _apply_font_shrink_strategy(

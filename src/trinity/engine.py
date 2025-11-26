@@ -165,7 +165,12 @@ class TrinityEngine:
                 
                 # Pre-emptive healing if high risk
                 if recommendation["skip_none_strategy"]:
-                    logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_score:.0%})")
+                    # FIX: Safe formatting - risk_score might not be float
+                    try:
+                        risk_val = float(risk_score) if risk_score is not None else 0.0
+                        logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_val:.0%})")
+                    except (ValueError, TypeError):
+                        logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_score})")
                     # Apply CSS_BREAK_WORD immediately (skip NONE attempt)
                     # Create a mock guardian report to trigger CSS_BREAK_WORD strategy
                     mock_report = {
