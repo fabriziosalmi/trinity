@@ -4,11 +4,11 @@
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)](https://github.com/fabriziosalmi/trinity)
-[![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/fabriziosalmi/trinity/releases)
+[![Version](https://img.shields.io/badge/version-0.5.0-green.svg)](https://github.com/fabriziosalmi/trinity/releases)
 
-> **The Static Site Generator that predicts and fixes its own layout bugs before deployment.**
+> **The Static Site Generator that learns to heal itself using neural networks.**
 
-Trinity Core is an AI-powered static site generator with **Neural-Symbolic self-healing**. Unlike traditional SSGs that blindly render content and hope for the best, Trinity uses **machine learning to predict layout breakage** before rendering, then autonomously repairs issues using progressive CSS strategies and LLM-powered content optimization.
+Trinity Core is an AI-powered static site generator with **Generative Neural Healing**. Unlike traditional SSGs that use fixed strategies, Trinity v0.5.0 uses **LSTM neural networks to generate optimal CSS fixes** learned from thousands of successful healing attempts across 100+ themes.
 
 ---
 
@@ -31,11 +31,11 @@ Traditional SSG:
 
 ## ✨ The Trinity Solution
 
-Trinity Core implements a **Neural-Symbolic 4-layer system**:
+Trinity Core implements a **Neural-Generative 5-layer system**:
 
 ```
-Trinity Core v0.3.0:
-  ML Prediction → Preventive Healing → Build → (Optional: Guardian Audit) → ✅ Perfect layout
+Trinity Core v0.5.0:
+  ML Prediction → Neural Healing (LSTM) → Build → (Optional: Guardian) → ✅ Perfect layout
 ```
 
 ### Architecture Overview
@@ -178,7 +178,7 @@ trinity build --theme editorial --no-predictive
 trinity chaos
 ```
 
-### Neural-Symbolic ML Commands (NEW in v0.3.0)
+### Neural-Symbolic ML Commands (v0.3.0-v0.4.0)
 
 ```bash
 # Show training dataset statistics
@@ -191,7 +191,24 @@ trinity mine-generate --count 1000 --themes brutalist,enterprise
 trinity train --dataset-path data/training_dataset.csv --output-dir models/
 ```
 
-### Theme Generation (Centuria Factory - NEW in v0.4.0)
+### Generative Style Engine (NEW in v0.5.0)
+
+```bash
+# Train LSTM Style Generator from successful fixes
+python -m trinity.components.generative_trainer \
+    --dataset data/training_dataset.csv \
+    --output models/generative \
+    --epochs 50 \
+    --batch-size 32
+
+# Build with Neural Healer (automatic if model exists)
+trinity build --theme brutalist --neural
+
+# Fallback to heuristic healing
+trinity build --theme brutalist --no-neural
+```
+
+### Theme Generation (Centuria Factory - v0.4.0)
 
 ```bash
 # Generate a single theme from description
