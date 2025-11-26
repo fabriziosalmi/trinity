@@ -2,7 +2,7 @@
 
 > **AI-powered portfolio generator that actually works in production**
 
-Stop wasting time debugging broken layouts. Trinity generates beautiful, responsive portfolios from your GitHub data using AI—and automatically fixes any CSS issues before deployment.
+Stop wasting time debugging broken layouts. Trinity generates beautiful, responsive websites from any data using AI—and automatically fixes any CSS issues before deployment.
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
