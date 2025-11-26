@@ -6,7 +6,9 @@
     "<UNK>": 3,
     "break-all": 4,
     "whitespace-normal": 5,
-    "overflow-wrap-anywhere": 6
+    "overflow-wrap-anywhere": 6,
+    "text-3xl": 7,
+    "text-xl": 8
   },
-  "vocab_size": 7
+  "vocab_size": 9
 }
