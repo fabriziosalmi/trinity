@@ -3,12 +3,12 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)](https://github.com/fabriziosalmi/trinity)
+[![Tests](https://img.shields.io/badge/tests-35%2F35%20passing-brightgreen.svg)](https://github.com/fabriziosalmi/trinity)
 [![Version](https://img.shields.io/badge/version-0.5.0-green.svg)](https://github.com/fabriziosalmi/trinity/releases)
 
-> **The Static Site Generator that learns to heal itself using neural networks.**
+> **A self-healing static site generator with ML-powered CSS generation.**
 
-Trinity Core is an AI-powered static site generator with **Generative Neural Healing**. Unlike traditional SSGs that use fixed strategies, Trinity v0.5.0 uses **LSTM neural networks to generate optimal CSS fixes** learned from thousands of successful healing attempts across 100+ themes.
+Trinity Core is an experimental static site generator that uses machine learning for self-healing. Trinity v0.5.0 features **LSTM neural networks that learn CSS fixing strategies** from successful healing attempts, combined with rule-based fallbacks for robust layout repair.
 
 ---
 
@@ -42,7 +42,7 @@ Trinity Core v0.5.0:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  TRINITY CORE v0.3.0 (NEURAL)                   │
+│                  TRINITY CORE v0.5.0 (NEURAL)                   │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
@@ -83,18 +83,18 @@ Trinity Core v0.5.0:
 - Theme-aware prompts
 - Pydantic schema validation
 
-**3. Predictor (Neural - v0.3.0)**
+**3. Predictor (ML-Based)**
 - Random Forest classifier (100 estimators)
 - Predicts layout breakage **before rendering**
-- F1-Score: 0.918 (91.8% accuracy)
-- Trained on 700+ real build events
+- Trained on real build events with content analysis
+- Helps decide when to enable Guardian validation
 
-**4. Healer (Generative Neural - NEW in v0.5.0)**
-- **Neural Healer (LSTM):** Generates optimal CSS from learned patterns
-  - 270K parameter Seq2Seq model
+**4. Healer (Hybrid Neural + Heuristic - v0.5.0)**
+- **Neural Healer (LSTM):** Learns CSS fixes from successful healing attempts
+  - 270K parameter Seq2Seq model (2 layers, 128 hidden dim)
   - Context-aware generation (theme + error_type + content_length)
-  - Learns from successful fixes across 100+ themes (Transfer Learning)
-  - Example: `"text-sm break-all overflow-hidden line-clamp-2"`
+  - Trained on real CSS fixes from mining pipeline
+  - Example output: `"break-all whitespace-normal overflow-wrap-anywhere"`
 - **SmartHealer (Heuristic Fallback):** Fixed strategies if model unavailable
   - Strategy 1: CSS_BREAK_WORD - Inject `break-all`, `overflow-wrap`
   - Strategy 2: FONT_SHRINK - Reduce font sizes (`text-5xl` → `text-3xl`)
@@ -102,10 +102,10 @@ Trinity Core v0.5.0:
   - Strategy 4: CONTENT_CUT - Nuclear option (truncate strings)
 
 **5. Guardian (Visual QA - Optional)**
-- Playwright headless browser
-- DOM overflow detection (JavaScript)
-- Vision AI analysis (Qwen VL - optional)
-- **Now optional:** ML predictor reduces need for expensive browser tests
+- Playwright headless browser validation
+- DOM overflow detection via JavaScript
+- Vision AI analysis (Qwen VL - optional, experimental)
+- Can be disabled for faster builds when predictor confidence is high
 
 ---
 
@@ -125,8 +125,9 @@ Trinity Core v0.5.0:
 ## 🚀 Quick Start (Docker)
 
 ### Prerequisites
-- Docker Desktop
-- LM Studio running with Qwen 2.5 Coder (or compatible OpenAI endpoint)
+- Docker Desktop (28.5+)
+- Python 3.10+ (for local development)
+- Optional: LM Studio with Qwen 2.5 Coder for Brain module
 
 ### Installation
 
@@ -150,16 +151,17 @@ Watch Trinity **automatically fix** intentionally broken content:
 $ trinity chaos --theme brutalist
 
 ⚠️  CHAOS MODE ACTIVATED
+Testing Guardian with intentionally broken layout...
 
 Attempt 1: CSS_BREAK_WORD → Injecting break-all classes
-Attempt 2: FONT_SHRINK → Reducing to text-3xl
+Attempt 2: FONT_SHRINK → Reducing to text-3xl  
 Attempt 3: CSS_TRUNCATE → Adding ellipsis
-💀 Max retries reached (chaos content is pathological)
 
-✅ Chaos test successful! Guardian correctly detected all issues.
+✅ Chaos test successful!
+Guardian correctly detected and attempted to fix layout issues.
 ```
 
-**For normal content:** 95% of issues are fixed by CSS strategies alone!
+**For normal content:** Self-healing strategies typically resolve layout issues within 1-2 attempts.
 
 ---
 

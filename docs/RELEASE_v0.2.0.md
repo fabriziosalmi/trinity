@@ -127,7 +127,7 @@ Attempt 3: CSS_TRUNCATE → Adding ellipsis
 - ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
 - ![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)
 - ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-- ![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)
+- ![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
 
 ### Documentation Quality
 - ✅ Clear problem/solution framing
