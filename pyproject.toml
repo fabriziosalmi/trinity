@@ -1,0 +1,90 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trinity-core"
+version = "0.2.0"
+description = "AI-powered static site generator with deterministic layouts and self-healing QA"
+authors = [
+    {name = "Trinity Team"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["static-site-generator", "llm", "playwright", "guardian", "self-healing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+]
+
+dependencies = [
+    "jinja2>=3.1.4",
+    "playwright==1.55.0",
+    "openai>=1.54.0",
+    "pydantic>=2.10.0",
+    "typer[all]>=0.12.0",
+    "dynaconf>=3.2.0",
+    "html5lib>=1.1",
+    "beautifulsoup4>=4.12.0",
+    "watchdog>=3.0.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+[project.scripts]
+trinity = "trinity.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/example/trinity-core"
+Documentation = "https://github.com/example/trinity-core/docs"
+Repository = "https://github.com/example/trinity-core"
+Issues = "https://github.com/example/trinity-core/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trinity"]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"

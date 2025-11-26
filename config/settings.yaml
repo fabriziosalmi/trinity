@@ -1,0 +1,37 @@
+# Trinity Core Settings
+# This file is loaded by Dynaconf and Pydantic Settings
+# Environment variables take precedence (TRINITY_*)
+
+# Paths
+template_dir: library
+output_dir: output
+config_dir: config
+data_dir: data
+
+# LLM Configuration
+lm_studio_url: http://192.168.100.12:1234/v1
+llm_timeout: 120
+llm_max_retries: 3
+
+# Guardian Configuration
+guardian_enabled: false
+guardian_vision_ai: false
+guardian_viewport_width: 1920
+guardian_viewport_height: 1080
+guardian_timeout: 30
+
+# Self-Healing Configuration
+max_retries: 3
+truncate_length: 50
+auto_fix_enabled: true
+
+# Build Configuration
+default_theme: enterprise
+available_themes:
+  - enterprise
+  - brutalist
+  - editorial
+
+# Logging
+log_level: INFO
+log_file: logs/trinity.log
