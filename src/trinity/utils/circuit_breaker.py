@@ -15,6 +15,7 @@ References:
 """
 import time
 import logging
+import asyncio
 from enum import Enum
 from typing import Callable, Any, Optional, Type
 from functools import wraps
@@ -276,6 +277,68 @@ class CircuitBreaker:
             result = circuit_breaker.call(external_service, arg1, arg2)
         """
         return self._call(func, *args, **kwargs)
+    
+    async def call_async(self, func: Callable, *args, **kwargs) -> Any:
+        """
+        Async version of circuit breaker call.
+        
+        Usage:
+            result = await circuit_breaker.call_async(async_external_service, arg1, arg2)
+        """
+        self._stats.total_requests += 1
+        
+        # Check if we should attempt recovery
+        if self._state == CircuitState.OPEN and self._should_attempt_reset():
+            logger.info(f"🟡 {self.name}: Attempting recovery (half-open state)")
+            self._state = CircuitState.HALF_OPEN
+            self._half_open_attempts = 0
+            self._stats.state_changes += 1
+        
+        # Handle circuit states
+        if self._state == CircuitState.OPEN:
+            raise CircuitOpenError(
+                f"Circuit breaker '{self.name}' is OPEN. "
+                f"Service unavailable. Retry after {self.recovery_timeout}s.",
+                details={
+                    "circuit_name": self.name,
+                    "state": self._state.value,
+                    "failure_count": self._failure_count,
+                    "last_failure": self._last_failure_time,
+                    "stats": {
+                        "total_requests": self._stats.total_requests,
+                        "failure_rate": self._stats.failure_rate,
+                    }
+                }
+            )
+        
+        if self._state == CircuitState.HALF_OPEN:
+            if self._half_open_attempts >= self.half_open_max_attempts:
+                raise CircuitHalfOpenError(
+                    f"Circuit breaker '{self.name}' is HALF_OPEN. "
+                    f"Maximum recovery attempts exceeded.",
+                    details={
+                        "circuit_name": self.name,
+                        "state": self._state.value,
+                        "attempts": self._half_open_attempts,
+                    }
+                )
+            self._half_open_attempts += 1
+        
+        # Execute async function
+        try:
+            result = await func(*args, **kwargs)
+            self._on_success()
+            return result
+        except self.expected_exception as e:
+            self._on_failure(e)
+            raise
+        except Exception as e:
+            # Unexpected exception, don't trigger circuit breaker
+            logger.warning(
+                f"⚠️  {self.name}: Unexpected exception (not triggering circuit): "
+                f"{type(e).__name__}: {e}"
+            )
+            raise
     
     def reset(self) -> None:
         """Manually reset circuit breaker to closed state."""
