@@ -125,7 +125,7 @@ Type-safe configuration with environment variable override:
 
 ```yaml
 # config/settings.yaml
-lm_studio_url: http://192.168.100.12:1234/v1
+lm_studio_url: http://localhost:1234/v1
 max_retries: 3
 truncate_length: 50
 guardian_enabled: false

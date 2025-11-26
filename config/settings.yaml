@@ -9,7 +9,7 @@ config_dir: config
 data_dir: data
 
 # LLM Configuration
-lm_studio_url: http://192.168.100.12:1234/v1
+lm_studio_url: http://localhost:1234/v1
 llm_timeout: 120
 llm_max_retries: 3
 

@@ -76,7 +76,7 @@ cmd_status() {
     echo ""
     print_status "Testing LM Studio connection..."
     if docker-compose exec -T trinity-builder curl -s http://host.docker.internal:1234/v1/models > /dev/null 2>&1; then
-        print_success "LM Studio: Connected (http://192.168.100.12:1234)"
+        print_success "LM Studio: Connected (http://localhost:1234)"
     else
         print_warning "LM Studio: Not reachable (start LM Studio on host)"
     fi
@@ -193,7 +193,7 @@ EXAMPLES:
 
 URLS:
     Web Server:  http://localhost:8080
-    LM Studio:   http://192.168.100.12:1234
+    LM Studio:   http://localhost:1234
 
 EOF
 }

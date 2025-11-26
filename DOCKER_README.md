@@ -7,7 +7,7 @@ Complete Docker development environment for Trinity Core static site generator.
 - **Docker Desktop >= 24.0** (latest stable recommended)
 - **Docker Compose >= 2.20** (included with Docker Desktop)
 - **LM Studio >= 0.2.0** with Qwen 2.5 Coder model (optional for LLM content generation)
-  - Default endpoint: `http://192.168.100.12:1234`
+  - Default endpoint: `http://localhost:1234`
   - Alternative: Any OpenAI-compatible API
 - **Disk Space:** ~500MB for Docker images + models
 

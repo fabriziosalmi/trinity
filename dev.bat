@@ -146,6 +146,6 @@ echo     dev.bat chaos
 echo.
 echo URLS:
 echo     Web Server:  http://localhost:8080
-echo     LM Studio:   http://192.168.100.12:1234
+echo     LM Studio:   http://localhost:1234
 echo.
 goto :eof

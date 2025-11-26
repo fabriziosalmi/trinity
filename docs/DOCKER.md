@@ -4,7 +4,7 @@
 
 ### Prerequisites
 - Docker Desktop installed and running
-- LM Studio running on host machine (http://192.168.100.12:1234)
+- LM Studio running on host machine (http://localhost:1234)
 - 4GB+ RAM available for Docker
 
 ### Start the Stack
@@ -132,11 +132,11 @@ This magic hostname (`host.docker.internal`) resolves to the host machine's netw
 **Code Implementation**:
 ```python
 # src/content_engine.py & src/guardian.py
-DEFAULT_LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://192.168.100.12:1234/v1")
+DEFAULT_LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1")
 ```
 
 - **In Docker**: Uses `host.docker.internal:1234`
-- **On Host**: Uses `192.168.100.12:1234` (fallback)
+- **On Host**: Uses `localhost:1234` (fallback)
 
 ---
 
@@ -219,7 +219,7 @@ APIConnectionError: Connection refused
 ```
 
 **Solutions**:
-1. Verify LM Studio is running on host: http://192.168.100.12:1234
+1. Verify LM Studio is running on host: http://localhost:1234
 2. Check Docker can reach host:
    ```bash
    docker-compose exec trinity-builder curl http://host.docker.internal:1234/v1/models

@@ -33,7 +33,7 @@ class TrinityConfig(BaseSettings):
     
     # LLM Configuration
     lm_studio_url: str = Field(
-        default="http://192.168.100.12:1234/v1",
+        default="http://localhost:1234/v1",
         description="LM Studio API endpoint"
     )
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")

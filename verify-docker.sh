@@ -74,9 +74,9 @@ echo ""
 
 # Check 5: LM Studio connection (warning only)
 echo -n "Checking LM Studio connection... "
-if curl -s http://192.168.100.12:1234/v1/models > /dev/null 2>&1; then
+if curl -s http://localhost:1234/v1/models > /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC}"
-    echo "  LM Studio is running at http://192.168.100.12:1234"
+    echo "  LM Studio is running at http://localhost:1234"
 else
     echo -e "${YELLOW}⚠${NC}"
     echo -e "${YELLOW}  WARNING: LM Studio not reachable${NC}"

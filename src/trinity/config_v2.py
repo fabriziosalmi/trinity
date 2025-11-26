@@ -64,8 +64,8 @@ class ImmutableTrinityConfig(BaseSettings):
     
     # LLM Configuration
     lm_studio_url: str = Field(
-        default="http://192.168.100.12:1234/v1",
-        description="LM Studio API endpoint",
+        default="http://localhost:1234/v1",
+        description="LM Studio API endpoint (override with LM_STUDIO_URL env var)",
         frozen=True
     )
     openai_api_key: Optional[str] = Field(

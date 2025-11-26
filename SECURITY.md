@@ -61,7 +61,7 @@ model = joblib.load("model.pkl")  # Can execute malicious code
 
 Trinity Core connects to local LLM servers (e.g., LM Studio). Ensure endpoints are trusted:
 
-- **Default:** `http://192.168.100.12:1234` (local network only)
+- **Default:** `http://localhost:1234` (configure via LM_STUDIO_URL env var)
 - **Risk:** Malicious LLM endpoint could inject harmful content
 - **Mitigation:** Use localhost (`127.0.0.1`) or verify TLS certificates for remote endpoints
 

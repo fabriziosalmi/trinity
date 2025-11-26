@@ -1,14 +1,50 @@
 # 🏛️ Trinity Core
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-35%2F35%20passing-brightgreen.svg)](https://github.com/fabriziosalmi/trinity)
-[![Version](https://img.shields.io/badge/version-0.5.0-green.svg)](https://github.com/fabriziosalmi/trinity/releases)
+<p align="center">
+  <strong>AI-Powered Static Site Generator with Production-Ready Architecture</strong>
+</p>
 
-> **A self-healing static site generator with ML-powered CSS generation.**
+<p align="center">
+  <a href="#quick-demo">🎥 Demo</a> •
+  <a href="#the-trinity-solution">✨ Features</a> •
+  <a href="#quick-start">🚀 Quick Start</a> •
+  <a href="docs/">📚 Documentation</a> •
+  <a href="REFACTORING_SUMMARY.md">🔧 v0.6.0 Refactoring</a>
+</p>
 
-Trinity Core is an experimental static site generator that uses machine learning for self-healing. Trinity v0.5.0 features **LSTM neural networks that learn CSS fixing strategies** from successful healing attempts, combined with rule-based fallbacks for robust layout repair.
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/docker-ready-brightgreen.svg" alt="Docker"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://github.com/fabriziosalmi/trinity"><img src="https://img.shields.io/badge/tests-35%2F35%20passing-brightgreen.svg" alt="Tests"></a>
+  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.6.0-green.svg" alt="Version"></a>
+</p>
+
+---
+
+## 🎥 Quick Demo
+
+<p align="center">
+  <i>See Trinity in action - from configuration to deployment in 60 seconds</i>
+</p>
+
+```bash
+# Try it yourself!
+./scripts/demo.sh
+
+# Or record your own:
+# 1. Install asciinema: brew install asciinema
+# 2. Record: asciinema rec -c "./scripts/demo.sh"
+# 3. See docs/RECORDING_GUIDE.md for details
+```
+
+> **🎬 Recording instructions:** See [`docs/RECORDING_GUIDE.md`](docs/RECORDING_GUIDE.md) for creating and embedding terminal recordings.
+
+---
+
+> **A self-healing static site generator with ML-powered CSS generation and enterprise-grade architecture.**
+
+Trinity Core v0.6.0 combines **LSTM neural networks for self-healing layouts** with **production-ready infrastructure**: immutable configuration, circuit breakers, idempotency, and secrets management.
 
 ---
 
@@ -527,7 +563,7 @@ trinity build --theme brutalist --predictive
 
 ```yaml
 # LLM Configuration
-lm_studio_url: http://192.168.100.12:1234/v1
+lm_studio_url: http://localhost:1234/v1
 llm_timeout: 120
 
 # Guardian Configuration

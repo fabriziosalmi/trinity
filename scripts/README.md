@@ -163,14 +163,14 @@ Total themes: 103
 #### Requirements
 
 - LM Studio running with Qwen 2.5 Coder (or compatible model)
-- `TRINITY_LM_STUDIO_URL` environment variable set (default: http://192.168.100.12:1234/v1)
+- `TRINITY_LM_STUDIO_URL` environment variable set (default: http://localhost:1234/v1)
 
 #### Troubleshooting
 
 **Error: "Cannot connect to LM Studio"**
 ```bash
 # Check LM Studio is running
-curl http://192.168.100.12:1234/v1/models
+curl http://localhost:1234/v1/models
 
 # Set correct URL
 export TRINITY_LM_STUDIO_URL="http://localhost:1234/v1"

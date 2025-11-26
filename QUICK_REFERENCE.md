@@ -44,7 +44,7 @@ poetry run trinity train
 ### "Cannot connect to LM Studio"
 ```bash
 # Check LM Studio is running
-curl http://192.168.100.12:1234/v1/models
+curl http://localhost:1234/v1/models
 
 # Or change URL
 export TRINITY_LM_STUDIO_URL="http://localhost:1234/v1"

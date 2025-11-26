@@ -2,6 +2,16 @@
 # Trinity Core - Demo Script for Terminal Recording
 # This script demonstrates the key features of Trinity Core v0.6.0
 
+# Activate virtual environment if it exists
+if [ -d "venv" ]; then
+    source venv/bin/activate
+elif [ -d ".venv" ]; then
+    source .venv/bin/activate
+fi
+
+# Set PYTHONPATH
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'

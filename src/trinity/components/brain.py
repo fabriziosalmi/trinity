@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 
 # Rule #8: No magic strings (these should come from config/settings.py in production)
 # Docker-compatible: Uses LM_STUDIO_URL env var with fallback to localhost
-DEFAULT_LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://192.168.100.12:1234/v1")
+DEFAULT_LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1")
 DEFAULT_LM_STUDIO_KEY = "lm-studio"  # Dummy key, LM Studio ignores it
 DEFAULT_MODEL_ID = "qwen2.5-coder-3b-instruct-mlx"
 
