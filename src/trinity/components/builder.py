@@ -118,7 +118,8 @@ class SiteBuilder:
         content: Dict[str, Any],
         theme: str,
         output_filename: str = "index.html",
-        template_name: str = "templates/base_layout.html"
+        template_name: str = "templates/base_layout.html",
+        style_overrides: Optional[Dict[str, str]] = None
     ) -> Path:
         """
         Assemble and render complete HTML page.
@@ -128,6 +129,8 @@ class SiteBuilder:
             theme: Theme name to apply
             output_filename: Output file name
             template_name: Base template to use
+            style_overrides: Optional CSS class overrides from SmartHealer
+                           Format: {"hero_title": "text-2xl break-all", ...}
             
         Returns:
             Path to generated HTML file
@@ -141,6 +144,20 @@ class SiteBuilder:
         # Load theme classes
         theme_classes = self.load_theme_config(theme)
         
+        # Merge style overrides from SmartHealer
+        if style_overrides:
+            logger.info(f"🎨 Applying {len(style_overrides)} CSS overrides from SmartHealer")
+            for key, override_classes in style_overrides.items():
+                if key in theme_classes:
+                    original = theme_classes[key]
+                    # Append override classes to existing ones
+                    theme_classes[key] = f"{original} {override_classes}"
+                    logger.debug(f"  {key}: '{original}' → '{theme_classes[key]}'")
+                else:
+                    # New key not in theme - add it
+                    theme_classes[key] = override_classes
+                    logger.debug(f"  {key}: NEW → '{override_classes}'")
+        
         # Rule #27: Separation of Concerns (Logic vs Presentation)
         try:
             template = self.env.get_template(template_name)
@@ -153,7 +170,7 @@ class SiteBuilder:
                 content=content,
                 theme_classes=theme_classes,
                 meta={
-                    "generator": "Trinity Core v1.0",
+                    "generator": "Trinity Core v0.2.0",
                     "theme": theme,
                     "build_date": "2025-11-26"  # TODO: Use datetime
                 }

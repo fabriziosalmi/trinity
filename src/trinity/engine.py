@@ -14,7 +14,7 @@ from trinity.config import TrinityConfig
 from trinity.components.builder import SiteBuilder
 from trinity.components.brain import ContentEngine
 from trinity.components.guardian import TrinityGuardian
-from trinity.components.healer import SmartHealer, FixStrategy
+from trinity.components.healer import SmartHealer, HealingResult, HealingStrategy
 from trinity.utils.validators import ContentValidator, ValidationError
 from trinity.utils.logger import get_logger
 
@@ -121,18 +121,20 @@ class TrinityEngine:
         max_retries = self.config.max_retries if enable_guardian else 1
         attempt = 0
         current_content = content
+        current_style_overrides: Dict[str, str] = {}  # Track CSS overrides
         fixes_applied = []
         
         while attempt < max_retries:
             attempt += 1
             logger.info(f"🔄 Build Attempt {attempt}/{max_retries}")
             
-            # 1. Build page
+            # 1. Build page with current style overrides
             try:
                 output_path = self.builder.build_page(
                     content=current_content,
                     theme=theme,
-                    output_filename=output_filename
+                    output_filename=output_filename,
+                    style_overrides=current_style_overrides if current_style_overrides else None
                 )
                 logger.info(f"✓ Page built: {output_path}")
             except Exception as e:
@@ -175,18 +177,29 @@ class TrinityEngine:
                     
                     # Check if we can retry
                     if attempt < max_retries:
-                        # Determine fix strategy
-                        strategy = self.healer.analyze_guardian_report(report)
-                        logger.info(f"🚑 Applying fix strategy: {strategy.value}")
-                        
-                        # Apply fix
-                        current_content = self.healer.apply_fix(
+                        # Apply progressive healing strategy
+                        healing_result = self.healer.heal_layout(
+                            guardian_report=report,
                             content=current_content,
-                            strategy=strategy,
                             attempt=attempt
                         )
-                        fixes_applied.append(f"{strategy.value} (attempt {attempt})")
-                        logger.info(f"   → Fix applied, retrying build...\n")
+                        
+                        logger.info(f"🚑 Applied strategy: {healing_result.strategy.value}")
+                        logger.info(f"   {healing_result.description}")
+                        
+                        # Update state based on healing result
+                        if healing_result.content_modified:
+                            # Nuclear option: content was modified
+                            current_content = healing_result.modified_content
+                            logger.warning("⚠️  Content modified (nuclear option)")
+                        else:
+                            # CSS strategy: update style overrides
+                            current_style_overrides.update(healing_result.style_overrides)
+                        
+                        fixes_applied.append(
+                            f"{healing_result.strategy.value} (attempt {attempt})"
+                        )
+                        logger.info(f"   → Retrying build with {healing_result.strategy.value}...\n")
                     else:
                         # Max retries reached
                         logger.error("💀 Max retries reached. Build failed.")

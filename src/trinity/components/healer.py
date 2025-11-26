@@ -3,114 +3,204 @@ Trinity Smart Healer - Intelligent Layout Fixing
 
 Implements Strategy Pattern for different fix approaches:
 1. CSS_BREAK_WORD: Inject Tailwind classes (break-all, overflow-wrap)
-2. CSS_TRUNCATE: Inject truncate/ellipsis classes
-3. CONTENT_TRUNCATE: Aggressive string shortening (last resort)
+2. FONT_SHRINK: Reduce font size (text-4xl → text-2xl)
+3. CSS_TRUNCATE: Inject truncate/ellipsis classes
+4. CONTENT_CUT: Aggressive string shortening (nuclear option, last resort)
 """
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from pathlib import Path
+from pydantic import BaseModel, Field
 
 from trinity.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class FixStrategy(str, Enum):
-    """Available fix strategies for layout issues."""
+class HealingStrategy(str, Enum):
+    """Available healing strategies (progressive escalation)."""
     CSS_BREAK_WORD = "css_break_word"
-    CSS_TRUNCATE = "css_truncate"
-    CONTENT_TRUNCATE = "content_truncate"
     FONT_SHRINK = "font_shrink"
+    CSS_TRUNCATE = "css_truncate"
+    CONTENT_CUT = "content_cut"
+
+
+class HealingResult(BaseModel):
+    """Result of a healing attempt."""
+    strategy: HealingStrategy
+    style_overrides: Dict[str, str] = Field(default_factory=dict)
+    content_modified: bool = False
+    modified_content: Optional[Dict[str, Any]] = None
+    description: str = ""
 
 
 class SmartHealer:
     """
-    Intelligent layout fixing engine.
+    Intelligent layout fixing engine with progressive strategy escalation.
     
-    Analyzes Guardian reports and applies appropriate fixes using
-    a strategy pattern approach.
+    Strategy Progression (per attempt):
+    1. CSS_BREAK_WORD: Add break-all, overflow-wrap classes
+    2. FONT_SHRINK: Reduce font size (text-4xl → text-3xl → text-2xl)
+    3. CSS_TRUNCATE: Add truncate/ellipsis classes
+    4. CONTENT_CUT: Nuclear option - truncate actual content
     """
+    
+    # Component-to-CSS-class mapping (based on themes.json)
+    COMPONENT_MAP = {
+        "hero_title": "hero_title",
+        "hero_subtitle": "hero_subtitle",
+        "card_title": "card_title",
+        "card_description": "card_description",
+        "brand_name": "brand_name",
+        "tagline": "tagline",
+    }
+    
+    # Font size progression (text-Nxl values)
+    FONT_SIZES = ["text-6xl", "text-5xl", "text-4xl", "text-3xl", "text-2xl", "text-xl", "text-lg"]
     
     def __init__(self, truncate_length: int = 50):
         """
         Initialize SmartHealer.
         
         Args:
-            truncate_length: Max string length for CONTENT_TRUNCATE strategy
+            truncate_length: Max string length for CONTENT_CUT strategy
         """
         self.truncate_length = truncate_length
+        self.override_history: Dict[str, List[str]] = {}  # Track what we've tried
         logger.info(f"🚑 SmartHealer initialized (truncate_length={truncate_length})")
     
-    def analyze_guardian_report(self, report: Dict[str, Any]) -> FixStrategy:
+    def heal_layout(
+        self,
+        guardian_report: Dict[str, Any],
+        content: Dict[str, Any],
+        attempt: int
+    ) -> HealingResult:
         """
-        Analyze Guardian report and determine best fix strategy.
+        Apply progressive healing strategy based on attempt number.
         
         Args:
-            report: Guardian audit report
+            guardian_report: Guardian audit report
+            content: Current content dictionary
+            attempt: Current attempt number (1, 2, 3, ...)
             
         Returns:
-            Recommended fix strategy
+            HealingResult with style overrides or modified content
         """
-        reason = report.get("reason", "").lower()
-        suggestion = report.get("fix_suggestion", "").upper()
+        logger.info(f"🚑 Healing attempt {attempt}")
         
-        # DOM overflow -> Try CSS fix first
-        if "overflow" in reason or "DOM" in suggestion:
-            logger.info("📊 Detected DOM overflow → Recommending CSS_BREAK_WORD")
-            return FixStrategy.CSS_BREAK_WORD
-        
-        # Text clipping -> Truncate with ellipsis
-        if "clipped" in reason or "truncate" in suggestion.lower():
-            logger.info("📊 Detected text clipping → Recommending CSS_TRUNCATE")
-            return FixStrategy.CSS_TRUNCATE
-        
-        # Default fallback
-        logger.info("📊 No specific issue detected → Recommending CONTENT_TRUNCATE")
-        return FixStrategy.CONTENT_TRUNCATE
+        # Determine strategy based on attempt
+        if attempt == 1:
+            return self._apply_break_word_strategy(guardian_report)
+        elif attempt == 2:
+            return self._apply_font_shrink_strategy(guardian_report, content)
+        elif attempt == 3:
+            return self._apply_truncate_strategy(guardian_report)
+        else:
+            # Nuclear option: cut content
+            return self._apply_content_cut_strategy(content, attempt)
     
-    def apply_fix(
+    def _apply_break_word_strategy(self, report: Dict[str, Any]) -> HealingResult:
+        """
+        Strategy 1: Add CSS classes to force word breaking.
+        
+        Injects: break-all, overflow-wrap-anywhere, word-break-break-all
+        """
+        logger.info("📊 Strategy 1: CSS_BREAK_WORD - Adding break-all classes")
+        
+        # Apply to all potentially long text components
+        overrides = {
+            "hero_title": "break-all overflow-wrap-anywhere word-break-break-all",
+            "hero_subtitle": "break-all overflow-wrap-anywhere",
+            "card_title": "break-all overflow-wrap-anywhere",
+            "card_description": "break-words",
+            "tagline": "break-words overflow-wrap-anywhere",
+        }
+        
+        return HealingResult(
+            strategy=HealingStrategy.CSS_BREAK_WORD,
+            style_overrides=overrides,
+            content_modified=False,
+            description="Injected break-all and overflow-wrap classes to all text components"
+        )
+    
+    def _apply_font_shrink_strategy(
+        self,
+        report: Dict[str, Any],
+        content: Dict[str, Any]
+    ) -> HealingResult:
+        """
+        Strategy 2: Reduce font sizes progressively.
+        
+        Finds text-Nxl classes and reduces them by one level.
+        """
+        logger.info("📊 Strategy 2: FONT_SHRINK - Reducing font sizes")
+        
+        overrides = {
+            # Shrink hero title from text-5xl/4xl to text-3xl
+            "hero_title": "text-3xl break-all",
+            # Shrink subtitle if present
+            "hero_subtitle": "text-lg break-words",
+            # Shrink card titles
+            "card_title": "text-xl break-all",
+        }
+        
+        return HealingResult(
+            strategy=HealingStrategy.FONT_SHRINK,
+            style_overrides=overrides,
+            content_modified=False,
+            description="Reduced font sizes: hero (text-3xl), cards (text-xl)"
+        )
+    
+    def _apply_truncate_strategy(self, report: Dict[str, Any]) -> HealingResult:
+        """
+        Strategy 3: Add CSS truncate/ellipsis classes.
+        
+        Uses Tailwind's truncate, line-clamp utilities.
+        """
+        logger.info("📊 Strategy 3: CSS_TRUNCATE - Adding ellipsis classes")
+        
+        overrides = {
+            "hero_title": "truncate text-2xl",
+            "hero_subtitle": "line-clamp-2 text-base",
+            "card_title": "truncate text-lg",
+            "card_description": "line-clamp-3 text-sm",
+            "tagline": "truncate",
+        }
+        
+        return HealingResult(
+            strategy=HealingStrategy.CSS_TRUNCATE,
+            style_overrides=overrides,
+            content_modified=False,
+            description="Added truncate and line-clamp classes with reduced font sizes"
+        )
+    
+    def _apply_content_cut_strategy(
         self,
         content: Dict[str, Any],
-        strategy: FixStrategy,
-        attempt: int = 1
-    ) -> Dict[str, Any]:
+        attempt: int
+    ) -> HealingResult:
         """
-        Apply fix strategy to content.
+        Strategy 4 (Nuclear): Actually modify the content by truncating strings.
         
-        Args:
-            content: Content dictionary to fix
-            strategy: Fix strategy to apply
-            attempt: Current attempt number (affects aggressiveness)
-            
-        Returns:
-            Fixed content dictionary
+        Progressively more aggressive based on attempt number.
         """
-        logger.info(f"🚑 Applying fix: {strategy.value} (attempt {attempt})")
+        # More aggressive with each attempt beyond 3
+        max_len = max(30, self.truncate_length - (attempt - 4) * 10)
         
-        if strategy == FixStrategy.CSS_BREAK_WORD:
-            # TODO Phase 2: Inject CSS classes into template
-            # For now, fallback to content truncate
-            logger.warning("⚠️  CSS_BREAK_WORD not yet implemented, falling back to CONTENT_TRUNCATE")
-            return self._apply_content_truncate(content, max_len=self.truncate_length)
+        logger.info(f"📊 Strategy 4 (NUCLEAR): CONTENT_CUT - Truncating to {max_len} chars")
+        logger.warning("⚠️  Resorting to content truncation - CSS strategies failed")
         
-        elif strategy == FixStrategy.CSS_TRUNCATE:
-            # TODO Phase 2: Inject truncate classes
-            logger.warning("⚠️  CSS_TRUNCATE not yet implemented, falling back to CONTENT_TRUNCATE")
-            return self._apply_content_truncate(content, max_len=self.truncate_length)
+        modified = self._truncate_recursive(content, max_len)
         
-        elif strategy == FixStrategy.FONT_SHRINK:
-            # TODO Phase 2: Modify theme config to use smaller fonts
-            logger.warning("⚠️  FONT_SHRINK not yet implemented, falling back to CONTENT_TRUNCATE")
-            return self._apply_content_truncate(content, max_len=self.truncate_length)
-        
-        elif strategy == FixStrategy.CONTENT_TRUNCATE:
-            # Progressively more aggressive based on attempt
-            max_len = max(30, self.truncate_length - (attempt - 1) * 10)
-            return self._apply_content_truncate(content, max_len=max_len)
-        
-        return content
+        return HealingResult(
+            strategy=HealingStrategy.CONTENT_CUT,
+            style_overrides={},
+            content_modified=True,
+            modified_content=modified,
+            description=f"Truncated all strings to {max_len} characters (nuclear option)"
+        )
     
-    def _apply_content_truncate(self, data: Any, max_len: int) -> Any:
+    def _truncate_recursive(self, data: Any, max_len: int) -> Any:
         """
         Recursively truncate all strings in nested data structure.
         
@@ -122,9 +212,9 @@ class SmartHealer:
             Truncated data
         """
         if isinstance(data, dict):
-            return {k: self._apply_content_truncate(v, max_len) for k, v in data.items()}
+            return {k: self._truncate_recursive(v, max_len) for k, v in data.items()}
         elif isinstance(data, list):
-            return [self._apply_content_truncate(i, max_len) for i in data]
+            return [self._truncate_recursive(i, max_len) for i in data]
         elif isinstance(data, str):
             if len(data) > max_len:
                 truncated = data[:max_len] + "..."
@@ -132,7 +222,6 @@ class SmartHealer:
                 return truncated
             return data
         return data
-
 
 # Standalone helper function for backwards compatibility
 def apply_emergency_truncate(data: Any, max_len: int = 60) -> Any:
@@ -147,4 +236,4 @@ def apply_emergency_truncate(data: Any, max_len: int = 60) -> Any:
         Truncated data
     """
     healer = SmartHealer(truncate_length=max_len)
-    return healer._apply_content_truncate(data, max_len)
+    return healer._truncate_recursive(data, max_len)
