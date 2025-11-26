@@ -16,6 +16,7 @@ See [PHASE6_ROADMAP.md](docs/PHASE6_ROADMAP.md) for details.
 - Structured logging for mining pipeline
 
 **v0.7.5 - DX & Testing:**
+- ✅ YAML theme configuration (better DX, Rule #45, Rule #39)
 - Mock LLM responses in CI/CD (deterministic, fast tests)
 - Makefile for simplified commands
 - Optional Playwright dependency
@@ -24,6 +25,63 @@ See [PHASE6_ROADMAP.md](docs/PHASE6_ROADMAP.md) for details.
 - Complete vibe engine migration to YAML
 - Simplified README (value-first, not architecture-first)
 - Refactor engine.py God Object into focused classes
+
+---
+
+## [0.7.0-dev] - 2025-01-27 (Phase 6 Task 3: YAML Theme Configuration)
+
+### Added - YAML Vibe Engine
+- **Theme Migration Script** (`scripts/migrate_themes_to_yaml.py`)
+  - Automatic conversion from JSON to YAML
+  - Enriches themes with metadata (description, category, color_palette, typography, use_case)
+  - Creates automatic backup of original JSON (themes.json.backup)
+  - One-time migration with validation
+  
+- **YAML Theme Structure** (`config/themes.yaml`)
+  - 14 themes migrated with rich metadata
+  - Categories: business, technical, creative, retro, minimal, experimental
+  - Inline comments and documentation
+  - Human-readable configuration (Rule #39)
+  - Supports YAML comments (Rule #45 compliance)
+  
+- **Theme Metadata Fields:**
+  - `description`: Human-readable theme description
+  - `category`: Theme classification
+  - `color_palette`: Main colors used
+  - `typography`: Font characteristics
+  - `use_case`: Recommended use cases
+  - `classes`: Tailwind CSS class mappings (unchanged)
+
+### Changed
+- **SiteBuilder** (`src/trinity/components/builder.py`)
+  - Updated to load themes from YAML (priority) or JSON (fallback)
+  - Auto-detection of config format (.yaml vs .json)
+  - Backward compatible with existing JSON themes
+  - Deprecation warning for JSON usage
+  - Added PyYAML dependency
+  
+- **Theme Configuration Path**
+  - Primary: `config/themes.yaml` (new)
+  - Legacy: `config/themes.json` (backward compatible)
+  - Backup: `config/themes.json.backup` (migration artifact)
+
+### Developer Experience (DX)
+- **Rule #45 Compliance:** YAML supports comments (JSON doesn't)
+- **Rule #39 Compliance:** Developer-friendly, self-documenting configuration
+- **Rule #21 Compliance:** Centralized theme logic with metadata
+- **Better Maintainability:** Easy to add/modify themes with inline docs
+
+### Backward Compatibility
+- ✅ Existing themes.json still works (with deprecation warning)
+- ✅ No breaking changes to theme loading API
+- ✅ Graceful fallback from YAML to JSON
+- ✅ All existing code paths preserved
+
+### Migration Notes
+1. Run: `python scripts/migrate_themes_to_yaml.py`
+2. Review: `config/themes.yaml`
+3. Test: Theme loading in builds
+4. Cleanup: `rm config/themes.json.backup` (after validation)
 
 ---
 
