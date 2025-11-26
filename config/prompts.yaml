@@ -1,0 +1,161 @@
+# Trinity Core - LLM Prompt Templates
+# Externalized from brain.py for maintainability and configurability
+
+content_generation:
+  base_instruction: |
+    You are a Content API Engine. Your task is to extract project data from raw text
+    and transform it into a STRICT JSON object.
+
+    CRITICAL RULES:
+    1. Output ONLY valid JSON - no markdown, no code blocks, no explanations
+    2. Follow the exact schema structure provided
+    3. Rewrite descriptions based on the specified tone/role
+    4. Select the TOP 6 most interesting projects based on stars/activity
+    5. Generate compelling hero section copy matching the theme
+
+  json_schema:
+    brand_name: "Your Name"
+    tagline: "Optional tagline based on theme"
+    hero:
+      title: "Generated hero title matching theme personality"
+      subtitle: "Generated subtitle (2-3 sentences, theme-appropriate)"
+      cta_primary:
+        label: "Primary Action"
+        url: "https://github.com/username"
+      cta_secondary:
+        label: "Secondary Action"
+        url: "#projects"
+    menu_items:
+      - label: "Projects"
+        url: "#projects"
+      - label: "About"
+        url: "#about"
+      - label: "Contact"
+        url: "#contact"
+    cta:
+      label: "View GitHub"
+      url: "https://github.com/username"
+    repos:
+      - name: "project-name"
+        description: "Rewritten description based on theme tone"
+        url: "https://github.com/user/repo"
+        stars: 123
+        language: "Python"
+        tags: ["tag1", "tag2"]
+
+  vibes:
+    enterprise:
+      role: "Chief Technology Officer at a Fortune 500 company"
+      tone: "Professional, reliable, scalable, benefit-driven, trustworthy"
+      instructions: |
+        Rewrite project descriptions as Enterprise SaaS products.
+        Focus on: reliability, security, scalability, ROI, compliance.
+        Use terms like: 'Enterprise-grade', 'Production-ready', 'Mission-critical', 'Platform'.
+      hero_style: "Professional headline emphasizing expertise and reliability"
+
+    brutalist:
+      role: "Elite DevOps Engineer / Security Researcher"
+      tone: "Raw, direct, technical, uppercase emphasis, cynical, no-bullshit"
+      instructions: |
+        Rewrite descriptions to be PUNCHY and TECHNICAL. MAX 10 WORDS.
+        Use uppercase for emphasis.
+        Use terms like: DEPLOY, MONITOR, KILL, DETECT, FILTER, BLOCK, AUTOMATE.
+        No marketing fluff. Just what it does.
+      hero_style: "Bold, aggressive headline. Short and technical."
+
+    editorial:
+      role: "Senior Technology Editor at Wired Magazine"
+      tone: "Sophisticated, narrative, thoughtful, intriguing, journalistic"
+      instructions: |
+        Rewrite descriptions as catchy editorial headlines or thought-provoking summaries.
+        Focus on: innovation, impact, creativity, the 'why' behind the tool.
+        Use narrative techniques: ask questions, create intrigue, tell a micro-story.
+      hero_style: "Compelling editorial headline that sparks curiosity"
+
+theme_generation:
+  system_prompt: |
+    You are a TailwindCSS Design Engine with expert knowledge of:
+    - Color theory and accessibility
+    - Typography hierarchy
+    - Modern UI/UX patterns
+    - CSS utility classes
+
+    Your task: Convert a visual style description into a complete TailwindCSS theme configuration.
+
+    CRITICAL RULES:
+    1. Output ONLY valid JSON (no markdown, no explanations)
+    2. Use real Tailwind classes (bg-blue-500, text-xl, rounded-lg, etc.)
+    3. Use arbitrary values [#hex] for custom colors if needed
+    4. Be BOLD and CREATIVE - embrace the vibe fully
+    5. Ensure contrast between backgrounds and text colors
+
+  required_keys:
+    - nav_bg
+    - body_bg
+    - text_primary
+    - text_secondary
+    - nav_link
+    - hero_title
+    - hero_subtitle
+    - card_bg
+    - card_title
+    - card_description
+    - btn_primary
+    - btn_secondary
+    - tagline
+
+  json_schema:
+    nav_bg: "background classes for navigation"
+    body_bg: "background classes for body"
+    text_primary: "main text color and size"
+    text_secondary: "secondary text color and size"
+    nav_link: "navigation link styles (hover effects welcome)"
+    hero_title: "hero title styles (font size, weight, spacing)"
+    hero_subtitle: "hero subtitle styles"
+    card_bg: "card/container background and borders"
+    card_title: "card title styles"
+    card_description: "card description styles"
+    btn_primary: "primary button styles (rounded, shadow, hover)"
+    btn_secondary: "secondary button styles"
+    tagline: "site tagline styles"
+
+  examples:
+    - "bg-gradient-to-r from-purple-600 to-pink-500"
+    - "text-white text-6xl font-black uppercase tracking-tight"
+    - "bg-[#FF00FF] border-4 border-[#00FFFF] shadow-2xl"
+    - "hover:bg-cyan-400 hover:text-black transition-all duration-300"
+
+  temperature: 0.9  # High creativity for diverse themes
+  max_tokens: 1000
+  timeout: 45
+
+vision_ai:
+  system_prompt: |
+    You are a Visual QA Engineer analyzing website screenshots.
+    Identify layout issues, broken elements, and visual bugs.
+
+    Focus on:
+    - Text overflow
+    - Misaligned elements
+    - Color contrast issues
+    - Responsive design problems
+    - Accessibility concerns
+
+    Provide actionable recommendations for fixes.
+
+guardian:
+  analysis_prompt: |
+    Analyze this HTML page for layout and rendering issues.
+    
+    Check for:
+    1. Text content that exceeds container bounds
+    2. Elements positioned outside viewport
+    3. Overlapping or misaligned components
+    4. Broken CSS styles
+    
+    Return a JSON object with:
+    {
+      "has_issues": boolean,
+      "issues": [{"type": string, "description": string, "severity": string}],
+      "fix_suggestions": [string]
+    }

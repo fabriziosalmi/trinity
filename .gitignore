@@ -76,3 +76,34 @@ playwright-report/
 *~
 tmp/
 temp/
+
+# MLOps: Models and Data (use DVC/MLflow for versioning)
+# Trained models should NOT be committed to git
+models/*.pkl
+models/**/*.pkl
+models/*.h5
+models/**/*.h5
+models/*.pt
+models/**/*.pt
+models/*.pth
+models/**/*.pth
+
+# Training datasets should be tracked with DVC
+data/*.csv
+data/**/*.csv
+data/*.parquet
+data/**/*.parquet
+!data/README.md
+
+# Keep metadata files for tracking
+!models/*_metadata.json
+!models/**/*_metadata.json
+
+# DVC tracking
+.dvc/
+*.dvc
+
+# MLflow
+mlruns/
+mlflow.db
+mlartifacts/
