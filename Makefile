@@ -162,6 +162,49 @@ cache-size: ## Show cache directory size
 	@echo "$(CYAN)Cache size:$(RESET)"
 	@du -sh .cache/llm 2>/dev/null || echo "$(YELLOW)No cache directory$(RESET)"
 
+##@ Logging
+
+logs: ## View logs in real-time (human-readable)
+	@echo "$(CYAN)Viewing logs...$(RESET)"
+	@tail -f logs/trinity.log 2>/dev/null || echo "$(YELLOW)No log file found. Run 'make build' first.$(RESET)"
+
+logs-json: ## View logs in JSON format
+	@echo "$(CYAN)Viewing JSON logs...$(RESET)"
+	@tail -f logs/trinity.log | jq '.'
+
+logs-errors: ## View error logs only
+	@echo "$(CYAN)Error logs:$(RESET)"
+	@cat logs/errors.log 2>/dev/null | jq 'select(.level=="ERROR")' || echo "$(YELLOW)No error log found$(RESET)"
+
+logs-performance: ## View performance logs
+	@echo "$(CYAN)Performance logs:$(RESET)"
+	@cat logs/performance.log 2>/dev/null | jq 'select(.duration_ms != null) | {timestamp, message, duration_ms, cache_hit}' || echo "$(YELLOW)No performance log found$(RESET)"
+
+logs-analyze: ## Analyze log statistics
+	@echo "$(CYAN)Log analysis:$(RESET)"
+	@if [ -f logs/trinity.log ]; then \
+		echo "$(YELLOW)Total entries:$(RESET) $$(wc -l < logs/trinity.log)"; \
+		echo "$(YELLOW)Errors:$(RESET) $$(grep -c '"level":"ERROR"' logs/trinity.log 2>/dev/null || echo 0)"; \
+		echo "$(YELLOW)Warnings:$(RESET) $$(grep -c '"level":"WARNING"' logs/trinity.log 2>/dev/null || echo 0)"; \
+		echo ""; \
+		echo "$(YELLOW)Top 5 messages:$(RESET)"; \
+		cat logs/trinity.log | jq -r '.message' 2>/dev/null | sort | uniq -c | sort -rn | head -5; \
+	else \
+		echo "$(YELLOW)No log file found$(RESET)"; \
+	fi
+
+logs-clear: ## Clear all log files
+	@echo "$(CYAN)Clearing logs...$(RESET)"
+	@rm -rf logs/*.log
+	@echo "$(GREEN)✓ Logs cleared$(RESET)"
+
+logs-test: ## Test logging system
+	@echo "$(CYAN)Testing structured logging...$(RESET)"
+	@PYTHONPATH=$$PYTHONPATH:$(PWD)/src LOG_FORMAT=human $(VENV_BIN)/python -c "from trinity.utils.structured_logger import get_logger; logger = get_logger('test'); logger.info('test_message', extra={'test': True, 'count': 42})"
+	@echo ""
+	@echo "$(CYAN)JSON format:$(RESET)"
+	@PYTHONPATH=$$PYTHONPATH:$(PWD)/src LOG_FORMAT=json $(VENV_BIN)/python -c "from trinity.utils.structured_logger import get_logger; logger = get_logger('test'); logger.info('test_message', extra={'test': True, 'count': 42})"
+
 ##@ Docker
 
 docker-build: ## Build Docker image

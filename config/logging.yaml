@@ -1,0 +1,237 @@
+# Logging Configuration for Trinity Core
+# Phase 6, Task 6: Structured Logging
+#
+# This configuration provides structured logging for development and production.
+# Use LOG_PROFILE env var to switch between profiles:
+#   - development: Human-readable colored output
+#   - production: JSON formatted for log aggregation
+#   - testing: Minimal output for CI/CD
+
+version: 1
+disable_existing_loggers: false
+
+# Formatters
+formatters:
+  # JSON formatter for production (log aggregation)
+  json:
+    (): trinity.utils.structured_logger.StructuredFormatter
+    include_extra: true
+
+  # Human-readable for development
+  human:
+    (): trinity.utils.structured_logger.HumanReadableFormatter
+
+  # Simple formatter for testing
+  simple:
+    format: '%(levelname)s - %(message)s'
+
+# Handlers
+handlers:
+  # Console output
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: human
+    stream: ext://sys.stdout
+
+  # Console JSON output (production)
+  console_json:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: json
+    stream: ext://sys.stdout
+
+  # File output (always JSON)
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: json
+    filename: logs/trinity.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+  # Error file (errors only)
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: json
+    filename: logs/errors.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+  # Performance metrics file
+  performance_file:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: json
+    filename: logs/performance.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 3
+    encoding: utf8
+
+# Loggers
+loggers:
+  # Trinity application loggers
+  trinity:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  trinity.components.brain:
+    level: DEBUG
+    handlers: [console, file, performance_file]
+    propagate: false
+
+  trinity.components.dataminer:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  trinity.components.guardian:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  trinity.utils.cache_manager:
+    level: INFO
+    handlers: [console, file, performance_file]
+    propagate: false
+
+  # LLM client (performance-critical)
+  llm_client:
+    level: INFO
+    handlers: [console, file, performance_file]
+    propagate: false
+
+  # Third-party loggers (quiet them down)
+  httpx:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+  httpcore:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+  urllib3:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+  playwright:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+# Root logger
+root:
+  level: INFO
+  handlers: [console, file]
+
+---
+# Development Profile
+# Usage: LOG_PROFILE=development python main.py
+development:
+  version: 1
+  disable_existing_loggers: false
+  
+  formatters:
+    human:
+      (): trinity.utils.structured_logger.HumanReadableFormatter
+  
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: human
+      stream: ext://sys.stdout
+  
+  root:
+    level: DEBUG
+    handlers: [console]
+  
+  loggers:
+    trinity:
+      level: DEBUG
+    httpx:
+      level: WARNING
+    httpcore:
+      level: WARNING
+
+---
+# Production Profile
+# Usage: LOG_PROFILE=production python main.py
+production:
+  version: 1
+  disable_existing_loggers: false
+  
+  formatters:
+    json:
+      (): trinity.utils.structured_logger.StructuredFormatter
+      include_extra: true
+  
+  handlers:
+    console_json:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: json
+      stream: ext://sys.stdout
+    
+    file:
+      class: logging.handlers.RotatingFileHandler
+      level: INFO
+      formatter: json
+      filename: /var/log/trinity/app.log
+      maxBytes: 52428800  # 50MB
+      backupCount: 10
+      encoding: utf8
+    
+    error_file:
+      class: logging.handlers.RotatingFileHandler
+      level: ERROR
+      formatter: json
+      filename: /var/log/trinity/errors.log
+      maxBytes: 52428800  # 50MB
+      backupCount: 10
+      encoding: utf8
+  
+  root:
+    level: INFO
+    handlers: [console_json, file, error_file]
+  
+  loggers:
+    trinity:
+      level: INFO
+    httpx:
+      level: ERROR
+    httpcore:
+      level: ERROR
+
+---
+# Testing Profile
+# Usage: LOG_PROFILE=testing pytest
+testing:
+  version: 1
+  disable_existing_loggers: false
+  
+  formatters:
+    simple:
+      format: '%(levelname)s - %(message)s'
+  
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: WARNING
+      formatter: simple
+      stream: ext://sys.stdout
+  
+  root:
+    level: WARNING
+    handlers: [console]
+  
+  loggers:
+    trinity:
+      level: WARNING

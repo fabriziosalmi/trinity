@@ -4,7 +4,6 @@ Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
-import logging
 import json
 import time
 import asyncio
@@ -18,7 +17,7 @@ try:
 except ImportError:
     raise ImportError("httpx required. Install with: pip install httpx")
 
-# Import cache manager
+# Import cache manager and structured logger
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from trinity.utils.cache_manager import CacheManager
@@ -27,7 +26,12 @@ except ImportError:
     CACHE_AVAILABLE = False
     CacheManager = None
 
-logger = logging.getLogger(__name__)
+try:
+    from trinity.utils.structured_logger import get_logger
+    logger = get_logger(__name__)
+except ImportError:
+    import logging
+    logger = logging.getLogger(__name__)
 
 # Rule #8: Constants
 DEFAULT_TIMEOUT = 30
@@ -92,9 +96,14 @@ class LLMClient:
             follow_redirects=True
         )
         
-        logger.info(
-            f"LLMClient initialized: {provider}/{model_name} @ {base_url}"
-        )
+        logger.info("llm_client_initialized", extra={
+            "provider": provider,
+            "model": model_name,
+            "base_url": base_url,
+            "timeout": timeout,
+            "max_retries": max_retries,
+            "temperature": temperature
+        })
 
     def _build_request_payload(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
         """Build provider-specific request payload."""
