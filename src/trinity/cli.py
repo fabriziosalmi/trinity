@@ -349,5 +349,191 @@ def _get_mock_content():
     }
 
 
+@app.command()
+def mine_stats(
+    dataset: Optional[Path] = typer.Option(
+        None,
+        "--dataset",
+        "-d",
+        help="Path to training dataset CSV"
+    ),
+):
+    """
+    Show ML training dataset statistics.
+    
+    Displays metrics about collected build events:
+    - Total samples (successful + failed builds)
+    - Success rate
+    - Themes and strategies distribution
+    
+    Example:
+        trinity mine-stats
+    """
+    from trinity.components.dataminer import TrinityMiner
+    
+    miner = TrinityMiner(dataset_path=dataset) if dataset else TrinityMiner()
+    stats = miner.get_dataset_stats()
+    
+    console.print("\n[bold cyan]📊 Trinity ML Dataset Statistics[/bold cyan]\n")
+    
+    # Create stats table
+    table = Table(title="Dataset Overview")
+    table.add_column("Metric", style="cyan", no_wrap=True)
+    table.add_column("Value", style="magenta")
+    
+    table.add_row("Total Samples", str(stats["total_samples"]))
+    table.add_row("Positive (Success)", f"[green]{stats['positive_samples']}[/green]")
+    table.add_row("Negative (Failure)", f"[red]{stats['negative_samples']}[/red]")
+    table.add_row("Success Rate", f"{stats['success_rate']}%")
+    
+    console.print(table)
+    
+    # Themes distribution
+    if stats["themes"]:
+        console.print(f"\n[bold]Themes:[/bold] {', '.join(stats['themes'])}")
+    
+    # Strategies distribution
+    if stats["strategies"]:
+        console.print(f"[bold]Strategies:[/bold] {', '.join(stats['strategies'])}")
+    
+    # Dataset location
+    console.print(f"\n[dim]Dataset: {miner.dataset_path}[/dim]\n")
+
+
+@app.command()
+def mine_generate(
+    count: int = typer.Option(
+        100,
+        "--count",
+        "-n",
+        help="Number of random builds to generate"
+    ),
+    themes: Optional[str] = typer.Option(
+        None,
+        "--themes",
+        help="Comma-separated theme list (default: all themes)"
+    ),
+    enable_guardian: bool = typer.Option(
+        True,
+        "--guardian/--no-guardian",
+        help="Enable Guardian QA for each build"
+    ),
+):
+    """
+    Generate synthetic training data by building random layouts.
+    
+    Creates hundreds/thousands of random content + theme combinations,
+    passes them through the Guardian, and logs results to the training dataset.
+    
+    This is the DATA MINING phase - run overnight to collect ML training samples.
+    
+    Examples:
+        # Generate 100 random builds across all themes
+        trinity mine-generate --count 100
+        
+        # Generate 1000 brutalist layouts only
+        trinity mine-generate --count 1000 --themes brutalist
+        
+        # Fast mining without Guardian (for testing)
+        trinity mine-generate --count 50 --no-guardian
+    """
+    import random
+    import string
+    from trinity.components.dataminer import TrinityMiner
+    
+    setup_logger("INFO")
+    config = TrinityConfig()
+    engine = TrinityEngine(config)
+    
+    # Parse themes
+    if themes:
+        theme_list = [t.strip() for t in themes.split(",")]
+    else:
+        theme_list = ["enterprise", "brutalist", "editorial"]
+    
+    console.print(f"\n[bold cyan]⛏️  Trinity Data Mining Mode[/bold cyan]\n")
+    console.print(f"Target: {count} random builds")
+    console.print(f"Themes: {', '.join(theme_list)}")
+    console.print(f"Guardian: {'Enabled' if enable_guardian else 'Disabled'}\n")
+    
+    def random_text(min_len=10, max_len=200):
+        """Generate random text of varying length."""
+        length = random.randint(min_len, max_len)
+        # Mix of normal words and pathological patterns
+        if random.random() < 0.2:
+            # 20% chance of pathological pattern (AAAA..., long URLs, etc.)
+            patterns = [
+                "A" * length,
+                "https://example.com/" + "x" * length,
+                "NoSpacesJustOneVeryLongWord" * (length // 28 + 1),
+            ]
+            return random.choice(patterns)[:length]
+        else:
+            # Normal text with random length
+            words = []
+            current_len = 0
+            while current_len < length:
+                word_len = random.randint(3, 12)
+                word = ''.join(random.choices(string.ascii_lowercase, k=word_len))
+                words.append(word)
+                current_len += word_len + 1  # +1 for space
+            return ' '.join(words)[:length]
+    
+    # Generate random builds
+    successful = 0
+    failed = 0
+    
+    with console.status("[bold green]Mining data...") as status:
+        for i in range(count):
+            theme = random.choice(theme_list)
+            
+            # Generate random content
+            content = {
+                "brand_name": random_text(5, 30),
+                "tagline": random_text(20, 80),
+                "hero": {
+                    "title": random_text(10, 100),
+                    "subtitle": random_text(30, 150)
+                },
+                "repos": [
+                    {
+                        "name": random_text(5, 25),
+                        "description": random_text(50, 200),
+                        "url": "https://example.com",
+                        "tags": ["tag1", "tag2"],
+                        "stars": random.randint(0, 1000)
+                    }
+                    for _ in range(random.randint(1, 3))
+                ]
+            }
+            
+            # Build with engine (will auto-log to dataset)
+            result = engine.build_with_self_healing(
+                content=content,
+                theme=theme,
+                output_filename=f"mine_{i}.html",
+                enable_guardian=enable_guardian
+            )
+            
+            if result.status == BuildStatus.SUCCESS:
+                successful += 1
+            else:
+                failed += 1
+            
+            # Update status
+            status.update(f"[bold green]Mining: {i+1}/{count} "
+                         f"(✅ {successful} | ❌ {failed})")
+    
+    console.print(f"\n[bold green]✅ Mining complete![/bold green]")
+    console.print(f"   Successful: {successful}")
+    console.print(f"   Failed: {failed}")
+    console.print(f"   Total samples: {successful + failed}\n")
+    
+    # Show updated stats
+    miner = TrinityMiner()
+    stats = miner.get_dataset_stats()
+    console.print(f"[dim]Dataset now contains {stats['total_samples']} total samples[/dim]\n")
+
+
 if __name__ == "__main__":
     app()

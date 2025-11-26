@@ -15,6 +15,7 @@ from trinity.components.builder import SiteBuilder
 from trinity.components.brain import ContentEngine
 from trinity.components.guardian import TrinityGuardian
 from trinity.components.healer import SmartHealer, HealingResult, HealingStrategy
+from trinity.components.dataminer import TrinityMiner
 from trinity.utils.validators import ContentValidator, ValidationError
 from trinity.utils.logger import get_logger
 
@@ -68,6 +69,7 @@ class TrinityEngine:
         self.builder = SiteBuilder(template_dir=str(self.config.templates_path))
         self.validator = ContentValidator()
         self.healer = SmartHealer(truncate_length=self.config.truncate_length)
+        self.miner = TrinityMiner()  # ML dataset collector
         
         # Guardian is lazy-loaded when needed
         self._guardian: Optional[TrinityGuardian] = None
@@ -164,6 +166,18 @@ class TrinityEngine:
                 
                 if report["approved"]:
                     logger.info(f"✅ Guardian APPROVED: {report['reason']}")
+                    
+                    # Log successful build to training dataset
+                    current_strategy = fixes_applied[-1].split(" ")[0] if fixes_applied else "NONE"
+                    self.miner.log_build_event(
+                        theme=theme,
+                        content=current_content,
+                        strategy=current_strategy,
+                        guardian_verdict=True,
+                        guardian_reason="",
+                        css_overrides=current_style_overrides if current_style_overrides else None
+                    )
+                    
                     return BuildResult(
                         status=BuildStatus.SUCCESS,
                         output_path=output_path,
@@ -174,6 +188,17 @@ class TrinityEngine:
                     )
                 else:
                     logger.warning(f"❌ Guardian REJECTED: {report['reason']}")
+                    
+                    # Log failed build to training dataset (negative sample)
+                    current_strategy = fixes_applied[-1].split(" ")[0] if fixes_applied else "NONE"
+                    self.miner.log_build_event(
+                        theme=theme,
+                        content=current_content,
+                        strategy=current_strategy,
+                        guardian_verdict=False,
+                        guardian_reason=report["reason"],
+                        css_overrides=current_style_overrides if current_style_overrides else None
+                    )
                     
                     # Check if we can retry
                     if attempt < max_retries:
