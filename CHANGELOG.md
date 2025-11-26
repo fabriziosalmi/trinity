@@ -22,9 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `src/trinity/ml/models.py` - Seq2Seq LSTM Style Generator (2 layers, 128 hidden)
   - `src/trinity/components/generative_trainer.py` - PyTorch training pipeline
   - `src/trinity/components/neural_healer.py` - Generative replacement for SmartHealer
-- **Transfer Learning:** Model learns fixes across 100+ themes (Centuria Factory)
-  - CSS solutions learned on Brutalist apply to Editorial, Medical, etc.
-  - Generalizes patterns: "overflow-x-hidden fixes horizontal scroll" regardless of theme
+- **Adaptive Learning:** Model learns from CSS fixes applied during mining
+  - Trained on successful healing attempts from real build events
+  - Generalizes patterns across different content types and themes
 - **Anti-Hallucination:** Token validation and Top-K sampling
   - Whitelist of valid Tailwind classes
   - Temperature-controlled generation (0.8 default)
@@ -39,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Model Architecture:**
   - Encoder: Context (theme + content_length + error_type) → Hidden state
   - Decoder: 2-layer LSTM generates CSS token sequences
-  - Vocabulary: ~200 Tailwind utility classes
+  - Vocabulary: Core overflow-handling tokens (break-all, whitespace-normal, overflow-wrap-anywhere)
+  - Total parameters: 270K (2 layers × 128 hidden dimensions)
 - **Training:**
   - Batch size: 32
   - Learning rate: 0.001 (Adam optimizer)
@@ -66,10 +67,12 @@ result = healer.heal_layout(guardian_report, content, attempt=1)
 
 ### Training the Model
 ```bash
-# Generate training data (if not already done)
-trinity mine-generate --count 1000 --themes all
+# Generate training data via mining pipeline
+trinity chaos --count 50 --mine --theme brutalist
+trinity chaos --count 50 --mine --theme editorial
+# ... repeat for multiple themes to build dataset
 
-# Train generative model
+# Train generative model on collected fixes
 python -m trinity.components.generative_trainer \
     --dataset data/training_dataset.csv \
     --output models/generative \
@@ -78,6 +81,7 @@ python -m trinity.components.generative_trainer \
 
 # Model outputs:
 # - models/generative/style_generator_best.pth (trained LSTM)
+# - models/generative/tailwind_vocab.json (vocabulary)
 # - models/generative/tailwind_vocab.json (tokenizer vocabulary)
 ```
 

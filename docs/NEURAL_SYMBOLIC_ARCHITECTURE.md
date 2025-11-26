@@ -1,8 +1,13 @@
 # 🧠 Neural-Symbolic Architecture - Complete Pipeline
 
-**Status:** ✅ Fully Implemented  
-**Version:** v0.4.0 (Centuria Factory)  
+**Status:** ⚠️ Core Complete, Training Dataset Pending  
+**Version:** v0.5.0 (Neural Healer with LSTM)  
 **Date:** November 26, 2025
+
+> **Reality Check:** This document describes the full vision of Trinity's neural-symbolic pipeline.  
+> **What's Complete:** Predictor (RF), Neural Healer (LSTM), Centuria Factory infrastructure  
+> **What's Pending:** The "100+ themes" training dataset has not been generated (current: 15 themes, 182 samples)  
+> The transfer learning benefits described below are **aspirational** until the full dataset is created.
 
 ---
 

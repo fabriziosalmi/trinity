@@ -2,7 +2,12 @@
 
 **Date:** November 26, 2025  
 **Version:** v0.4.0  
-**Status:** ✅ COMPLETE
+**Status:** ⚠️ PARTIALLY COMPLETE (Core infrastructure, not 100+ themes)
+
+> **Note:** This document describes the Centuria Factory architecture and capabilities.  
+> The theme generation infrastructure is complete (Brain module with `generate_theme_from_vibe`),  
+> but the "100+ themes" dataset has not been generated. Current theme count: **15 themes**.  
+> The training improvements described here are **aspirational** for when the full dataset is created.
 
 ---
 
