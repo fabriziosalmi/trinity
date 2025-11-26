@@ -47,6 +47,11 @@ class TrinityConfig(BaseSettings):
     guardian_viewport_height: int = Field(default=1080, description="Viewport height for screenshots")
     guardian_timeout: int = Field(default=30, description="Guardian timeout (seconds)")
     
+    # ML Prediction Configuration (Phase 3)
+    predictive_enabled: bool = Field(default=True, description="Enable ML predictive healing")
+    model_dir: Path = Field(default=Path("models"), description="Trained models directory")
+    risk_threshold: float = Field(default=0.7, description="Risk threshold for pre-emptive healing")
+    
     # Self-Healing Configuration
     max_retries: int = Field(default=3, description="Max build retry attempts")
     truncate_length: int = Field(default=50, description="String truncation length")

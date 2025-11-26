@@ -84,6 +84,11 @@ def build(
         "--vision",
         help="Enable Vision AI analysis (requires Qwen VL)"
     ),
+    predictive: bool = typer.Option(
+        True,
+        "--predictive/--no-predictive",
+        help="Enable ML predictive healing (Phase 3)"
+    ),
     log_level: str = typer.Option(
         "INFO",
         "--log-level",
@@ -114,6 +119,7 @@ def build(
     # Initialize engine
     config.guardian_enabled = guardian
     config.guardian_vision_ai = guardian_vision
+    config.predictive_enabled = predictive
     config.default_theme = theme
     engine = TrinityEngine(config)
     
@@ -418,6 +424,12 @@ def mine_generate(
         "--guardian/--no-guardian",
         help="Enable Guardian QA for each build"
     ),
+    pathological_ratio: float = typer.Option(
+        0.2,
+        "--pathological",
+        "-p",
+        help="Ratio of pathological content (0.0 = all safe, 1.0 = all chaos)"
+    ),
 ):
     """
     Generate synthetic training data by building random layouts.
@@ -460,8 +472,8 @@ def mine_generate(
         """Generate random text of varying length."""
         length = random.randint(min_len, max_len)
         # Mix of normal words and pathological patterns
-        if random.random() < 0.2:
-            # 20% chance of pathological pattern (AAAA..., long URLs, etc.)
+        if random.random() < pathological_ratio:
+            # Pathological pattern (AAAA..., long URLs, etc.)
             patterns = [
                 "A" * length,
                 "https://example.com/" + "x" * length,

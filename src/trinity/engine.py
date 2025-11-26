@@ -16,6 +16,7 @@ from trinity.components.brain import ContentEngine
 from trinity.components.guardian import TrinityGuardian
 from trinity.components.healer import SmartHealer, HealingResult, HealingStrategy
 from trinity.components.dataminer import TrinityMiner
+from trinity.components.predictor import LayoutRiskPredictor
 from trinity.utils.validators import ContentValidator, ValidationError
 from trinity.utils.logger import get_logger
 
@@ -74,8 +75,8 @@ class TrinityEngine:
         # Guardian is lazy-loaded when needed
         self._guardian: Optional[TrinityGuardian] = None
         
-        # Risk prediction model (Phase 3: lazy-load trained model)
-        self._risk_model: Optional[Any] = None
+        # Risk predictor (Phase 3: lazy-load trained model)
+        self._predictor: Optional[LayoutRiskPredictor] = None
         
         logger.info("🚀 TrinityEngine initialized")
     
@@ -88,6 +89,16 @@ class TrinityEngine:
                 viewport_width=self.config.guardian_viewport_width,
                 viewport_height=self.config.guardian_viewport_height
             )
+            logger.info("🛡️  Guardian loaded")
+        return self._guardian
+    
+    @property
+    def predictor(self) -> LayoutRiskPredictor:
+        """Lazy-load ML Risk Predictor (Rule #66: Load once)."""
+        if self._predictor is None:
+            self._predictor = LayoutRiskPredictor()
+            logger.info("🔮 Predictor loaded")
+        return self._predictor
         return self._guardian
     
     def build_with_self_healing(
@@ -128,6 +139,30 @@ class TrinityEngine:
         current_content = content
         current_style_overrides: Dict[str, str] = {}  # Track CSS overrides
         fixes_applied = []
+        
+        # 🔮 Phase 3: Pre-Cognition (predict risk before first render)
+        if enable_guardian and self.config.predictive_enabled:
+            risk_score, prediction_available = self.predictor.predict_risk(
+                content=content,
+                theme=theme,
+                css_signature="NONE"
+            )
+            
+            if prediction_available:
+                recommendation = self.predictor.get_recommendation(risk_score)
+                logger.info(f"🔮 Neural Predictor: {recommendation['reason']}")
+                
+                # Pre-emptive healing if high risk
+                if recommendation["skip_none_strategy"]:
+                    logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_score:.0%})")
+                    # Apply CSS_BREAK_WORD immediately (skip NONE attempt)
+                    preemptive_fix = self.healer.apply_strategy(
+                        content=content,
+                        strategy=HealingStrategy.CSS_BREAK_WORD
+                    )
+                    if preemptive_fix.style_overrides:
+                        current_style_overrides = preemptive_fix.style_overrides
+                        fixes_applied.append("Pre-emptive CSS_BREAK_WORD (ML predicted failure)")
         
         while attempt < max_retries:
             attempt += 1
