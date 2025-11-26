@@ -7,6 +7,7 @@ Implements Strategy Pattern for different fix approaches:
 3. CSS_TRUNCATE: Inject truncate/ellipsis classes
 4. CONTENT_CUT: Aggressive string shortening (nuclear option, last resort)
 """
+
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -19,6 +20,7 @@ logger = get_logger(__name__)
 
 class HealingStrategy(str, Enum):
     """Available healing strategies (progressive escalation)."""
+
     CSS_BREAK_WORD = "css_break_word"
     FONT_SHRINK = "font_shrink"
     CSS_TRUNCATE = "css_truncate"
@@ -27,6 +29,7 @@ class HealingStrategy(str, Enum):
 
 class HealingResult(BaseModel):
     """Result of a healing attempt."""
+
     strategy: HealingStrategy
     style_overrides: Dict[str, str] = Field(default_factory=dict)
     content_modified: bool = False
@@ -70,10 +73,7 @@ class SmartHealer:
         logger.info(f"🚑 SmartHealer initialized (truncate_length={truncate_length})")
 
     def heal_layout(
-        self,
-        guardian_report: Dict[str, Any],
-        content: Dict[str, Any],
-        attempt: int
+        self, guardian_report: Dict[str, Any], content: Dict[str, Any], attempt: int
     ) -> HealingResult:
         """
         Apply progressive healing strategy based on attempt number.
@@ -123,9 +123,9 @@ class SmartHealer:
 
         overrides = {
             # Template keys (match theme_classes.X in templates)
-            "heading_primary": nuclear_css,     # Hero h1, section h2
-            "heading_secondary": nuclear_css,   # Card h3
-            "body_text": nuclear_css,           # All <p> tags
+            "heading_primary": nuclear_css,  # Hero h1, section h2
+            "heading_secondary": nuclear_css,  # Card h3
+            "body_text": nuclear_css,  # All <p> tags
             # Legacy keys (for backward compatibility)
             "hero_title": nuclear_css,
             "hero_subtitle": nuclear_css,
@@ -138,13 +138,11 @@ class SmartHealer:
             strategy=HealingStrategy.CSS_BREAK_WORD,
             style_overrides=overrides,
             content_modified=False,
-            description="Injected NUCLEAR break-all (mid-word breaking) to all text components via theme_classes keys"
+            description="Injected NUCLEAR break-all (mid-word breaking) to all text components via theme_classes keys",
         )
 
     def _apply_font_shrink_strategy(
-        self,
-        report: Dict[str, Any],
-        content: Dict[str, Any]
+        self, report: Dict[str, Any], content: Dict[str, Any]
     ) -> HealingResult:
         """
         Strategy 2: Reduce font sizes progressively.
@@ -156,9 +154,9 @@ class SmartHealer:
 
         overrides = {
             # Template keys (match theme_classes.X)
-            "heading_primary": "text-3xl break-all",     # Shrink hero/section headings
-            "heading_secondary": "text-xl break-all",     # Shrink card headings
-            "body_text": "text-base break-words",         # Keep body readable
+            "heading_primary": "text-3xl break-all",  # Shrink hero/section headings
+            "heading_secondary": "text-xl break-all",  # Shrink card headings
+            "body_text": "text-base break-words",  # Keep body readable
             # Legacy keys
             "hero_title": "text-3xl break-all",
             "hero_subtitle": "text-lg break-words",
@@ -169,7 +167,7 @@ class SmartHealer:
             strategy=HealingStrategy.FONT_SHRINK,
             style_overrides=overrides,
             content_modified=False,
-            description="Reduced font sizes: headings (text-3xl/xl), body (text-base)"
+            description="Reduced font sizes: headings (text-3xl/xl), body (text-base)",
         )
 
     def _apply_truncate_strategy(self, report: Dict[str, Any]) -> HealingResult:
@@ -183,9 +181,9 @@ class SmartHealer:
 
         overrides = {
             # Template keys (match theme_classes.X)
-            "heading_primary": "truncate text-2xl",       # Hero/section headings
-            "heading_secondary": "truncate text-lg",      # Card headings
-            "body_text": "line-clamp-3 text-sm",          # Body paragraphs
+            "heading_primary": "truncate text-2xl",  # Hero/section headings
+            "heading_secondary": "truncate text-lg",  # Card headings
+            "body_text": "line-clamp-3 text-sm",  # Body paragraphs
             # Legacy keys
             "hero_title": "truncate text-2xl",
             "hero_subtitle": "line-clamp-2 text-base",
@@ -198,14 +196,10 @@ class SmartHealer:
             strategy=HealingStrategy.CSS_TRUNCATE,
             style_overrides=overrides,
             content_modified=False,
-            description="Added truncate and line-clamp classes with reduced font sizes"
+            description="Added truncate and line-clamp classes with reduced font sizes",
         )
 
-    def _apply_content_cut_strategy(
-        self,
-        content: Dict[str, Any],
-        attempt: int
-    ) -> HealingResult:
+    def _apply_content_cut_strategy(self, content: Dict[str, Any], attempt: int) -> HealingResult:
         """
         Strategy 4 (Nuclear): Actually modify the content by truncating strings.
 
@@ -224,7 +218,7 @@ class SmartHealer:
             style_overrides={},
             content_modified=True,
             modified_content=modified,
-            description=f"Truncated all strings to {max_len} characters (nuclear option)"
+            description=f"Truncated all strings to {max_len} characters (nuclear option)",
         )
 
     def _truncate_recursive(self, data: Any, max_len: int) -> Any:
@@ -249,6 +243,7 @@ class SmartHealer:
                 return truncated
             return data
         return data
+
 
 # Standalone helper function for backwards compatibility
 def apply_emergency_truncate(data: Any, max_len: int = 60) -> Any:

@@ -6,6 +6,7 @@ catch with example-based tests.
 
 Install: pip install hypothesis
 """
+
 import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
@@ -52,7 +53,7 @@ class TestIdempotencyProperties:
             keys=text(min_size=1, max_size=10),
             values=integers() | text() | floats(allow_nan=False),
             min_size=1,
-            max_size=10
+            max_size=10,
         )
     )
     def test_key_generation_is_deterministic(self, data):
@@ -63,10 +64,7 @@ class TestIdempotencyProperties:
 
         assert len(set(keys)) == 1, "Key generation must be deterministic"
 
-    @given(
-        result=text(min_size=1, max_size=1000),
-        ttl=integers(min_value=1, max_value=3600)
-    )
+    @given(result=text(min_size=1, max_size=1000), ttl=integers(min_value=1, max_value=3600))
     def test_stored_result_is_retrievable(self, result, ttl):
         """Stored results should be retrievable before expiration."""
         manager = IdempotencyKeyManager(enable_persistence=False, default_ttl=ttl)
@@ -83,15 +81,12 @@ class TestCircuitBreakerProperties:
     """Property-based tests for circuit breaker."""
 
     @given(
-        threshold=integers(min_value=1, max_value=20),
-        timeout=integers(min_value=1, max_value=300)
+        threshold=integers(min_value=1, max_value=20), timeout=integers(min_value=1, max_value=300)
     )
     def test_circuit_opens_after_threshold_failures(self, threshold, timeout):
         """Circuit should open after exactly threshold failures."""
         breaker = CircuitBreaker(
-            failure_threshold=threshold,
-            recovery_timeout=timeout,
-            expected_exception=ValueError
+            failure_threshold=threshold, recovery_timeout=timeout, expected_exception=ValueError
         )
 
         # Fail threshold-1 times
@@ -124,17 +119,13 @@ class TestCircuitBreakerProperties:
         assert breaker.stats.failed_requests == 0
 
     @given(
-        failures=integers(min_value=1, max_value=10),
-        threshold=integers(min_value=1, max_value=20)
+        failures=integers(min_value=1, max_value=10), threshold=integers(min_value=1, max_value=20)
     )
     def test_failure_count_accuracy(self, failures, threshold):
         """Failure count should accurately reflect number of failures."""
         assume(failures < threshold)  # Don't open circuit
 
-        breaker = CircuitBreaker(
-            failure_threshold=threshold,
-            expected_exception=ValueError
-        )
+        breaker = CircuitBreaker(failure_threshold=threshold, expected_exception=ValueError)
 
         for _ in range(failures):
             try:
@@ -152,14 +143,12 @@ class TestConfigurationProperties:
     @given(
         max_retries=integers(min_value=1, max_value=10),
         llm_timeout=integers(min_value=1, max_value=600),
-        truncate_length=integers(min_value=10, max_value=500)
+        truncate_length=integers(min_value=10, max_value=500),
     )
     def test_config_creation_with_valid_values(self, max_retries, llm_timeout, truncate_length):
         """Configuration should accept all valid values."""
         config = create_config(
-            max_retries=max_retries,
-            llm_timeout=llm_timeout,
-            truncate_length=truncate_length
+            max_retries=max_retries, llm_timeout=llm_timeout, truncate_length=truncate_length
         )
 
         assert config.max_retries == max_retries
@@ -186,7 +175,7 @@ class TestLLMPromptProperties:
 
     @given(
         theme=st.sampled_from(["enterprise", "brutalist", "editorial"]),
-        content=text(min_size=10, max_size=500)
+        content=text(min_size=10, max_size=500),
     )
     def test_prompt_generation_is_deterministic(self, theme, content):
         """Same inputs should produce same prompt."""

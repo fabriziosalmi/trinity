@@ -41,12 +41,7 @@ class CSSFixDataset(Dataset):
     context-target pairs for LSTM training.
     """
 
-    def __init__(
-        self,
-        csv_path: Path,
-        tokenizer: TailwindTokenizer,
-        max_seq_length: int = 20
-    ):
+    def __init__(self, csv_path: Path, tokenizer: TailwindTokenizer, max_seq_length: int = 20):
         """
         Initialize dataset.
 
@@ -62,7 +57,7 @@ class CSSFixDataset(Dataset):
         df = pd.read_csv(csv_path)
 
         # Only use successful fixes
-        df = df[df['is_valid'] == 1].copy()
+        df = df[df["is_valid"] == 1].copy()
 
         logger.info(f"📊 Loaded {len(df)} successful fixes from {csv_path.name}")
 
@@ -85,40 +80,40 @@ class CSSFixDataset(Dataset):
         contexts = []
 
         # Get unique themes for one-hot encoding
-        themes = df['theme'].unique().tolist()
+        themes = df["theme"].unique().tolist()
         theme_to_idx = {theme: idx for idx, theme in enumerate(themes)}
 
         # Get unique error types
-        error_types = ['overflow', 'text_too_long', 'layout_shift', 'unknown']
+        error_types = ["overflow", "text_too_long", "layout_shift", "unknown"]
         error_to_idx = {err: idx for idx, err in enumerate(error_types)}
 
         for _, row in df.iterrows():
             # Theme one-hot
             theme_vec = [0] * len(themes)
-            theme_vec[theme_to_idx[row['theme']]] = 1
+            theme_vec[theme_to_idx[row["theme"]]] = 1
 
             # Content length (normalized to [0, 1])
-            content_len = min(row.get('content_length', 100), 1000) / 1000.0
+            content_len = min(row.get("content_length", 100), 1000) / 1000.0
 
             # Error type one-hot
             error_vec = [0] * len(error_types)
-            error_type = row.get('error_type', 'unknown')
+            error_type = row.get("error_type", "unknown")
             if error_type in error_to_idx:
                 error_vec[error_to_idx[error_type]] = 1
             else:
-                error_vec[error_to_idx['unknown']] = 1
+                error_vec[error_to_idx["unknown"]] = 1
 
             # Attempt number (normalized)
-            attempt = min(row.get('attempt_number', 1), 5) / 5.0
+            attempt = min(row.get("attempt_number", 1), 5) / 5.0
 
             # Combine into context vector
             context = {
-                'vector': theme_vec + [content_len, attempt] + error_vec,
-                'metadata': {
-                    'theme': row['theme'],
-                    'content_length': row.get('content_length', 0),
-                    'error_type': error_type,
-                }
+                "vector": theme_vec + [content_len, attempt] + error_vec,
+                "metadata": {
+                    "theme": row["theme"],
+                    "content_length": row.get("content_length", 0),
+                    "error_type": error_type,
+                },
             }
 
             contexts.append(context)
@@ -137,9 +132,9 @@ class CSSFixDataset(Dataset):
         targets = []
 
         # Check if v0.5.0 schema exists
-        if 'style_overrides_raw' in df.columns:
+        if "style_overrides_raw" in df.columns:
             for _, row in df.iterrows():
-                css_raw = row.get('style_overrides_raw', '')
+                css_raw = row.get("style_overrides_raw", "")
 
                 if pd.isna(css_raw) or not css_raw.strip():
                     # No CSS override (probably failed build)
@@ -148,6 +143,7 @@ class CSSFixDataset(Dataset):
                     # Parse JSON: {"hero_title": "break-all", "card": "truncate"}
                     try:
                         import json
+
                         css_dict = json.loads(css_raw)
                         # Combine all CSS classes from overrides
                         all_classes = []
@@ -168,7 +164,7 @@ class CSSFixDataset(Dataset):
             # Legacy: try 'css_overrides' column (old schema)
             logger.warning("⚠️  Using legacy CSS extraction (upgrade dataset to v0.5.0)")
             for _, row in df.iterrows():
-                css_override = row.get('css_overrides', '')
+                css_override = row.get("css_overrides", "")
 
                 if pd.isna(css_override) or not css_override.strip():
                     css_override = "text-sm truncate"
@@ -190,7 +186,7 @@ class CSSFixDataset(Dataset):
             target: [seq_len] long tensor (padded)
         """
         # Context vector
-        context = torch.FloatTensor(self.contexts[idx]['vector'])
+        context = torch.FloatTensor(self.contexts[idx]["vector"])
 
         # Target CSS tokens
         css_string = self.targets[idx]
@@ -202,7 +198,7 @@ class CSSFixDataset(Dataset):
                 self.max_seq_length - len(token_ids)
             )
         else:
-            token_ids = token_ids[:self.max_seq_length]
+            token_ids = token_ids[: self.max_seq_length]
 
         target = torch.LongTensor(token_ids)
 
@@ -254,9 +250,7 @@ class GenerativeStyleTrainer:
 
         # Create dataset
         self.dataset = CSSFixDataset(
-            csv_path=dataset_path,
-            tokenizer=self.tokenizer,
-            max_seq_length=20
+            csv_path=dataset_path, tokenizer=self.tokenizer, max_seq_length=20
         )
 
         # Get context dimension from first sample
@@ -268,12 +262,13 @@ class GenerativeStyleTrainer:
     def _build_vocabulary(self) -> None:
         """Build tokenizer vocabulary from successful CSS fixes."""
         import json
+
         df = pd.read_csv(self.dataset_path)
-        df = df[df['is_valid'] == 1]
+        df = df[df["is_valid"] == 1]
 
         # Parse JSON CSS overrides and extract all classes
         css_sequences = []
-        for css_raw in df['style_overrides_raw'].dropna():
+        for css_raw in df["style_overrides_raw"].dropna():
             try:
                 css_dict = json.loads(css_raw)
                 all_classes = []
@@ -320,12 +315,8 @@ class GenerativeStyleTrainer:
             self.dataset, [train_size, val_size]
         )
 
-        train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True
-        )
-        val_loader = DataLoader(
-            val_dataset, batch_size=batch_size, shuffle=False
-        )
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
         logger.info(f"📊 Training: {train_size} | Validation: {val_size}")
 
@@ -342,7 +333,7 @@ class GenerativeStyleTrainer:
         criterion = nn.CrossEntropyLoss(ignore_index=0)  # Ignore <PAD>
 
         # Training loop
-        best_val_loss = float('inf')
+        best_val_loss = float("inf")
         patience_counter = 0
 
         for epoch in range(epochs):
@@ -393,8 +384,7 @@ class GenerativeStyleTrainer:
             val_loss /= len(val_loader)
 
             logger.info(
-                f"Epoch {epoch+1}: "
-                f"Train Loss={train_loss:.4f} | Val Loss={val_loss:.4f}"
+                f"Epoch {epoch+1}: " f"Train Loss={train_loss:.4f} | Val Loss={val_loss:.4f}"
             )
 
             # Early stopping
@@ -414,8 +404,7 @@ class GenerativeStyleTrainer:
 
         # Load best model
         model = LSTMStyleGenerator.load(
-            self.output_dir / "style_generator_best.pth",
-            device=self.device
+            self.output_dir / "style_generator_best.pth", device=self.device
         )
 
         return model
@@ -430,13 +419,13 @@ if __name__ == "__main__":
         "--dataset",
         type=Path,
         default=Path("data/training_dataset.csv"),
-        help="Path to training dataset"
+        help="Path to training dataset",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("models/generative"),
-        help="Output directory for model and vocab"
+        help="Output directory for model and vocab",
     )
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch-size", type=int, default=32)
@@ -447,16 +436,10 @@ if __name__ == "__main__":
 
     # Train model
     trainer = GenerativeStyleTrainer(
-        dataset_path=args.dataset,
-        output_dir=args.output,
-        device=args.device
+        dataset_path=args.dataset, output_dir=args.output, device=args.device
     )
 
-    model = trainer.train(
-        epochs=args.epochs,
-        batch_size=args.batch_size,
-        learning_rate=args.lr
-    )
+    model = trainer.train(epochs=args.epochs, batch_size=args.batch_size, learning_rate=args.lr)
 
     print("\n🎉 Training complete!")
     print(f"📂 Model saved: {args.output}/style_generator_best.pth")

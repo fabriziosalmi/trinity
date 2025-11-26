@@ -84,6 +84,7 @@ class NeuralHealer:
         if not self.model or not self.tokenizer:
             if fallback_to_heuristic:
                 from trinity.components.healer import SmartHealer
+
                 self.heuristic_healer = SmartHealer()
                 logger.info("⚠️  Neural model unavailable, using heuristic fallback")
             else:
@@ -104,28 +105,46 @@ class NeuralHealer:
         # Common Tailwind utilities (subset for safety)
         whitelist = {
             # Text sizing
-            "text-xs", "text-sm", "text-base", "text-lg", "text-xl",
-            "text-2xl", "text-3xl", "text-4xl", "text-5xl",
-
+            "text-xs",
+            "text-sm",
+            "text-base",
+            "text-lg",
+            "text-xl",
+            "text-2xl",
+            "text-3xl",
+            "text-4xl",
+            "text-5xl",
             # Line height
-            "leading-none", "leading-tight", "leading-snug", "leading-normal",
-
+            "leading-none",
+            "leading-tight",
+            "leading-snug",
+            "leading-normal",
             # Word breaking
-            "break-normal", "break-words", "break-all",
-
+            "break-normal",
+            "break-words",
+            "break-all",
             # Overflow
-            "overflow-hidden", "overflow-x-hidden", "overflow-y-hidden",
-            "overflow-auto", "overflow-scroll",
-
+            "overflow-hidden",
+            "overflow-x-hidden",
+            "overflow-y-hidden",
+            "overflow-auto",
+            "overflow-scroll",
             # Truncation
-            "truncate", "text-ellipsis", "line-clamp-1", "line-clamp-2",
-            "line-clamp-3", "line-clamp-4",
-
+            "truncate",
+            "text-ellipsis",
+            "line-clamp-1",
+            "line-clamp-2",
+            "line-clamp-3",
+            "line-clamp-4",
             # Whitespace
-            "whitespace-normal", "whitespace-nowrap", "whitespace-pre",
-
+            "whitespace-normal",
+            "whitespace-nowrap",
+            "whitespace-pre",
             # Font weight
-            "font-normal", "font-medium", "font-semibold", "font-bold",
+            "font-normal",
+            "font-medium",
+            "font-semibold",
+            "font-bold",
         }
 
         # If tokenizer available, use its vocabulary
@@ -141,11 +160,7 @@ class NeuralHealer:
         return whitelist
 
     def _extract_context_vector(
-        self,
-        theme: str,
-        content_length: int,
-        error_type: str,
-        attempt: int
+        self, theme: str, content_length: int, error_type: str, attempt: int
     ) -> torch.Tensor:
         """
         Convert context into feature vector for LSTM.
@@ -200,7 +215,7 @@ class NeuralHealer:
             if cls in self.valid_tailwind_classes:
                 valid.append(cls)
             # Allow arbitrary values: text-[0.9rem]
-            elif '[' in cls and ']' in cls:
+            elif "[" in cls and "]" in cls:
                 valid.append(cls)
             else:
                 logger.debug(f"⚠️  Filtered invalid class: {cls}")
@@ -212,7 +227,7 @@ class NeuralHealer:
         guardian_report: Dict[str, Any],
         content: Dict,
         attempt: int,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> HealingResult:
         """
         Generate CSS fix using neural model.
@@ -245,10 +260,7 @@ class NeuralHealer:
 
         # Build context vector
         context_tensor = self._extract_context_vector(
-            theme=theme,
-            content_length=content_length,
-            error_type=error_type,
-            attempt=attempt
+            theme=theme, content_length=content_length, error_type=error_type, attempt=attempt
         ).to(self.device)
 
         # Generate CSS fix
@@ -296,7 +308,7 @@ class NeuralHealer:
             style_overrides=style_overrides,
             content_modified=False,
             modified_content=None,
-            description=f"Neural-generated CSS: {final_css}"
+            description=f"Neural-generated CSS: {final_css}",
         )
 
     @classmethod
@@ -316,7 +328,7 @@ class NeuralHealer:
         return cls(
             model_path=model_path if model_path.exists() else None,
             vocab_path=vocab_path if vocab_path.exists() else None,
-            fallback_to_heuristic=fallback_to_heuristic
+            fallback_to_heuristic=fallback_to_heuristic,
         )
 
 
@@ -330,14 +342,14 @@ if __name__ == "__main__":
         "approved": False,
         "reason": "Text overflow detected",
         "issues": ["hero_title overflow"],
-        "fix_suggestion": "Reduce font size or add truncation"
+        "fix_suggestion": "Reduce font size or add truncation",
     }
 
     # Content
     content = {
         "hero": {
             "title": "A" * 100,  # Pathological content
-            "subtitle": "This is a test"
+            "subtitle": "This is a test",
         }
     }
 
@@ -346,7 +358,7 @@ if __name__ == "__main__":
         guardian_report=guardian_report,
         content=content,
         attempt=1,
-        context={"theme": "brutalist", "error_type": "overflow"}
+        context={"theme": "brutalist", "error_type": "overflow"},
     )
 
     print(f"\n🧠 Generated fix: {result.style_overrides}")

@@ -117,7 +117,7 @@ class TailwindTokenizer:
         valid_tokens = []
         for token in tokens:
             # Allow: text-sm, text-[0.9rem], -mt-4, hover:text-blue-500
-            if re.match(r'^-?[\w\-\[\].:]+$', token):
+            if re.match(r"^-?[\w\-\[\].:]+$", token):
                 valid_tokens.append(token)
             # else: silently skip invalid tokens (anti-injection)
 
@@ -141,10 +141,7 @@ class TailwindTokenizer:
         tokens = self._split_css_string(css_string)
 
         # Convert to indices (use <UNK> for unknown tokens)
-        indices = [
-            self.token2idx.get(token, self.token2idx[self.UNK_TOKEN])
-            for token in tokens
-        ]
+        indices = [self.token2idx.get(token, self.token2idx[self.UNK_TOKEN]) for token in tokens]
 
         if add_special_tokens:
             indices = [self.token2idx[self.SOS_TOKEN]] + indices + [self.token2idx[self.EOS_TOKEN]]
@@ -203,7 +200,10 @@ class TailwindTokenizer:
         valid = set()
         for token in tokens:
             if token in self.token2idx and token not in {
-                self.PAD_TOKEN, self.SOS_TOKEN, self.EOS_TOKEN, self.UNK_TOKEN
+                self.PAD_TOKEN,
+                self.SOS_TOKEN,
+                self.EOS_TOKEN,
+                self.UNK_TOKEN,
             }:
                 valid.add(token)
         return valid
@@ -216,14 +216,14 @@ class TailwindTokenizer:
         }
 
         vocab_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(vocab_path, 'w') as f:
+        with open(vocab_path, "w") as f:
             json.dump(vocab_data, f, indent=2)
 
         print(f"💾 Vocabulary saved: {vocab_path} ({len(self.token2idx)} tokens)")
 
     def load_vocab(self, vocab_path: Path) -> None:
         """Load vocabulary from JSON file."""
-        with open(vocab_path, 'r') as f:
+        with open(vocab_path, "r") as f:
             vocab_data = json.load(f)
 
         self.token2idx = vocab_data["token2idx"]

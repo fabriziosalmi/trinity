@@ -4,6 +4,7 @@ Rule #7: Explicit error handling with retries
 Rule #28: Structured logging
 Rule #5: Type safety with Pydantic validation
 """
+
 import json
 import logging
 import os
@@ -32,6 +33,7 @@ DEFAULT_MODEL_ID = "qwen2.5-coder-3b-instruct-mlx"
 
 class RepositorySchema(BaseModel):
     """Pydantic schema for repository validation."""
+
     name: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1, max_length=1000)
     url: str = Field(..., min_length=1)
@@ -42,6 +44,7 @@ class RepositorySchema(BaseModel):
 
 class HeroSchema(BaseModel):
     """Pydantic schema for hero section."""
+
     title: str = Field(..., min_length=1, max_length=200)
     subtitle: str = Field(..., min_length=1, max_length=500)
     cta_primary: Optional[Dict[str, str]] = None
@@ -50,6 +53,7 @@ class HeroSchema(BaseModel):
 
 class GeneratedContentSchema(BaseModel):
     """Complete content structure returned by LLM."""
+
     brand_name: str = Field(..., min_length=1, max_length=100)
     tagline: Optional[str] = None
     hero: HeroSchema
@@ -60,6 +64,7 @@ class GeneratedContentSchema(BaseModel):
 
 class ContentEngineError(Exception):
     """Base exception for ContentEngine errors."""
+
     pass
 
 
@@ -82,7 +87,7 @@ class ContentEngine:
         api_key: str = DEFAULT_LM_STUDIO_KEY,
         model_id: str = DEFAULT_MODEL_ID,
         max_retries: int = 3,
-        enable_text_processing: bool = True
+        enable_text_processing: bool = True,
     ):
         """
         Initialize ContentEngine with LM Studio endpoint.
@@ -146,7 +151,7 @@ class ContentEngine:
                     "Focus on: reliability, security, scalability, ROI, compliance. "
                     "Use terms like: 'Enterprise-grade', 'Production-ready', 'Mission-critical', 'Platform'."
                 ),
-                "hero_style": "Professional headline emphasizing expertise and reliability"
+                "hero_style": "Professional headline emphasizing expertise and reliability",
             },
             "brutalist": {
                 "role": "Elite DevOps Engineer / Security Researcher",
@@ -157,7 +162,7 @@ class ContentEngine:
                     "Use terms like: DEPLOY, MONITOR, KILL, DETECT, FILTER, BLOCK, AUTOMATE. "
                     "No marketing fluff. Just what it does."
                 ),
-                "hero_style": "Bold, aggressive headline. Short and technical."
+                "hero_style": "Bold, aggressive headline. Short and technical.",
             },
             "editorial": {
                 "role": "Senior Technology Editor at Wired Magazine",
@@ -167,8 +172,8 @@ class ContentEngine:
                     "Focus on: innovation, impact, creativity, the 'why' behind the tool. "
                     "Use narrative techniques: ask questions, create intrigue, tell a micro-story."
                 ),
-                "hero_style": "Compelling editorial headline that sparks curiosity"
-            }
+                "hero_style": "Compelling editorial headline that sparks curiosity",
+            },
         }
 
         vibe = vibes.get(theme, vibes["enterprise"])
@@ -181,12 +186,12 @@ class ContentEngine:
                 "title": "Generated hero title matching theme personality",
                 "subtitle": "Generated subtitle (2-3 sentences, theme-appropriate)",
                 "cta_primary": {"label": "Primary Action", "url": "https://github.com/username"},
-                "cta_secondary": {"label": "Secondary Action", "url": "#projects"}
+                "cta_secondary": {"label": "Secondary Action", "url": "#projects"},
             },
             "menu_items": [
                 {"label": "Projects", "url": "#projects"},
                 {"label": "About", "url": "#about"},
-                {"label": "Contact", "url": "#contact"}
+                {"label": "Contact", "url": "#contact"},
             ],
             "cta": {"label": "View GitHub", "url": "https://github.com/username"},
             "repos": [
@@ -196,9 +201,9 @@ class ContentEngine:
                     "url": "https://github.com/user/repo",
                     "stars": 123,
                     "language": "Python",
-                    "tags": ["tag1", "tag2"]
+                    "tags": ["tag1", "tag2"],
                 }
-            ]
+            ],
         }
 
         return (
@@ -222,11 +227,11 @@ class ContentEngine:
             Cleaned JSON string
         """
         # Remove markdown code blocks
-        cleaned = re.sub(r'```(?:json)?\s*', '', raw_response)
-        cleaned = re.sub(r'```\s*$', '', cleaned)
+        cleaned = re.sub(r"```(?:json)?\s*", "", raw_response)
+        cleaned = re.sub(r"```\s*$", "", cleaned)
 
         # Remove any text before first { or after last }
-        match = re.search(r'\{.*\}', cleaned, re.DOTALL)
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
         if match:
             cleaned = match.group(0)
 
@@ -273,11 +278,14 @@ class ContentEngine:
                     model=self.model_id,
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"EXTRACT AND REWRITE THIS PORTFOLIO DATA:\n\n{raw_text}"}
+                        {
+                            "role": "user",
+                            "content": f"EXTRACT AND REWRITE THIS PORTFOLIO DATA:\n\n{raw_text}",
+                        },
                     ],
                     temperature=0.7,  # Some creativity for rewriting
                     max_tokens=2500,
-                    timeout=60  # 60s timeout
+                    timeout=60,  # 60s timeout
                 )
 
                 content_str = response.choices[0].message.content.strip()
@@ -309,7 +317,9 @@ class ContentEngine:
                             content_dict = self.text_processor.process_content(content_dict, theme)
                             logger.info("✓ Text transformations applied")
                         except TextProcessorError as e:
-                            logger.warning(f"Text processing failed: {e} (using unprocessed content)")
+                            logger.warning(
+                                f"Text processing failed: {e} (using unprocessed content)"
+                            )
 
                     return content_dict
 
@@ -341,10 +351,7 @@ class ContentEngine:
         )
 
     def generate_content_with_fallback(
-        self,
-        raw_text_path: str,
-        theme: str,
-        fallback_path: Optional[str] = None
+        self, raw_text_path: str, theme: str, fallback_path: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate content with automatic fallback to static data on failure.
@@ -378,10 +385,7 @@ if __name__ == "__main__":
     engine = ContentEngine()
 
     try:
-        content = engine.generate_content(
-            raw_text_path="data/raw_portfolio.txt",
-            theme="brutalist"
-        )
+        content = engine.generate_content(raw_text_path="data/raw_portfolio.txt", theme="brutalist")
 
         print("\n" + "=" * 60)
         print("GENERATED CONTENT")

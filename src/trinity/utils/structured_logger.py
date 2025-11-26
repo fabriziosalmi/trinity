@@ -41,7 +41,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Correlation ID context
-_correlation_id: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
+_correlation_id: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
 
 
 class StructuredFormatter(logging.Formatter):
@@ -78,24 +78,41 @@ class StructuredFormatter(logging.Formatter):
             log_data["exception"] = {
                 "type": record.exc_info[0].__name__,
                 "message": str(record.exc_info[1]),
-                "traceback": self.formatException(record.exc_info)
+                "traceback": self.formatException(record.exc_info),
             }
 
         # Add structured extra fields
-        if self.include_extra and hasattr(record, 'extra_fields'):
+        if self.include_extra and hasattr(record, "extra_fields"):
             log_data.update(record.extra_fields)
 
         # Add any other extra attributes (backward compatibility)
         reserved_attrs = {
-            'name', 'msg', 'args', 'created', 'filename', 'funcName',
-            'levelname', 'levelno', 'lineno', 'module', 'msecs',
-            'message', 'pathname', 'process', 'processName', 'relativeCreated',
-            'thread', 'threadName', 'exc_info', 'exc_text', 'stack_info',
-            'extra_fields'
+            "name",
+            "msg",
+            "args",
+            "created",
+            "filename",
+            "funcName",
+            "levelname",
+            "levelno",
+            "lineno",
+            "module",
+            "msecs",
+            "message",
+            "pathname",
+            "process",
+            "processName",
+            "relativeCreated",
+            "thread",
+            "threadName",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "extra_fields",
         }
 
         for key, value in record.__dict__.items():
-            if key not in reserved_attrs and not key.startswith('_'):
+            if key not in reserved_attrs and not key.startswith("_"):
                 log_data[key] = value
 
         return json.dumps(log_data, default=str)
@@ -110,25 +127,27 @@ class HumanReadableFormatter(logging.Formatter):
 
     # ANSI color codes
     COLORS = {
-        'DEBUG': '\033[36m',     # Cyan
-        'INFO': '\033[32m',      # Green
-        'WARNING': '\033[33m',   # Yellow
-        'ERROR': '\033[31m',     # Red
-        'CRITICAL': '\033[35m',  # Magenta
-        'RESET': '\033[0m'
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[35m",  # Magenta
+        "RESET": "\033[0m",
     }
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record for human reading."""
         # Color by level
-        color = self.COLORS.get(record.levelname, '')
-        reset = self.COLORS['RESET']
+        color = self.COLORS.get(record.levelname, "")
+        reset = self.COLORS["RESET"]
 
         # Timestamp
-        timestamp = datetime.fromtimestamp(record.created).strftime('%H:%M:%S.%f')[:-3]
+        timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S.%f")[:-3]
 
         # Base message
-        message = f"{color}{record.levelname:8}{reset} {timestamp} [{record.name}] {record.getMessage()}"
+        message = (
+            f"{color}{record.levelname:8}{reset} {timestamp} [{record.name}] {record.getMessage()}"
+        )
 
         # Add correlation ID if present
         correlation_id = _correlation_id.get()
@@ -136,7 +155,7 @@ class HumanReadableFormatter(logging.Formatter):
             message += f" {color}[{correlation_id}]{reset}"
 
         # Add structured context
-        if hasattr(record, 'extra_fields') and record.extra_fields:
+        if hasattr(record, "extra_fields") and record.extra_fields:
             context = " | ".join(f"{k}={v}" for k, v in record.extra_fields.items())
             message += f" {color}({context}){reset}"
 
@@ -152,14 +171,15 @@ class StructuredLogger(logging.Logger):
     Extended logger with structured context support.
     """
 
-    def _log_with_context(self, level: int, msg: str, extra: Optional[Dict[str, Any]] = None,
-                          *args, **kwargs):
+    def _log_with_context(
+        self, level: int, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs
+    ):
         """Log with structured extra fields."""
         if extra:
             # Store extra fields in a dedicated attribute
-            if 'extra' not in kwargs:
-                kwargs['extra'] = {}
-            kwargs['extra']['extra_fields'] = extra
+            if "extra" not in kwargs:
+                kwargs["extra"] = {}
+            kwargs["extra"]["extra_fields"] = extra
 
         super()._log(level, msg, args, **kwargs)
 
@@ -238,7 +258,7 @@ def configure_logging(
     level: str = "INFO",
     log_format: str = "human",  # "human" or "json"
     log_file: Optional[Path] = None,
-    config_file: Optional[Path] = None
+    config_file: Optional[Path] = None,
 ):
     """
     Configure logging system.
@@ -259,6 +279,7 @@ def configure_logging(
     # Use config file if provided
     if config_file and config_file.exists():
         import yaml
+
         with open(config_file) as f:
             config = yaml.safe_load(f)
         logging.config.dictConfig(config)
@@ -309,9 +330,7 @@ def setup_default_logging():
     log_file = os.getenv("LOG_FILE")
 
     configure_logging(
-        level=log_level,
-        log_format=log_format,
-        log_file=Path(log_file) if log_file else None
+        level=log_level, log_format=log_format, log_file=Path(log_file) if log_file else None
     )
 
 

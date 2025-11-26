@@ -3,6 +3,7 @@ Performance benchmarks: Sync vs Async ContentEngine
 
 Tests the 6x throughput improvement target for async implementation.
 """
+
 import asyncio
 import time
 from pathlib import Path
@@ -45,7 +46,7 @@ URL: https://github.com/jane/cli-utils
 @pytest.fixture
 def sample_portfolio_file():
     """Create temporary portfolio file."""
-    with NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+    with NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         f.write(SAMPLE_PORTFOLIO)
         temp_path = f.name
 
@@ -63,10 +64,7 @@ class TestAsyncPerformance:
         """Test async single content generation."""
         try:
             async with AsyncContentEngine() as engine:
-                result = await engine.generate_content_async(
-                    sample_portfolio_file,
-                    "brutalist"
-                )
+                result = await engine.generate_content_async(sample_portfolio_file, "brutalist")
 
                 assert result is not None
                 assert "brand_name" in result
@@ -85,8 +83,7 @@ class TestAsyncPerformance:
             async with AsyncContentEngine() as engine:
                 # Generate all themes concurrently
                 tasks = [
-                    engine.generate_content_async(sample_portfolio_file, theme)
-                    for theme in themes
+                    engine.generate_content_async(sample_portfolio_file, theme) for theme in themes
                 ]
 
                 results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -169,14 +166,14 @@ class TestAsyncPerformance:
         print(f"Speedup: {speedup:.1f}x")
 
         # Performance assertions
-        assert async_duration < sync_duration, \
-            f"Async should be faster than sync ({async_duration:.2f}s vs {sync_duration:.2f}s)"
+        assert (
+            async_duration < sync_duration
+        ), f"Async should be faster than sync ({async_duration:.2f}s vs {sync_duration:.2f}s)"
 
         # Conservative target: at least 1.5x speedup with 3 concurrent requests
         # (Ideal would be ~3x, but network/LLM overhead reduces this)
         min_speedup = 1.5
-        assert speedup >= min_speedup, \
-            f"Expected speedup >= {min_speedup}x, got {speedup:.1f}x"
+        assert speedup >= min_speedup, f"Expected speedup >= {min_speedup}x, got {speedup:.1f}x"
 
         print(f"\n✓ Performance test PASSED (speedup: {speedup:.1f}x >= {min_speedup}x)")
 
@@ -185,10 +182,7 @@ class TestAsyncPerformance:
         """Test async error handling with invalid file."""
         async with AsyncContentEngine() as engine:
             with pytest.raises(FileNotFoundError):
-                await engine.generate_content_async(
-                    "/nonexistent/file.txt",
-                    "brutalist"
-                )
+                await engine.generate_content_async("/nonexistent/file.txt", "brutalist")
 
     @pytest.mark.asyncio
     async def test_context_manager_required(self, sample_portfolio_file):
@@ -196,10 +190,7 @@ class TestAsyncPerformance:
         engine = AsyncContentEngine()
 
         with pytest.raises(ContentEngineError, match="not initialized"):
-            await engine.generate_content_async(
-                sample_portfolio_file,
-                "brutalist"
-            )
+            await engine.generate_content_async(sample_portfolio_file, "brutalist")
 
 
 class TestBackwardCompatibility:
@@ -255,13 +246,13 @@ async def test_high_concurrency(sample_portfolio_file):
             print(f"Failures: {failures}/{num_requests}")
 
             # At least 50% should succeed
-            assert successes >= num_requests * 0.5, \
-                f"Too many failures: {failures}/{num_requests}"
+            assert successes >= num_requests * 0.5, f"Too many failures: {failures}/{num_requests}"
 
             # Should achieve at least 5 req/s (vs ~1 req/s sync)
             throughput = num_requests / duration
-            assert throughput >= 5.0, \
-                f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
+            assert (
+                throughput >= 5.0
+            ), f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
 
             print(f"✓ High concurrency test PASSED ({throughput:.1f} req/s)")
 

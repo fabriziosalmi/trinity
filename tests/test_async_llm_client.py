@@ -1,6 +1,7 @@
 """
 Test async LLM client functionality and performance.
 """
+
 import asyncio
 import time
 
@@ -28,8 +29,7 @@ class TestAsyncLLMClient:
         async with AsyncLLMClient(base_url="http://localhost:11434") as client:
             try:
                 response = await client.generate_content(
-                    prompt='Say "Hello" in JSON format: {"message": "..."}',
-                    expect_json=True
+                    prompt='Say "Hello" in JSON format: {"message": "..."}', expect_json=True
                 )
                 assert response
                 assert len(response) > 0
@@ -48,10 +48,7 @@ class TestAsyncLLMClient:
                 ]
 
                 # Send all requests concurrently
-                tasks = [
-                    client.generate_content(prompt, expect_json=True)
-                    for prompt in prompts
-                ]
+                tasks = [client.generate_content(prompt, expect_json=True) for prompt in prompts]
 
                 responses = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -76,10 +73,7 @@ class TestAsyncLLMClient:
             start_sync = time.time()
             with LLMClient(base_url="http://localhost:11434") as client:
                 for i in range(num_requests):
-                    client.generate_content(
-                        prompt=f'Say "Sync {i}" in JSON',
-                        expect_json=True
-                    )
+                    client.generate_content(prompt=f'Say "Sync {i}" in JSON', expect_json=True)
             sync_time = time.time() - start_sync
         except LLMClientError:
             pytest.skip("LLM not available for sync test")
@@ -89,10 +83,7 @@ class TestAsyncLLMClient:
             start_async = time.time()
             async with AsyncLLMClient(base_url="http://localhost:11434") as client:
                 tasks = [
-                    client.generate_content(
-                        prompt=f'Say "Async {i}" in JSON',
-                        expect_json=True
-                    )
+                    client.generate_content(prompt=f'Say "Async {i}" in JSON', expect_json=True)
                     for i in range(num_requests)
                 ]
                 await asyncio.gather(*tasks)
@@ -136,10 +127,7 @@ class TestSyncBackwardCompatibility:
         """Test sync client still functions."""
         with LLMClient(base_url="http://localhost:11434") as client:
             try:
-                response = client.generate_content(
-                    prompt='Say "Hello" in JSON',
-                    expect_json=True
-                )
+                response = client.generate_content(prompt='Say "Hello" in JSON', expect_json=True)
                 assert response
             except LLMClientError as e:
                 pytest.skip(f"LLM not available: {e}")

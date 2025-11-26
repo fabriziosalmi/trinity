@@ -1,6 +1,7 @@
 """
 Unit tests for Circuit Breaker implementation.
 """
+
 import time
 
 import pytest
@@ -34,10 +35,7 @@ class TestCircuitBreakerBasics:
 
     def test_circuit_opens_after_threshold_failures(self):
         """Circuit should open after failure threshold is exceeded."""
-        breaker = CircuitBreaker(
-            failure_threshold=3,
-            expected_exception=ValueError
-        )
+        breaker = CircuitBreaker(failure_threshold=3, expected_exception=ValueError)
 
         # Fail 3 times
         for _ in range(3):
@@ -49,10 +47,7 @@ class TestCircuitBreakerBasics:
 
     def test_open_circuit_blocks_calls(self):
         """Open circuit should block calls immediately."""
-        breaker = CircuitBreaker(
-            failure_threshold=2,
-            expected_exception=ValueError
-        )
+        breaker = CircuitBreaker(failure_threshold=2, expected_exception=ValueError)
 
         # Open the circuit
         for _ in range(2):
@@ -70,7 +65,7 @@ class TestCircuitBreakerBasics:
         breaker = CircuitBreaker(
             failure_threshold=1,
             recovery_timeout=1,  # 1 second
-            expected_exception=ValueError
+            expected_exception=ValueError,
         )
 
         # Open circuit
@@ -91,9 +86,7 @@ class TestCircuitBreakerBasics:
     def test_half_open_failure_reopens_circuit(self):
         """Failure in HALF_OPEN state should reopen circuit."""
         breaker = CircuitBreaker(
-            failure_threshold=1,
-            recovery_timeout=1,
-            expected_exception=ValueError
+            failure_threshold=1, recovery_timeout=1, expected_exception=ValueError
         )
 
         # Open circuit
@@ -121,10 +114,7 @@ class TestCircuitBreakerBasics:
 
     def test_reset_circuit(self):
         """Manual reset should close circuit."""
-        breaker = CircuitBreaker(
-            failure_threshold=1,
-            expected_exception=ValueError
-        )
+        breaker = CircuitBreaker(failure_threshold=1, expected_exception=ValueError)
 
         # Open circuit
         with pytest.raises(ValueError):
@@ -173,10 +163,7 @@ class TestCircuitBreakerStatistics:
 
     def test_get_status(self):
         """get_status should return comprehensive state."""
-        breaker = CircuitBreaker(
-            name="test-breaker",
-            failure_threshold=5
-        )
+        breaker = CircuitBreaker(name="test-breaker", failure_threshold=5)
 
         status = breaker.get_status()
 
@@ -216,11 +203,7 @@ class TestCircuitBreakerRegistry:
     def test_reset_all_breakers(self):
         """Registry should reset all breakers."""
         registry = CircuitBreakerRegistry()
-        breaker = CircuitBreaker(
-            name="breaker",
-            failure_threshold=1,
-            expected_exception=ValueError
-        )
+        breaker = CircuitBreaker(name="breaker", failure_threshold=1, expected_exception=ValueError)
 
         registry.register("breaker", breaker)
 

@@ -74,7 +74,7 @@ class LSTMStyleGenerator(nn.Module):
         self.embedding = nn.Embedding(
             num_embeddings=vocab_size,
             embedding_dim=embedding_dim,
-            padding_idx=0  # <PAD> token
+            padding_idx=0,  # <PAD> token
         )
 
         # Context encoder: maps context to initial hidden state
@@ -83,7 +83,7 @@ class LSTMStyleGenerator(nn.Module):
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, hidden_dim * num_layers),
-            nn.Tanh()
+            nn.Tanh(),
         )
 
         # LSTM decoder: generates token sequence
@@ -92,7 +92,7 @@ class LSTMStyleGenerator(nn.Module):
             hidden_size=hidden_dim,
             num_layers=num_layers,
             dropout=dropout if num_layers > 1 else 0,
-            batch_first=True
+            batch_first=True,
         )
 
         # Output projection: hidden state → vocabulary logits
@@ -104,15 +104,12 @@ class LSTMStyleGenerator(nn.Module):
     def _init_weights(self) -> None:
         """Initialize model weights (Xavier for stability)."""
         for name, param in self.named_parameters():
-            if 'weight' in name and param.dim() > 1:
+            if "weight" in name and param.dim() > 1:
                 nn.init.xavier_uniform_(param)
-            elif 'bias' in name:
+            elif "bias" in name:
                 nn.init.zeros_(param)
 
-    def _init_hidden(
-        self,
-        context: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _init_hidden(self, context: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Initialize LSTM hidden state from context.
 
@@ -135,10 +132,7 @@ class LSTMStyleGenerator(nn.Module):
         return h0, c0
 
     def forward(
-        self,
-        context: torch.Tensor,
-        target_tokens: torch.Tensor,
-        teacher_forcing_ratio: float = 0.5
+        self, context: torch.Tensor, target_tokens: torch.Tensor, teacher_forcing_ratio: float = 0.5
     ) -> torch.Tensor:
         """
         Forward pass for training.
@@ -178,7 +172,7 @@ class LSTMStyleGenerator(nn.Module):
             # Teacher forcing: use ground truth or prediction?
             use_teacher_forcing = torch.rand(1).item() < teacher_forcing_ratio
             if use_teacher_forcing and t < seq_len - 1:
-                decoder_input = target_tokens[:, t+1].unsqueeze(1)
+                decoder_input = target_tokens[:, t + 1].unsqueeze(1)
             else:
                 # Use model's own prediction
                 decoder_input = logits.argmax(dim=-1)
@@ -226,10 +220,7 @@ class LSTMStyleGenerator(nn.Module):
 
         # Start with <SOS> token
         decoder_input = torch.full(
-            (batch_size, 1),
-            fill_value=sos_token_idx,
-            dtype=torch.long,
-            device=device
+            (batch_size, 1), fill_value=sos_token_idx, dtype=torch.long, device=device
         )
 
         # Track generated sequences
@@ -249,7 +240,7 @@ class LSTMStyleGenerator(nn.Module):
             # Top-K filtering (anti-hallucination)
             if top_k is not None:
                 top_k_logits, top_k_indices = torch.topk(logits, top_k, dim=-1)
-                logits = torch.full_like(logits, float('-inf'))
+                logits = torch.full_like(logits, float("-inf"))
                 logits.scatter_(1, top_k_indices, top_k_logits)
 
             # Sample next token
@@ -332,9 +323,9 @@ if __name__ == "__main__":
     # Create model
     model = LSTMStyleGenerator(
         vocab_size=200,  # From tokenizer
-        context_dim=50,   # Theme (one-hot) + content_length + error_type
-        hidden_dim=128,   # Rule #43: keep small
-        num_layers=2
+        context_dim=50,  # Theme (one-hot) + content_length + error_type
+        hidden_dim=128,  # Rule #43: keep small
+        num_layers=2,
     )
 
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
@@ -348,7 +339,7 @@ if __name__ == "__main__":
         context,
         max_length=10,
         temperature=0.8,
-        top_k=20  # Anti-hallucination
+        top_k=20,  # Anti-hallucination
     )
 
     print(f"\nGenerated {len(generated_sequences)} CSS sequences")

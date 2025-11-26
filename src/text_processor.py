@@ -4,6 +4,7 @@ Rule #8: No magic strings - all rules from config
 Rule #14: Single responsibility - only text transformation
 Rule #7: Explicit error handling with graceful degradation
 """
+
 import json
 import logging
 import re
@@ -21,6 +22,7 @@ DEFAULT_RULES_PATH = "config/content_rules.json"
 
 class TextTransformationRules(BaseModel):
     """Pydantic schema for text transformation rules."""
+
     force_uppercase: Optional[bool] = False
     title_case: Optional[bool] = False
     capitalize_first: Optional[bool] = False
@@ -37,6 +39,7 @@ class TextTransformationRules(BaseModel):
 
 class ThemeRules(BaseModel):
     """Complete theme transformation configuration."""
+
     description: str
     transformations: Dict[str, TextTransformationRules]
     field_mapping: Dict[str, str]
@@ -44,6 +47,7 @@ class ThemeRules(BaseModel):
 
 class ContentRulesConfig(BaseModel):
     """Root configuration for all themes."""
+
     brutalist: ThemeRules
     editorial: ThemeRules
     enterprise: ThemeRules
@@ -51,6 +55,7 @@ class ContentRulesConfig(BaseModel):
 
 class TextProcessorError(Exception):
     """Base exception for TextProcessor errors."""
+
     pass
 
 
@@ -121,24 +126,24 @@ class TextProcessor:
         if rules.remove_fluff_words:
             for word in rules.remove_fluff_words:
                 # Case-insensitive word boundary replacement
-                pattern = r'\b' + re.escape(word) + r'\b'
-                result = re.sub(pattern, '', result, flags=re.IGNORECASE)
+                pattern = r"\b" + re.escape(word) + r"\b"
+                result = re.sub(pattern, "", result, flags=re.IGNORECASE)
             # Clean up multiple spaces
-            result = re.sub(r'\s+', ' ', result).strip()
+            result = re.sub(r"\s+", " ", result).strip()
 
         # Replace casual terms (enterprise style)
         if rules.replace_casual_terms:
             for casual, professional in rules.replace_casual_terms.items():
-                pattern = r'\b' + re.escape(casual) + r'\b'
+                pattern = r"\b" + re.escape(casual) + r"\b"
                 result = re.sub(pattern, professional, result, flags=re.IGNORECASE)
 
         # Profanity filter (enterprise style)
         if rules.profanity_filter:
             # Basic profanity list (expand as needed)
-            profanity_list = ['damn', 'hell', 'crap', 'shit', 'fuck']
+            profanity_list = ["damn", "hell", "crap", "shit", "fuck"]
             for word in profanity_list:
-                pattern = r'\b' + re.escape(word) + r'\b'
-                result = re.sub(pattern, '****', result, flags=re.IGNORECASE)
+                pattern = r"\b" + re.escape(word) + r"\b"
+                result = re.sub(pattern, "****", result, flags=re.IGNORECASE)
 
         # Case transformations
         if rules.force_uppercase:
@@ -152,7 +157,7 @@ class TextProcessor:
         # Length constraints
         if rules.max_length and len(result) > rules.max_length:
             # Truncate at word boundary
-            result = result[:rules.max_length].rsplit(' ', 1)[0]
+            result = result[: rules.max_length].rsplit(" ", 1)[0]
             if rules.suffix:
                 result += rules.suffix
 
@@ -163,12 +168,12 @@ class TextProcessor:
         # Punctuation handling
         if rules.strip_extra_punctuation:
             # Remove multiple punctuation marks
-            result = re.sub(r'[.!?]{2,}', '.', result)
-            result = re.sub(r'\.{2,}', '', result)
+            result = re.sub(r"[.!?]{2,}", ".", result)
+            result = re.sub(r"\.{2,}", "", result)
 
         if rules.force_punctuation:
             # Ensure text ends with specified punctuation
-            if result and result[-1] not in '.!?':
+            if result and result[-1] not in ".!?":
                 result += rules.force_punctuation
 
         # Apply suffix
@@ -177,7 +182,9 @@ class TextProcessor:
 
         return result.strip()
 
-    def _get_field_rules(self, field_path: str, theme_rules: ThemeRules) -> Optional[TextTransformationRules]:
+    def _get_field_rules(
+        self, field_path: str, theme_rules: ThemeRules
+    ) -> Optional[TextTransformationRules]:
         """
         Get transformation rules for a specific field path.
 
@@ -195,19 +202,16 @@ class TextProcessor:
 
         # Check pattern match (e.g., repos[].description)
         for pattern, rule_name in theme_rules.field_mapping.items():
-            if '[]' in pattern:
+            if "[]" in pattern:
                 # Convert pattern to regex
-                regex_pattern = pattern.replace('[]', r'\[\d+\]').replace('.', r'\.')
+                regex_pattern = pattern.replace("[]", r"\[\d+\]").replace(".", r"\.")
                 if re.match(regex_pattern, field_path):
                     return theme_rules.transformations.get(rule_name)
 
         return None
 
     def _process_recursive(
-        self,
-        data: Union[Dict, List, str, Any],
-        theme_rules: ThemeRules,
-        current_path: str = ""
+        self, data: Union[Dict, List, str, Any], theme_rules: ThemeRules, current_path: str = ""
     ) -> Union[Dict, List, str, Any]:
         """
         Recursively process data structure applying transformations.
@@ -268,7 +272,7 @@ class TextProcessor:
         # Get theme rules
         theme_rules = getattr(self.config, theme, None)
         if not theme_rules:
-            available = [name for name in dir(self.config) if not name.startswith('_')]
+            available = [name for name in dir(self.config) if not name.startswith("_")]
             raise TextProcessorError(
                 f"Theme '{theme}' not found in rules. Available: {', '.join(available)}"
             )
@@ -299,18 +303,18 @@ if __name__ == "__main__":
         "tagline": "This is a really very quite amazing portfolio site",
         "hero": {
             "title": "welcome to my awesome website",
-            "subtitle": "I build crazy insane software tools that hack your productivity"
+            "subtitle": "I build crazy insane software tools that hack your productivity",
         },
         "repos": [
             {
                 "name": "test-repo",
-                "description": "A very simple tool to kill processes and filter data"
+                "description": "A very simple tool to kill processes and filter data",
             },
             {
                 "name": "another-repo",
-                "description": "Just another project that does cool stuff with AI and machine learning"
-            }
-        ]
+                "description": "Just another project that does cool stuff with AI and machine learning",
+            },
+        ],
     }
 
     processor = TextProcessor()
@@ -319,7 +323,7 @@ if __name__ == "__main__":
     for theme in ["brutalist", "editorial", "enterprise"]:
         print(f"\n{'=' * 60}")
         print(f"THEME: {theme.upper()}")
-        print('=' * 60)
+        print("=" * 60)
 
         result = processor.process_content(test_content.copy(), theme)
 

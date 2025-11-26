@@ -22,6 +22,7 @@ Architecture:
 Rule #7: Graceful degradation if model unavailable (fallback to heuristics).
 Rule #66: Load model once per execution (Singleton pattern).
 """
+
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -108,25 +109,24 @@ class LayoutRiskPredictor:
             if "label_encoders" in self.metadata:
                 for feature, classes in self.metadata["label_encoders"].items():
                     encoder = LabelEncoder()
-                    encoder.classes_ = np.array(classes, dtype=object)  # Convert list to numpy array
+                    encoder.classes_ = np.array(
+                        classes, dtype=object
+                    )  # Convert list to numpy array
                     self.label_encoders[feature] = encoder
 
         self.is_loaded = True
         logger.info("✅ Model loaded successfully")
 
         # Safe F1-Score logging
-        metrics = self.metadata.get('metrics', {})
-        f1_score = metrics.get('f1_score', 'N/A') if isinstance(metrics, dict) else 'N/A'
+        metrics = self.metadata.get("metrics", {})
+        f1_score = metrics.get("f1_score", "N/A") if isinstance(metrics, dict) else "N/A"
         if isinstance(f1_score, (int, float)):
             logger.info(f"   F1-Score: {f1_score:.3f}")
         else:
             logger.info(f"   F1-Score: {f1_score}")
 
     def _prepare_features(
-        self,
-        content: Dict[str, Any],
-        theme: str,
-        css_signature: str = "NONE"
+        self, content: Dict[str, Any], theme: str, css_signature: str = "NONE"
     ) -> Optional[list]:
         """
         Prepare features for prediction (MUST match Trainer preprocessing).
@@ -163,7 +163,9 @@ class LayoutRiskPredictor:
         # Encode strategy
         try:
             if "active_strategy" in self.label_encoders:
-                strategy_encoded = self.label_encoders["active_strategy"].transform([css_signature])[0]
+                strategy_encoded = self.label_encoders["active_strategy"].transform(
+                    [css_signature]
+                )[0]
             else:
                 strategy_encoded = hash(css_signature) % 100
                 logger.warning("⚠️  Strategy encoder not found, using hash fallback")
@@ -174,10 +176,7 @@ class LayoutRiskPredictor:
         return [char_len, word_count, theme_encoded, strategy_encoded]
 
     def predict_risk(
-        self,
-        content: Dict[str, Any],
-        theme: str,
-        css_signature: str = "NONE"
+        self, content: Dict[str, Any], theme: str, css_signature: str = "NONE"
     ) -> Tuple[float, bool]:
         """
         Predict layout breakage risk.
@@ -212,7 +211,9 @@ class LayoutRiskPredictor:
             # Risk = probability of failure (class 0)
             risk_score = proba[0]
 
-            logger.debug(f"🔮 Predicted risk: {risk_score:.2%} (theme={theme}, char_len={features[0]})")
+            logger.debug(
+                f"🔮 Predicted risk: {risk_score:.2%} (theme={theme}, char_len={features[0]})"
+            )
 
             return (risk_score, True)
 
@@ -234,17 +235,17 @@ class LayoutRiskPredictor:
             return {
                 "skip_none_strategy": True,
                 "reason": f"High breakage risk detected ({risk_score:.0%}). Applying pre-emptive healing.",
-                "confidence": risk_score
+                "confidence": risk_score,
             }
         elif risk_score >= 0.5:
             return {
                 "skip_none_strategy": False,
                 "reason": f"Moderate risk ({risk_score:.0%}). Attempting normal build with Guardian enabled.",
-                "confidence": risk_score
+                "confidence": risk_score,
             }
         else:
             return {
                 "skip_none_strategy": False,
                 "reason": f"Low risk ({risk_score:.0%}). Proceeding with standard build.",
-                "confidence": 1 - risk_score
+                "confidence": 1 - risk_score,
             }

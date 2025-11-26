@@ -21,6 +21,7 @@ Usage:
     >>> # Delete API key
     >>> secrets_manager.delete_secret("openai_api_key")
 """
+
 import os
 from enum import Enum
 from pathlib import Path
@@ -34,6 +35,7 @@ logger = get_logger(__name__)
 # Try to import keyring (optional dependency)
 try:
     import keyring
+
     KEYRING_AVAILABLE = True
 except ImportError:
     KEYRING_AVAILABLE = False
@@ -45,9 +47,10 @@ except ImportError:
 
 class SecretBackend(Enum):
     """Secret storage backends."""
-    KEYRING = "keyring"          # System keyring (most secure)
+
+    KEYRING = "keyring"  # System keyring (most secure)
     ENVIRONMENT = "environment"  # Environment variables
-    DOTENV = "dotenv"           # .env file (dev only)
+    DOTENV = "dotenv"  # .env file (dev only)
 
 
 class SecretsManager:
@@ -62,11 +65,7 @@ class SecretsManager:
 
     SERVICE_NAME = "trinity-core"
 
-    def __init__(
-        self,
-        prefer_keyring: bool = True,
-        dotenv_path: Optional[Path] = None
-    ):
+    def __init__(self, prefer_keyring: bool = True, dotenv_path: Optional[Path] = None):
         """
         Initialize secrets manager.
 
@@ -86,10 +85,7 @@ class SecretsManager:
             )
 
     def get_secret(
-        self,
-        key: str,
-        default: Optional[str] = None,
-        required: bool = False
+        self, key: str, default: Optional[str] = None, required: bool = False
     ) -> Optional[str]:
         """
         Retrieve a secret.
@@ -130,9 +126,9 @@ class SecretsManager:
                 with open(self.dotenv_path) as f:
                     for line in f:
                         line = line.strip()
-                        if line and not line.startswith('#'):
-                            if '=' in line:
-                                env_key, env_value = line.split('=', 1)
+                        if line and not line.startswith("#"):
+                            if "=" in line:
+                                env_key, env_value = line.split("=", 1)
                                 if env_key.strip() == key_normalized:
                                     logger.debug(f"Retrieved secret '{key}' from .env")
                                     return env_value.strip().strip('"').strip("'")
@@ -146,8 +142,8 @@ class SecretsManager:
                 details={
                     "key": key,
                     "keyring_available": KEYRING_AVAILABLE,
-                    "dotenv_exists": self.dotenv_path.exists()
-                }
+                    "dotenv_exists": self.dotenv_path.exists(),
+                },
             )
 
         logger.debug(f"Secret '{key}' not found, using default")
@@ -175,7 +171,7 @@ class SecretsManager:
                 logger.error(f"Failed to store '{key}' in keyring: {e}")
                 raise ConfigurationError(
                     f"Failed to store secret '{key}' in keyring",
-                    details={"key": key, "error": str(e)}
+                    details={"key": key, "error": str(e)},
                 )
         else:
             logger.warning(
@@ -184,10 +180,7 @@ class SecretsManager:
             )
             raise ConfigurationError(
                 f"Cannot store secret '{key}' without keyring support",
-                details={
-                    "key": key,
-                    "suggestion": f"export {key_normalized}='your_value'"
-                }
+                details={"key": key, "suggestion": f"export {key_normalized}='your_value'"},
             )
 
     def delete_secret(self, key: str) -> bool:
@@ -254,7 +247,7 @@ class SecretsManager:
             "keyring_preferred": self.prefer_keyring,
             "dotenv_path": str(self.dotenv_path),
             "dotenv_exists": self.dotenv_path.exists(),
-            **backend_details
+            **backend_details,
         }
 
 

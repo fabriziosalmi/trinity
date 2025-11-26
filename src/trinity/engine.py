@@ -4,6 +4,7 @@ Trinity Engine - Main Orchestrator
 Coordinates the build → audit → heal → retry cycle.
 Implements the Self-Healing Loop with intelligent fix strategies.
 """
+
 import os
 from enum import Enum
 from pathlib import Path
@@ -27,6 +28,7 @@ logger = get_logger(__name__)
 
 class BuildStatus(str, Enum):
     """Build result status."""
+
     SUCCESS = "success"
     FAILED = "failed"
     REJECTED = "rejected"
@@ -99,7 +101,7 @@ class TrinityEngine:
             self._guardian = TrinityGuardian(
                 enable_vision_ai=self.config.guardian_vision_ai,
                 viewport_width=self.config.guardian_viewport_width,
-                viewport_height=self.config.guardian_viewport_height
+                viewport_height=self.config.guardian_viewport_height,
             )
             logger.info("🛡️  Guardian loaded")
         return self._guardian
@@ -132,7 +134,9 @@ class TrinityEngine:
         Returns:
             BuildResult with status and metadata
         """
-        logger.info(f"🔨 Starting build: {output_filename} (theme={theme}, guardian={enable_guardian})")
+        logger.info(
+            f"🔨 Starting build: {output_filename} (theme={theme}, guardian={enable_guardian})"
+        )
 
         # Validate content upfront
         try:
@@ -140,9 +144,7 @@ class TrinityEngine:
         except ValidationError as e:
             logger.error(f"Content validation failed: {e}")
             return BuildResult(
-                status=BuildStatus.FAILED,
-                theme=theme,
-                errors=[f"Content validation failed: {e}"]
+                status=BuildStatus.FAILED, theme=theme, errors=[f"Content validation failed: {e}"]
             )
 
         # Self-Healing Loop
@@ -155,9 +157,7 @@ class TrinityEngine:
         # 🔮 Phase 3: Pre-Cognition (predict risk before first render)
         if enable_guardian and self.config.predictive_enabled:
             risk_score, prediction_available = self.predictor.predict_risk(
-                content=content,
-                theme=theme,
-                css_signature="NONE"
+                content=content, theme=theme, css_signature="NONE"
             )
 
             if prediction_available:
@@ -179,12 +179,12 @@ class TrinityEngine:
                         "status": "fail",
                         "reason": "ML predicted high risk",
                         "issues": ["Predicted layout overflow"],
-                        "fix_suggestion": "break-word"
+                        "fix_suggestion": "break-word",
                     }
                     preemptive_fix = self.healer.heal_layout(
                         guardian_report=mock_report,
                         content=content,
-                        attempt=1  # Force CSS_BREAK_WORD
+                        attempt=1,  # Force CSS_BREAK_WORD
                     )
                     if preemptive_fix.style_overrides:
                         current_style_overrides = preemptive_fix.style_overrides
@@ -200,7 +200,7 @@ class TrinityEngine:
                     content=current_content,
                     theme=theme,
                     output_filename=output_filename,
-                    style_overrides=current_style_overrides if current_style_overrides else None
+                    style_overrides=current_style_overrides if current_style_overrides else None,
                 )
                 logger.info(f"✓ Page built: {output_path}")
             except Exception as e:
@@ -209,7 +209,7 @@ class TrinityEngine:
                     status=BuildStatus.FAILED,
                     theme=theme,
                     attempts=attempt,
-                    errors=[f"Build error: {e}"]
+                    errors=[f"Build error: {e}"],
                 )
 
             # 2. If Guardian disabled, return success
@@ -224,14 +224,14 @@ class TrinityEngine:
                     strategy=current_strategy,
                     guardian_verdict=True,  # Assume success (no Guardian = pass)
                     guardian_reason="",
-                    css_overrides=current_style_overrides if current_style_overrides else None
+                    css_overrides=current_style_overrides if current_style_overrides else None,
                 )
 
                 return BuildResult(
                     status=BuildStatus.SUCCESS,
                     output_path=output_path,
                     theme=theme,
-                    attempts=attempt
+                    attempts=attempt,
                 )
 
             # 3. Guardian Audit
@@ -251,7 +251,7 @@ class TrinityEngine:
                         strategy=current_strategy,
                         guardian_verdict=True,
                         guardian_reason="",
-                        css_overrides=current_style_overrides if current_style_overrides else None
+                        css_overrides=current_style_overrides if current_style_overrides else None,
                     )
 
                     return BuildResult(
@@ -260,7 +260,7 @@ class TrinityEngine:
                         theme=theme,
                         attempts=attempt,
                         guardian_report=report,
-                        fixes_applied=fixes_applied
+                        fixes_applied=fixes_applied,
                     )
                 else:
                     logger.warning(f"❌ Guardian REJECTED: {report['reason']}")
@@ -273,7 +273,7 @@ class TrinityEngine:
                         strategy=current_strategy,
                         guardian_verdict=False,
                         guardian_reason=report["reason"],
-                        css_overrides=current_style_overrides if current_style_overrides else None
+                        css_overrides=current_style_overrides if current_style_overrides else None,
                     )
 
                     # Check if we can retry
@@ -290,27 +290,24 @@ class TrinityEngine:
                             elif "layout" in report.get("reason", "").lower():
                                 error_type = "layout_shift"
 
-                            healing_context = {
-                                "theme": theme,
-                                "error_type": error_type
-                            }
+                            healing_context = {"theme": theme, "error_type": error_type}
 
                             healing_result = self.healer.heal_layout(
                                 guardian_report=report,
                                 content=current_content,
                                 attempt=attempt,
-                                context=healing_context
+                                context=healing_context,
                             )
                         else:
                             # SmartHealer (heuristic)
                             healing_result = self.healer.heal_layout(
-                                guardian_report=report,
-                                content=current_content,
-                                attempt=attempt
+                                guardian_report=report, content=current_content, attempt=attempt
                             )
 
                         healer_type = "🧠 Neural" if self.use_neural_healer else "🚑 Smart"
-                        logger.info(f"{healer_type} Applied strategy: {healing_result.strategy.value}")
+                        logger.info(
+                            f"{healer_type} Applied strategy: {healing_result.strategy.value}"
+                        )
                         logger.info(f"   {healing_result.description}")
 
                         # Update state based on healing result
@@ -322,10 +319,10 @@ class TrinityEngine:
                             # CSS strategy: update style overrides
                             current_style_overrides.update(healing_result.style_overrides)
 
-                        fixes_applied.append(
-                            f"{healing_result.strategy.value} (attempt {attempt})"
+                        fixes_applied.append(f"{healing_result.strategy.value} (attempt {attempt})")
+                        logger.info(
+                            f"   → Retrying build with {healing_result.strategy.value}...\n"
                         )
-                        logger.info(f"   → Retrying build with {healing_result.strategy.value}...\n")
                     else:
                         # Max retries reached
                         logger.error("💀 Max retries reached. Build failed.")
@@ -342,7 +339,7 @@ class TrinityEngine:
                             attempts=attempt,
                             guardian_report=report,
                             fixes_applied=fixes_applied,
-                            errors=[f"Guardian rejected after {attempt} attempts"]
+                            errors=[f"Guardian rejected after {attempt} attempts"],
                         )
 
             except Exception as e:
@@ -353,7 +350,7 @@ class TrinityEngine:
                     theme=theme,
                     attempts=attempt,
                     fixes_applied=fixes_applied,
-                    errors=[f"Guardian error: {e}"]
+                    errors=[f"Guardian error: {e}"],
                 )
 
         # Should not reach here
@@ -361,7 +358,7 @@ class TrinityEngine:
             status=BuildStatus.FAILED,
             theme=theme,
             attempts=attempt,
-            errors=["Unknown error in build loop"]
+            errors=["Unknown error in build loop"],
         )
 
     def build_with_llm(
@@ -388,15 +385,14 @@ class TrinityEngine:
         try:
             # Initialize ContentEngine
             engine = ContentEngine(
-                lm_studio_url=self.config.lm_studio_url,
-                timeout=self.config.llm_timeout
+                lm_studio_url=self.config.lm_studio_url, timeout=self.config.llm_timeout
             )
 
             # Generate content
             content = engine.generate_content_with_fallback(
                 raw_text_path=raw_text_path,
                 theme=theme,
-                fallback_path=str(self.config.data_dir / "input_content.json")
+                fallback_path=str(self.config.data_dir / "input_content.json"),
             )
 
             # Build with self-healing
@@ -404,7 +400,7 @@ class TrinityEngine:
                 content=content,
                 theme=theme,
                 output_filename=output_filename,
-                enable_guardian=enable_guardian
+                enable_guardian=enable_guardian,
             )
 
         except Exception as e:
@@ -413,5 +409,5 @@ class TrinityEngine:
                 status=BuildStatus.FAILED,
                 theme=theme,
                 attempts=0,
-                errors=[f"LLM generation failed: {e}"]
+                errors=[f"LLM generation failed: {e}"],
             )

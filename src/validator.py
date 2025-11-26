@@ -4,6 +4,7 @@ Rule #95: Validate accessibility and HTML standards
 Rule #5: Type safety with Pydantic
 Rule #28: Structured logging
 """
+
 import json
 import logging
 from pathlib import Path
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class ValidationError(Exception):
     """Base exception for validation errors."""
+
     pass
 
 
@@ -53,6 +55,7 @@ class ContentValidator:
         Raises:
             ValidationError: If schema validation fails
         """
+
         # Define schema using Pydantic
         class MenuItem(BaseModel):
             label: str = Field(..., min_length=1, max_length=100)
@@ -75,12 +78,12 @@ class ContentValidator:
             tags: List[str] = Field(default_factory=list)
             stars: Optional[int] = Field(None, ge=0)
 
-            @field_validator('url')
+            @field_validator("url")
             @classmethod
             def validate_url(cls, v: str) -> str:
                 """Basic URL validation."""
-                if not (v.startswith('http://') or v.startswith('https://') or v.startswith('#')):
-                    raise ValueError('URL must start with http://, https://, or #')
+                if not (v.startswith("http://") or v.startswith("https://") or v.startswith("#")):
+                    raise ValueError("URL must start with http://, https://, or #")
                 return v
 
         class ContentSchema(BaseModel):
@@ -117,11 +120,11 @@ class ContentValidator:
             raise FileNotFoundError(f"HTML file not found: {html_path}")
 
         try:
-            with open(html_path, 'r', encoding='utf-8') as f:
+            with open(html_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
 
             # Parse with html5lib (strict validator)
-            document = parse(html_content, treebuilder='etree', namespaceHTMLElements=False)
+            document = parse(html_content, treebuilder="etree", namespaceHTMLElements=False)
 
             if document is None:
                 raise ValidationError("Failed to parse HTML document")
@@ -147,18 +150,20 @@ class ContentValidator:
         warnings = []
 
         try:
-            with open(html_path, 'r', encoding='utf-8') as f:
+            with open(html_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
 
             # Check for common issues
-            if '<img' in html_content and 'alt=' not in html_content:
+            if "<img" in html_content and "alt=" not in html_content:
                 warnings.append("Missing alt attributes on images")
 
-            if '<nav' not in html_content and '<header' not in html_content:
+            if "<nav" not in html_content and "<header" not in html_content:
                 warnings.append("Missing semantic navigation elements")
 
-            if 'aria-label' not in html_content and 'role=' not in html_content:
-                warnings.append("No ARIA attributes found (consider adding for better accessibility)")
+            if "aria-label" not in html_content and "role=" not in html_content:
+                warnings.append(
+                    "No ARIA attributes found (consider adding for better accessibility)"
+                )
 
             if not warnings:
                 logger.info(f"✓ Accessibility checks passed: {html_path.name}")
@@ -188,7 +193,7 @@ class ContentValidator:
             ValidationError: If keys are missing
         """
         try:
-            with open(theme_path, 'r', encoding='utf-8') as f:
+            with open(theme_path, "r", encoding="utf-8") as f:
                 themes = json.load(f)
 
             errors = []
@@ -221,9 +226,9 @@ if __name__ == "__main__":
                 "description": "A test repository",
                 "url": "https://github.com/test/repo",
                 "tags": ["test"],
-                "stars": 10
+                "stars": 10,
             }
-        ]
+        ],
     }
 
     validator = ContentValidator()
@@ -234,15 +239,10 @@ if __name__ == "__main__":
         print(f"✗ Validation failed: {e}")
 
     # Test theme validation
-    required_theme_keys = [
-        "nav_bg", "text_primary", "text_secondary", "nav_link", "btn_primary"
-    ]
+    required_theme_keys = ["nav_bg", "text_primary", "text_secondary", "nav_link", "btn_primary"]
 
     try:
-        validator.validate_theme_config(
-            Path("config/themes.json"),
-            required_theme_keys
-        )
+        validator.validate_theme_config(Path("config/themes.json"), required_theme_keys)
         print("✓ Theme validation passed")
     except ValidationError as e:
         print(f"✗ Theme validation failed: {e}")

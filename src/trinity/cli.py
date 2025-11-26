@@ -3,6 +3,7 @@ Trinity Core CLI - Modern Command Line Interface
 
 Built with Typer for excellent UX and type safety.
 """
+
 import json
 import re
 from pathlib import Path
@@ -52,53 +53,29 @@ def main(
 @app.command()
 def build(
     theme: str = typer.Option(
-        "enterprise",
-        "--theme",
-        "-t",
-        help="Theme to apply (enterprise, brutalist, editorial)"
+        "enterprise", "--theme", "-t", help="Theme to apply (enterprise, brutalist, editorial)"
     ),
     input_file: Optional[Path] = typer.Option(
-        None,
-        "--input",
-        "-i",
-        help="Input JSON content file"
+        None, "--input", "-i", help="Input JSON content file"
     ),
-    output: str = typer.Option(
-        "index.html",
-        "--output",
-        "-o",
-        help="Output filename"
-    ),
-    use_llm: bool = typer.Option(
-        False,
-        "--llm",
-        help="Generate content with LLM from raw text"
-    ),
+    output: str = typer.Option("index.html", "--output", "-o", help="Output filename"),
+    use_llm: bool = typer.Option(False, "--llm", help="Generate content with LLM from raw text"),
     guardian: bool = typer.Option(
-        False,
-        "--guardian",
-        "-g",
-        help="Enable Guardian QA (with self-healing)"
+        False, "--guardian", "-g", help="Enable Guardian QA (with self-healing)"
     ),
     guardian_vision: bool = typer.Option(
-        False,
-        "--vision",
-        help="Enable Vision AI analysis (requires Qwen VL)"
+        False, "--vision", help="Enable Vision AI analysis (requires Qwen VL)"
     ),
     predictive: bool = typer.Option(
-        True,
-        "--predictive/--no-predictive",
-        help="Enable ML predictive healing (Phase 3)"
+        True, "--predictive/--no-predictive", help="Enable ML predictive healing (Phase 3)"
     ),
     neural: bool = typer.Option(
         False,
         "--neural/--no-neural",
-        help="Use Neural Healer (v0.5.0 LSTM-based) instead of heuristic SmartHealer"
+        help="Use Neural Healer (v0.5.0 LSTM-based) instead of heuristic SmartHealer",
     ),
     log_level: str = typer.Option(
-        "INFO",
-        "--log-level",
-        help="Logging level (DEBUG, INFO, WARNING, ERROR)"
+        "INFO", "--log-level", help="Logging level (DEBUG, INFO, WARNING, ERROR)"
     ),
 ):
     """
@@ -140,7 +117,7 @@ def build(
                 raw_text_path=str(input_file),
                 theme=theme,
                 output_filename=output,
-                enable_guardian=guardian
+                enable_guardian=guardian,
             )
         else:
             # Static content build
@@ -152,10 +129,7 @@ def build(
                 content = _get_mock_content()
 
             result = engine.build_with_self_healing(
-                content=content,
-                theme=theme,
-                output_filename=output,
-                enable_guardian=guardian
+                content=content, theme=theme, output_filename=output, enable_guardian=guardian
             )
 
         # Display result
@@ -177,21 +151,14 @@ def build(
 
 @app.command()
 def chaos(
-    theme: str = typer.Option(
-        "brutalist",
-        "--theme",
-        "-t",
-        help="Theme to test"
-    ),
+    theme: str = typer.Option("brutalist", "--theme", "-t", help="Theme to test"),
     guardian: bool = typer.Option(
-        True,
-        "--guardian/--no-guardian",
-        help="Enable/disable Guardian (enabled by default)"
+        True, "--guardian/--no-guardian", help="Enable/disable Guardian (enabled by default)"
     ),
     neural: bool = typer.Option(
         False,
         "--neural/--no-neural",
-        help="Use Neural Healer (v0.5.0 LSTM-based) for chaos testing"
+        help="Use Neural Healer (v0.5.0 LSTM-based) for chaos testing",
     ),
 ):
     """
@@ -222,7 +189,7 @@ def chaos(
         content=content,
         theme=theme,
         output_filename=f"index_{theme}_chaos.html",
-        enable_guardian=guardian
+        enable_guardian=guardian,
     )
 
     _display_build_result(result)
@@ -248,7 +215,7 @@ def themes():
     theme_descriptions = {
         "enterprise": "Professional corporate design with clean gradients",
         "brutalist": "Raw, bold, unapologetically direct aesthetic",
-        "editorial": "Magazine-inspired layout with elegant typography"
+        "editorial": "Magazine-inspired layout with elegant typography",
     }
 
     for theme in config.available_themes:
@@ -295,7 +262,7 @@ def _display_build_result(result):
         BuildStatus.SUCCESS: "green",
         BuildStatus.FAILED: "red",
         BuildStatus.REJECTED: "yellow",
-        BuildStatus.PARTIAL: "yellow"
+        BuildStatus.PARTIAL: "yellow",
     }
     color = status_colors.get(result.status, "white")
     console.print(f"Status: [{color}]{result.status.value.upper()}[/{color}]")
@@ -345,14 +312,14 @@ def _get_mock_content():
         "menu_items": [
             {"label": "Features", "url": "#features"},
             {"label": "Examples", "url": "#examples"},
-            {"label": "Docs", "url": "#docs"}
+            {"label": "Docs", "url": "#docs"},
         ],
         "cta": {"label": "Get Started", "url": "#start"},
         "hero": {
             "title": "Build Static Sites at Light Speed",
             "subtitle": "Combine human-crafted HTML with LLM-generated content.",
             "cta_primary": {"label": "View Demo", "url": "#demo"},
-            "cta_secondary": {"label": "Read Docs", "url": "#docs"}
+            "cta_secondary": {"label": "Read Docs", "url": "#docs"},
         },
         "repos": [
             {
@@ -360,19 +327,16 @@ def _get_mock_content():
                 "description": "Python static site generator with LLM integration.",
                 "url": "https://github.com/example/trinity-core",
                 "tags": ["Python", "Jinja2", "LLM"],
-                "stars": 127
+                "stars": 127,
             }
-        ]
+        ],
     }
 
 
 @app.command()
 def mine_stats(
     dataset: Optional[Path] = typer.Option(
-        None,
-        "--dataset",
-        "-d",
-        help="Path to training dataset CSV"
+        None, "--dataset", "-d", help="Path to training dataset CSV"
     ),
 ):
     """
@@ -419,27 +383,18 @@ def mine_stats(
 
 @app.command()
 def mine_generate(
-    count: int = typer.Option(
-        100,
-        "--count",
-        "-n",
-        help="Number of random builds to generate"
-    ),
+    count: int = typer.Option(100, "--count", "-n", help="Number of random builds to generate"),
     themes: Optional[str] = typer.Option(
-        None,
-        "--themes",
-        help="Comma-separated theme list (default: all themes)"
+        None, "--themes", help="Comma-separated theme list (default: all themes)"
     ),
     enable_guardian: bool = typer.Option(
-        True,
-        "--guardian/--no-guardian",
-        help="Enable Guardian QA for each build"
+        True, "--guardian/--no-guardian", help="Enable Guardian QA for each build"
     ),
     pathological_ratio: float = typer.Option(
         0.2,
         "--pathological",
         "-p",
-        help="Ratio of pathological content (0.0 = all safe, 1.0 = all chaos)"
+        help="Ratio of pathological content (0.0 = all safe, 1.0 = all chaos)",
     ),
 ):
     """
@@ -504,10 +459,10 @@ def mine_generate(
             current_len = 0
             while current_len < length:
                 word_len = random.randint(3, 10)
-                word = ''.join(random.choices(string.ascii_lowercase, k=word_len))
+                word = "".join(random.choices(string.ascii_lowercase, k=word_len))
                 words.append(word)
                 current_len += word_len + 1  # +1 for space
-            return ' '.join(words)[:length]
+            return " ".join(words)[:length]
 
     # Generate random builds
     successful = 0
@@ -521,20 +476,17 @@ def mine_generate(
             content = {
                 "brand_name": random_text(5, 30),
                 "tagline": random_text(20, 80),
-                "hero": {
-                    "title": random_text(10, 100),
-                    "subtitle": random_text(30, 150)
-                },
+                "hero": {"title": random_text(10, 100), "subtitle": random_text(30, 150)},
                 "repos": [
                     {
                         "name": random_text(5, 25),
                         "description": random_text(50, 200),
                         "url": "https://example.com",
                         "tags": ["tag1", "tag2"],
-                        "stars": random.randint(0, 1000)
+                        "stars": random.randint(0, 1000),
                     }
                     for _ in range(random.randint(1, 3))
-                ]
+                ],
             }
 
             # Build with engine (will auto-log to dataset)
@@ -542,7 +494,7 @@ def mine_generate(
                 content=content,
                 theme=theme,
                 output_filename=f"mine_{i}.html",
-                enable_guardian=enable_guardian
+                enable_guardian=enable_guardian,
             )
 
             if result.status == BuildStatus.SUCCESS:
@@ -551,8 +503,7 @@ def mine_generate(
                 failed += 1
 
             # Update status
-            status.update(f"[bold green]Mining: {i+1}/{count} "
-                         f"(✅ {successful} | ❌ {failed})")
+            status.update(f"[bold green]Mining: {i+1}/{count} " f"(✅ {successful} | ❌ {failed})")
 
     console.print("\n[bold green]✅ Mining complete![/bold green]")
     console.print(f"   Successful: {successful}")
@@ -568,16 +519,10 @@ def mine_generate(
 @app.command()
 def train(
     dataset: str = typer.Option(
-        "data/training_dataset.csv",
-        "--dataset-path",
-        "-d",
-        help="Path to training dataset CSV"
+        "data/training_dataset.csv", "--dataset-path", "-d", help="Path to training dataset CSV"
     ),
     output_dir: str = typer.Option(
-        "models/",
-        "--output-dir",
-        "-o",
-        help="Directory to save trained model"
+        "models/", "--output-dir", "-o", help="Directory to save trained model"
     ),
 ):
     """
@@ -624,7 +569,9 @@ def train(
     # Validate inputs
     if not dataset_path.exists():
         console.print(f"[red]Error:[/red] Dataset not found: {dataset_path}")
-        console.print("\nRun [cyan]trinity mine-generate --count 1000[/cyan] to collect training data.")
+        console.print(
+            "\nRun [cyan]trinity mine-generate --count 1000[/cyan] to collect training data."
+        )
         raise typer.Exit(code=1)
 
     # Create output directory
@@ -637,8 +584,7 @@ def train(
         with console.status("[bold green]Training model...") as status:
             # Train from CSV
             model, metrics = trainer.train_from_csv(
-                csv_path=str(dataset_path),
-                output_dir=str(output_path)
+                csv_path=str(dataset_path), output_dir=str(output_path)
             )
 
             status.update("[bold green]Training complete!")
@@ -656,8 +602,8 @@ def train(
         table.add_row("Precision", f"{metrics['precision']:.3f}", "≥ 0.500")
         table.add_row("Recall", f"{metrics['recall']:.3f}", "≥ 0.500")
         table.add_row("Accuracy", f"{metrics['accuracy']:.3f}", "—")
-        table.add_row("Train Samples", str(metrics['train_samples']), "—")
-        table.add_row("Test Samples", str(metrics['test_samples']), "—")
+        table.add_row("Train Samples", str(metrics["train_samples"]), "—")
+        table.add_row("Test Samples", str(metrics["test_samples"]), "—")
 
         console.print(table)
 
@@ -666,7 +612,9 @@ def train(
         console.print(f"  📦 {metrics['model_path']}")
         console.print(f"  📄 {metrics['model_path'].replace('.pkl', '_metadata.json')}")
 
-        console.print("\n[dim]Next: Integrate model into TrinityEngine for real-time predictions[/dim]\n")
+        console.print(
+            "\n[dim]Next: Integrate model into TrinityEngine for real-time predictions[/dim]\n"
+        )
 
     except InsufficientDataError as e:
         console.print("\n[red]❌ Insufficient Data[/red]\n")
@@ -687,8 +635,12 @@ def train(
         console.print("\n[red]❌ Model Quality Gate Failed[/red]\n")
         console.print(f"{e}")
         console.print("\n[yellow]Solution:[/yellow] Collect more diverse training data:")
-        console.print("  1. Generate 5000+ samples: [cyan]trinity mine-generate --count 5000[/cyan]")
-        console.print("  2. Use multiple themes: [cyan]--themes enterprise,brutalist,editorial[/cyan]")
+        console.print(
+            "  1. Generate 5000+ samples: [cyan]trinity mine-generate --count 5000[/cyan]"
+        )
+        console.print(
+            "  2. Use multiple themes: [cyan]--themes enterprise,brutalist,editorial[/cyan]"
+        )
         console.print("  3. Enable Guardian: [cyan]--guardian[/cyan] (creates negative samples)\n")
         raise typer.Exit(code=1)
 
@@ -700,20 +652,11 @@ def train(
 @app.command()
 def theme_gen(
     description: str = typer.Argument(
-        ...,
-        help="Visual style description (e.g., 'Cyberpunk neon city', 'Victorian steampunk')"
+        ..., help="Visual style description (e.g., 'Cyberpunk neon city', 'Victorian steampunk')"
     ),
-    name: str = typer.Option(
-        ...,
-        "--name",
-        "-n",
-        help="Theme name (lowercase, no spaces)"
-    ),
+    name: str = typer.Option(..., "--name", "-n", help="Theme name (lowercase, no spaces)"),
     output: str = typer.Option(
-        "config/themes.json",
-        "--output",
-        "-o",
-        help="Path to themes.json file"
+        "config/themes.json", "--output", "-o", help="Path to themes.json file"
     ),
 ):
     """
@@ -740,8 +683,10 @@ def theme_gen(
     from trinity.components.brain import ContentEngine, ContentEngineError
 
     # Validate theme name (lowercase, alphanumeric + underscores)
-    if not re.match(r'^[a-z0-9_]+$', name):
-        console.print("[red]Error:[/red] Theme name must be lowercase alphanumeric with underscores only")
+    if not re.match(r"^[a-z0-9_]+$", name):
+        console.print(
+            "[red]Error:[/red] Theme name must be lowercase alphanumeric with underscores only"
+        )
         console.print(f"[yellow]Invalid:[/yellow] '{name}'")
         console.print("[green]Valid:[/green] 'cyberpunk', 'retro_80s', 'dark_mode'")
         raise typer.Exit(code=1)
@@ -773,7 +718,11 @@ def theme_gen(
         preview_keys = ["nav_bg", "hero_title", "card_bg", "btn_primary"]
         for key in preview_keys:
             if key in theme_config:
-                value = theme_config[key][:60] + "..." if len(theme_config[key]) > 60 else theme_config[key]
+                value = (
+                    theme_config[key][:60] + "..."
+                    if len(theme_config[key]) > 60
+                    else theme_config[key]
+                )
                 console.print(f"  [cyan]{key}:[/cyan] {value}")
 
     except ContentEngineError as e:

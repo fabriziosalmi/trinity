@@ -4,6 +4,7 @@ Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
+
 import asyncio
 import json
 import sys
@@ -21,6 +22,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from trinity.utils.cache_manager import CacheManager
+
     CACHE_AVAILABLE = True
 except ImportError:
     CACHE_AVAILABLE = False
@@ -28,9 +30,11 @@ except ImportError:
 
 try:
     from trinity.utils.structured_logger import get_logger
+
     logger = get_logger(__name__)
 except ImportError:
     import logging
+
     logger = logging.getLogger(__name__)
 
 # Rule #8: Constants
@@ -41,12 +45,14 @@ DEFAULT_TEMPERATURE = 0.2
 
 class LLMProvider(Enum):
     """Supported LLM providers."""
+
     OLLAMA = "ollama"
     LLAMACPP = "llamacpp"
 
 
 class LLMClientError(Exception):
     """Base exception for LLM client errors."""
+
     pass
 
 
@@ -70,7 +76,7 @@ class LLMClient:
         base_url: str = "http://localhost:11434",
         timeout: int = DEFAULT_TIMEOUT,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        temperature: float = DEFAULT_TEMPERATURE
+        temperature: float = DEFAULT_TEMPERATURE,
     ):
         """
         Initialize LLM client.
@@ -85,53 +91,46 @@ class LLMClient:
         """
         self.provider = LLMProvider(provider)
         self.model_name = model_name
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
 
         # HTTP client with sensible defaults
-        self.client = httpx.Client(
-            timeout=httpx.Timeout(timeout),
-            follow_redirects=True
+        self.client = httpx.Client(timeout=httpx.Timeout(timeout), follow_redirects=True)
+
+        logger.info(
+            "llm_client_initialized",
+            extra={
+                "provider": provider,
+                "model": model_name,
+                "base_url": base_url,
+                "timeout": timeout,
+                "max_retries": max_retries,
+                "temperature": temperature,
+            },
         )
 
-        logger.info("llm_client_initialized", extra={
-            "provider": provider,
-            "model": model_name,
-            "base_url": base_url,
-            "timeout": timeout,
-            "max_retries": max_retries,
-            "temperature": temperature
-        })
-
-    def _build_request_payload(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def _build_request_payload(
+        self, prompt: str, system_prompt: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Build provider-specific request payload."""
         if self.provider == LLMProvider.OLLAMA:
             payload = {
                 "model": self.model_name,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": self.temperature
-                }
+                "options": {"temperature": self.temperature},
             }
             if system_prompt:
                 payload["system"] = system_prompt
             return payload
         else:
             # LlamaCPP format
-            return {
-                "prompt": prompt,
-                "temperature": self.temperature,
-                "max_tokens": 2000
-            }
+            return {"prompt": prompt, "temperature": self.temperature, "max_tokens": 2000}
 
     def generate_content(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        expect_json: bool = True
+        self, prompt: str, system_prompt: Optional[str] = None, expect_json: bool = True
     ) -> str:
         """
         Send prompt to LLM and return response.
@@ -147,7 +146,11 @@ class LLMClient:
         Raises:
             LLMClientError: On connection/timeout/parse errors
         """
-        endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
+        endpoint = (
+            f"{self.base_url}/api/generate"
+            if self.provider == LLMProvider.OLLAMA
+            else f"{self.base_url}/completion"
+        )
         payload = self._build_request_payload(prompt, system_prompt)
 
         # Rule #7: Retry logic with exponential backoff
@@ -156,9 +159,7 @@ class LLMClient:
                 logger.info(f"LLM request (attempt {attempt}/{self.max_retries})")
 
                 response = self.client.post(
-                    endpoint,
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
+                    endpoint, json=payload, headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
 
@@ -188,7 +189,9 @@ class LLMClient:
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
-                    raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
+                    raise LLMClientError(
+                        f"LLM request failed after {self.max_retries} attempts: {e}"
+                    )
 
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
@@ -201,7 +204,7 @@ class LLMClient:
 
             # Exponential backoff
             if attempt < self.max_retries:
-                sleep_time = 2 ** attempt
+                sleep_time = 2**attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 time.sleep(sleep_time)
 
@@ -246,7 +249,7 @@ class AsyncLLMClient:
         max_retries: int = DEFAULT_MAX_RETRIES,
         temperature: float = DEFAULT_TEMPERATURE,
         enable_cache: bool = True,
-        cache_ttl: int = 3600
+        cache_ttl: int = 3600,
     ):
         """
         Initialize async LLM client.
@@ -263,7 +266,7 @@ class AsyncLLMClient:
         """
         self.provider = LLMProvider(provider)
         self.model_name = model_name
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
@@ -281,34 +284,30 @@ class AsyncLLMClient:
             f"(cache={'enabled' if enable_cache else 'disabled'})"
         )
 
-    def _build_request_payload(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def _build_request_payload(
+        self, prompt: str, system_prompt: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Build provider-specific request payload."""
         if self.provider == LLMProvider.OLLAMA:
             payload = {
                 "model": self.model_name,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": self.temperature
-                }
+                "options": {"temperature": self.temperature},
             }
             if system_prompt:
                 payload["system"] = system_prompt
             return payload
         else:
             # LlamaCPP format
-            return {
-                "prompt": prompt,
-                "temperature": self.temperature,
-                "max_tokens": 2000
-            }
+            return {"prompt": prompt, "temperature": self.temperature, "max_tokens": 2000}
 
     async def generate_content(
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
         expect_json: bool = True,
-        use_cache: bool = True
+        use_cache: bool = True,
     ) -> str:
         """
         Send prompt to LLM asynchronously and return response.
@@ -331,16 +330,14 @@ class AsyncLLMClient:
             LLMClientError: On connection/timeout/parse errors
         """
         if self.client is None:
-            raise LLMClientError("Client not initialized. Use 'async with AsyncLLMClient()' context manager.")
+            raise LLMClientError(
+                "Client not initialized. Use 'async with AsyncLLMClient()' context manager."
+            )
 
         # Check cache first (if enabled)
         cache_key = None
         if self.enable_cache and use_cache and self.cache and CACHE_AVAILABLE:
-            cache_key = CacheManager.hash_prompt(
-                prompt,
-                system_prompt or "",
-                self.model_name
-            )
+            cache_key = CacheManager.hash_prompt(prompt, system_prompt or "", self.model_name)
 
             cached_response = await self.cache.get_async(cache_key)
             if cached_response:
@@ -350,7 +347,11 @@ class AsyncLLMClient:
             logger.debug(f"Cache MISS: {cache_key[:16]}...")
 
         # Generate fresh response
-        endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
+        endpoint = (
+            f"{self.base_url}/api/generate"
+            if self.provider == LLMProvider.OLLAMA
+            else f"{self.base_url}/completion"
+        )
         payload = self._build_request_payload(prompt, system_prompt)
 
         # Rule #7: Retry logic with exponential backoff
@@ -359,9 +360,7 @@ class AsyncLLMClient:
                 logger.info(f"Async LLM request (attempt {attempt}/{self.max_retries})")
 
                 response = await self.client.post(
-                    endpoint,
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
+                    endpoint, json=payload, headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
 
@@ -391,7 +390,9 @@ class AsyncLLMClient:
                 if self.enable_cache and use_cache and cache_key and self.cache and CACHE_AVAILABLE:
                     try:
                         await self.cache.set_async(cache_key, text, self.cache_ttl)
-                        logger.debug(f"Cached response: {cache_key[:16]}... (ttl={self.cache_ttl}s)")
+                        logger.debug(
+                            f"Cached response: {cache_key[:16]}... (ttl={self.cache_ttl}s)"
+                        )
                     except Exception as e:
                         logger.warning(f"Failed to cache response: {e}")
 
@@ -400,7 +401,9 @@ class AsyncLLMClient:
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
-                    raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
+                    raise LLMClientError(
+                        f"LLM request failed after {self.max_retries} attempts: {e}"
+                    )
 
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
@@ -413,7 +416,7 @@ class AsyncLLMClient:
 
             # Exponential backoff (async)
             if attempt < self.max_retries:
-                sleep_time = 2 ** attempt
+                sleep_time = 2**attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 await asyncio.sleep(sleep_time)
 
@@ -424,7 +427,7 @@ class AsyncLLMClient:
         self.client = httpx.AsyncClient(
             timeout=httpx.Timeout(self.timeout),
             follow_redirects=True,
-            http2=True  # Enable HTTP/2 for better performance
+            http2=True,  # Enable HTTP/2 for better performance
         )
 
         # Initialize cache (if enabled and available)
@@ -434,7 +437,7 @@ class AsyncLLMClient:
                     enable_redis=False,  # Redis optional, will auto-enable if available
                     cache_dir=".cache/llm",
                     memory_size=100,
-                    filesystem_size_mb=100
+                    filesystem_size_mb=100,
                 )
                 await self.cache.__aenter__()
                 logger.info("Cache initialized")
@@ -464,8 +467,8 @@ if __name__ == "__main__":
     with LLMClient() as client:
         try:
             response = client.generate_content(
-                prompt="Say 'Hello from Trinity' in JSON format: {\"message\": \"...\"}",
-                expect_json=True
+                prompt='Say \'Hello from Trinity\' in JSON format: {"message": "..."}',
+                expect_json=True,
             )
             print(f"Sync Response: {response}")
         except LLMClientError as e:
@@ -473,13 +476,14 @@ if __name__ == "__main__":
 
     # Async demo
     print("\n=== Async LLM Client Demo ===")
+
     async def async_demo():
         async with AsyncLLMClient() as client:
             try:
                 # Single request
                 response = await client.generate_content(
-                    prompt="Say 'Hello from Async Trinity' in JSON format: {\"message\": \"...\"}",
-                    expect_json=True
+                    prompt='Say \'Hello from Async Trinity\' in JSON format: {"message": "..."}',
+                    expect_json=True,
                 )
                 print(f"Async Response: {response}")
 
@@ -491,10 +495,7 @@ if __name__ == "__main__":
                     "Say 'Request 3' in JSON",
                 ]
 
-                tasks = [
-                    client.generate_content(prompt, expect_json=True)
-                    for prompt in prompts
-                ]
+                tasks = [client.generate_content(prompt, expect_json=True) for prompt in prompts]
 
                 responses = await asyncio.gather(*tasks)
                 for i, resp in enumerate(responses, 1):
@@ -504,4 +505,3 @@ if __name__ == "__main__":
                 print(f"Async Error: {e}")
 
     asyncio.run(async_demo())
-

@@ -4,6 +4,7 @@ Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
+
 import json
 import logging
 import time
@@ -25,12 +26,14 @@ DEFAULT_TEMPERATURE = 0.2
 
 class LLMProvider(Enum):
     """Supported LLM providers."""
+
     OLLAMA = "ollama"
     LLAMACPP = "llamacpp"
 
 
 class LLMClientError(Exception):
     """Base exception for LLM client errors."""
+
     pass
 
 
@@ -54,7 +57,7 @@ class LLMClient:
         base_url: str = "http://localhost:11434",
         timeout: int = DEFAULT_TIMEOUT,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        temperature: float = DEFAULT_TEMPERATURE
+        temperature: float = DEFAULT_TEMPERATURE,
     ):
         """
         Initialize LLM client.
@@ -69,48 +72,36 @@ class LLMClient:
         """
         self.provider = LLMProvider(provider)
         self.model_name = model_name
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
 
         # HTTP client with sensible defaults
-        self.client = httpx.Client(
-            timeout=httpx.Timeout(timeout),
-            follow_redirects=True
-        )
+        self.client = httpx.Client(timeout=httpx.Timeout(timeout), follow_redirects=True)
 
-        logger.info(
-            f"LLMClient initialized: {provider}/{model_name} @ {base_url}"
-        )
+        logger.info(f"LLMClient initialized: {provider}/{model_name} @ {base_url}")
 
-    def _build_request_payload(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+    def _build_request_payload(
+        self, prompt: str, system_prompt: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Build provider-specific request payload."""
         if self.provider == LLMProvider.OLLAMA:
             payload = {
                 "model": self.model_name,
                 "prompt": prompt,
                 "stream": False,
-                "options": {
-                    "temperature": self.temperature
-                }
+                "options": {"temperature": self.temperature},
             }
             if system_prompt:
                 payload["system"] = system_prompt
             return payload
         else:
             # LlamaCPP format
-            return {
-                "prompt": prompt,
-                "temperature": self.temperature,
-                "max_tokens": 2000
-            }
+            return {"prompt": prompt, "temperature": self.temperature, "max_tokens": 2000}
 
     def generate_content(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        expect_json: bool = True
+        self, prompt: str, system_prompt: Optional[str] = None, expect_json: bool = True
     ) -> str:
         """
         Send prompt to LLM and return response.
@@ -126,7 +117,11 @@ class LLMClient:
         Raises:
             LLMClientError: On connection/timeout/parse errors
         """
-        endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
+        endpoint = (
+            f"{self.base_url}/api/generate"
+            if self.provider == LLMProvider.OLLAMA
+            else f"{self.base_url}/completion"
+        )
         payload = self._build_request_payload(prompt, system_prompt)
 
         # Rule #7: Retry logic with exponential backoff
@@ -135,9 +130,7 @@ class LLMClient:
                 logger.info(f"LLM request (attempt {attempt}/{self.max_retries})")
 
                 response = self.client.post(
-                    endpoint,
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
+                    endpoint, json=payload, headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
 
@@ -167,7 +160,9 @@ class LLMClient:
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
-                    raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
+                    raise LLMClientError(
+                        f"LLM request failed after {self.max_retries} attempts: {e}"
+                    )
 
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
@@ -180,7 +175,7 @@ class LLMClient:
 
             # Exponential backoff
             if attempt < self.max_retries:
-                sleep_time = 2 ** attempt
+                sleep_time = 2**attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 time.sleep(sleep_time)
 
@@ -203,8 +198,8 @@ if __name__ == "__main__":
     with LLMClient() as client:
         try:
             response = client.generate_content(
-                prompt="Say 'Hello from Trinity' in JSON format: {\"message\": \"...\"}",
-                expect_json=True
+                prompt='Say \'Hello from Trinity\' in JSON format: {"message": "..."}',
+                expect_json=True,
             )
             print(f"Response: {response}")
         except LLMClientError as e:

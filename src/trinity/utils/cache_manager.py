@@ -20,6 +20,7 @@ Usage:
     result = await llm.generate(prompt)
     await cache.set_async("prompt_hash", result, ttl=3600)
 """
+
 import asyncio
 import hashlib
 import json
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 # Optional Redis support
 try:
     import redis.asyncio as aioredis
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -44,6 +46,7 @@ except ImportError:
 @dataclass
 class CacheEntry:
     """Cache entry with metadata."""
+
     key: str
     value: str
     created_at: float
@@ -62,7 +65,7 @@ class CacheEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'CacheEntry':
+    def from_dict(cls, data: dict) -> "CacheEntry":
         """Create from dictionary."""
         return cls(**data)
 
@@ -127,7 +130,7 @@ class MemoryCache:
             value=value,
             created_at=time.time(),
             ttl=ttl,
-            size_bytes=len(value.encode('utf-8'))
+            size_bytes=len(value.encode("utf-8")),
         )
 
         self._cache[key] = entry
@@ -157,7 +160,7 @@ class MemoryCache:
             "max_size": self.max_size,
             "total_hits": total_hits,
             "total_size_bytes": total_size,
-            "utilization": len(self._cache) / self.max_size if self.max_size > 0 else 0
+            "utilization": len(self._cache) / self.max_size if self.max_size > 0 else 0,
         }
 
 
@@ -200,7 +203,7 @@ class FilesystemCache:
             return None
 
         try:
-            data = json.loads(cache_path.read_text(encoding='utf-8'))
+            data = json.loads(cache_path.read_text(encoding="utf-8"))
             entry = CacheEntry.from_dict(data)
 
             if entry.is_expired():
@@ -229,14 +232,11 @@ class FilesystemCache:
             value=value,
             created_at=time.time(),
             ttl=ttl,
-            size_bytes=len(value.encode('utf-8'))
+            size_bytes=len(value.encode("utf-8")),
         )
 
         try:
-            cache_path.write_text(
-                json.dumps(entry.to_dict(), indent=2),
-                encoding='utf-8'
-            )
+            cache_path.write_text(json.dumps(entry.to_dict(), indent=2), encoding="utf-8")
             logger.debug(f"FilesystemCache SET: {key[:16]}... (size={entry.size_bytes}B)")
 
             # Check total cache size and cleanup if needed
@@ -257,10 +257,7 @@ class FilesystemCache:
             return
 
         # Sort files by modification time (oldest first)
-        files = sorted(
-            self.cache_dir.rglob("*.json"),
-            key=lambda f: f.stat().st_mtime
-        )
+        files = sorted(self.cache_dir.rglob("*.json"), key=lambda f: f.stat().st_mtime)
 
         # Remove oldest files until under limit
         removed = 0
@@ -298,7 +295,7 @@ class FilesystemCache:
             "total_size_bytes": total_size,
             "max_size_bytes": self.max_size_bytes,
             "utilization": total_size / self.max_size_bytes if self.max_size_bytes > 0 else 0,
-            "cache_dir": str(self.cache_dir)
+            "cache_dir": str(self.cache_dir),
         }
 
 
@@ -311,9 +308,7 @@ class RedisCache:
     """
 
     def __init__(
-        self,
-        redis_url: str = "redis://localhost:6379/0",
-        key_prefix: str = "trinity:llm:"
+        self, redis_url: str = "redis://localhost:6379/0", key_prefix: str = "trinity:llm:"
     ):
         """
         Initialize Redis cache.
@@ -338,10 +333,7 @@ class RedisCache:
 
         try:
             self.client = await aioredis.from_url(
-                self.redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-                max_connections=10
+                self.redis_url, encoding="utf-8", decode_responses=True, max_connections=10
             )
             await self.client.ping()
             logger.info("RedisCache connected")
@@ -400,7 +392,7 @@ class RedisCache:
                 value=value,
                 created_at=time.time(),
                 ttl=ttl,
-                size_bytes=len(value.encode('utf-8'))
+                size_bytes=len(value.encode("utf-8")),
             )
 
             redis_key = self._make_key(key)
@@ -459,7 +451,7 @@ class RedisCache:
                 "tier": "redis",
                 "entries": len(keys),
                 "redis_memory_used": info.get("used_memory", 0),
-                "redis_url": self.redis_url.split("@")[-1]  # Hide credentials
+                "redis_url": self.redis_url.split("@")[-1],  # Hide credentials
             }
 
         except Exception as e:
@@ -487,7 +479,7 @@ class CacheManager:
         redis_url: str = "redis://localhost:6379/0",
         cache_dir: str = ".cache/llm",
         memory_size: int = 100,
-        filesystem_size_mb: int = 100
+        filesystem_size_mb: int = 100,
     ):
         """
         Initialize cache manager.
@@ -530,7 +522,7 @@ class CacheManager:
             SHA256 hash as cache key
         """
         content = f"{model}:{system_prompt}:{prompt}"
-        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     async def get_async(self, key: str) -> Optional[str]:
         """
@@ -603,21 +595,14 @@ class CacheManager:
             except Exception as e:
                 logger.error(f"Redis clear failed: {e}")
 
-        result = {
-            "memory": memory_count,
-            "filesystem": filesystem_count,
-            "redis": redis_count
-        }
+        result = {"memory": memory_count, "filesystem": filesystem_count, "redis": redis_count}
 
         logger.info(f"CacheManager CLEAR: {result}")
         return result
 
     async def get_stats_async(self) -> dict:
         """Get statistics from all cache tiers."""
-        stats = {
-            "memory": self.memory.get_stats(),
-            "filesystem": self.filesystem.get_stats()
-        }
+        stats = {"memory": self.memory.get_stats(), "filesystem": self.filesystem.get_stats()}
 
         if self.redis:
             try:
@@ -641,6 +626,7 @@ class CacheManager:
 
 # Demo
 if __name__ == "__main__":
+
     async def demo():
         print("=== CacheManager Demo ===\n")
 

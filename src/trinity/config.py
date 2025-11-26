@@ -4,6 +4,7 @@ Trinity Configuration System
 Uses Pydantic Settings for type-safe configuration management.
 Loads from config/settings.yaml and environment variables.
 """
+
 from pathlib import Path
 from typing import List, Optional
 
@@ -24,7 +25,7 @@ class TrinityConfig(BaseSettings):
     # Paths
     project_root: Path = Field(
         default_factory=lambda: Path(__file__).parent.parent.parent,
-        description="Project root directory"
+        description="Project root directory",
     )
     template_dir: Path = Field(default=Path("library"), description="Templates directory")
     output_dir: Path = Field(default=Path("output"), description="Output directory")
@@ -33,8 +34,7 @@ class TrinityConfig(BaseSettings):
 
     # LLM Configuration
     lm_studio_url: str = Field(
-        default="http://localhost:1234/v1",
-        description="LM Studio API endpoint"
+        default="http://localhost:1234/v1", description="LM Studio API endpoint"
     )
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
     llm_timeout: int = Field(default=120, description="LLM request timeout (seconds)")
@@ -44,7 +44,9 @@ class TrinityConfig(BaseSettings):
     guardian_enabled: bool = Field(default=False, description="Enable Guardian QA")
     guardian_vision_ai: bool = Field(default=False, description="Enable Vision AI analysis")
     guardian_viewport_width: int = Field(default=1920, description="Viewport width for screenshots")
-    guardian_viewport_height: int = Field(default=1080, description="Viewport height for screenshots")
+    guardian_viewport_height: int = Field(
+        default=1080, description="Viewport height for screenshots"
+    )
     guardian_timeout: int = Field(default=30, description="Guardian timeout (seconds)")
 
     # ML Prediction Configuration (Phase 3)
@@ -60,8 +62,7 @@ class TrinityConfig(BaseSettings):
     # Build Configuration
     default_theme: str = Field(default="enterprise", description="Default theme name")
     available_themes: List[str] = Field(
-        default=["enterprise", "brutalist", "editorial"],
-        description="Available theme names"
+        default=["enterprise", "brutalist", "editorial"], description="Available theme names"
     )
 
     # Logging

@@ -13,6 +13,7 @@ References:
 - https://martinfowler.com/bliki/CircuitBreaker.html
 - https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker
 """
+
 import logging
 import time
 from dataclasses import dataclass
@@ -31,14 +32,16 @@ logger = logging.getLogger(__name__)
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failure threshold exceeded
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failure threshold exceeded
     HALF_OPEN = "half_open"  # Testing recovery
 
 
 @dataclass
 class CircuitBreakerStats:
     """Statistics for circuit breaker monitoring."""
+
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
@@ -87,7 +90,7 @@ class CircuitBreaker:
         recovery_timeout: int = 60,
         expected_exception: Type[Exception] = Exception,
         half_open_max_attempts: int = 1,
-        name: Optional[str] = None
+        name: Optional[str] = None,
     ):
         """
         Initialize circuit breaker.
@@ -218,8 +221,8 @@ class CircuitBreaker:
                     "stats": {
                         "total_requests": self._stats.total_requests,
                         "failure_rate": self._stats.failure_rate,
-                    }
-                }
+                    },
+                },
             )
 
         if self._state == CircuitState.HALF_OPEN:
@@ -231,7 +234,7 @@ class CircuitBreaker:
                         "circuit_name": self.name,
                         "state": self._state.value,
                         "attempts": self._half_open_attempts,
-                    }
+                    },
                 )
             self._half_open_attempts += 1
 
@@ -260,6 +263,7 @@ class CircuitBreaker:
             def call_external_service():
                 ...
         """
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return self._call(func, *args, **kwargs)
@@ -304,8 +308,8 @@ class CircuitBreaker:
                     "stats": {
                         "total_requests": self._stats.total_requests,
                         "failure_rate": self._stats.failure_rate,
-                    }
-                }
+                    },
+                },
             )
 
         if self._state == CircuitState.HALF_OPEN:
@@ -317,7 +321,7 @@ class CircuitBreaker:
                         "circuit_name": self.name,
                         "state": self._state.value,
                         "attempts": self._half_open_attempts,
-                    }
+                    },
                 )
             self._half_open_attempts += 1
 
@@ -366,9 +370,13 @@ class CircuitBreaker:
                 "failure_rate": self._stats.failure_rate,
                 "success_rate": self._stats.success_rate,
                 "state_changes": self._stats.state_changes,
-                "last_failure": self._stats.last_failure_time.isoformat() if self._stats.last_failure_time else None,
-                "last_success": self._stats.last_success_time.isoformat() if self._stats.last_success_time else None,
-            }
+                "last_failure": self._stats.last_failure_time.isoformat()
+                if self._stats.last_failure_time
+                else None,
+                "last_success": self._stats.last_success_time.isoformat()
+                if self._stats.last_success_time
+                else None,
+            },
         }
 
 
@@ -398,10 +406,7 @@ class CircuitBreakerRegistry:
 
     def get_all_status(self) -> dict[str, dict]:
         """Get status of all registered circuit breakers."""
-        return {
-            name: breaker.get_status()
-            for name, breaker in self._breakers.items()
-        }
+        return {name: breaker.get_status() for name, breaker in self._breakers.items()}
 
     def reset_all(self) -> None:
         """Reset all circuit breakers."""

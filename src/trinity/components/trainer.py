@@ -75,22 +75,27 @@ MIN_RECALL = 0.5
 
 # === CUSTOM EXCEPTIONS ===
 
+
 class InsufficientDataError(Exception):
     """Raised when dataset has too few samples for reliable training."""
+
     pass
 
 
 class ModelPerformanceError(Exception):
     """Raised when trained model fails to meet minimum quality thresholds."""
+
     pass
 
 
 class DataValidationError(Exception):
     """Raised when dataset has invalid or missing critical features."""
+
     pass
 
 
 # === MAIN TRAINER CLASS ===
+
 
 class LayoutRiskTrainer:
     """
@@ -113,7 +118,7 @@ class LayoutRiskTrainer:
         self,
         random_seed: int = RANDOM_SEED,
         test_size: float = TEST_SIZE,
-        min_samples: int = MIN_SAMPLES_FOR_TRAINING
+        min_samples: int = MIN_SAMPLES_FOR_TRAINING,
     ):
         """
         Initialize trainer with hyperparameters.
@@ -178,8 +183,11 @@ class LayoutRiskTrainer:
 
         # Validate critical columns exist
         required_columns = [
-            'theme', 'input_char_len', 'input_word_count',
-            'active_strategy', 'is_valid'
+            "theme",
+            "input_char_len",
+            "input_word_count",
+            "active_strategy",
+            "is_valid",
         ]
         missing = set(required_columns) - set(df.columns)
         if missing:
@@ -210,16 +218,16 @@ class LayoutRiskTrainer:
 
         # Remove rows with missing critical values
         before_count = len(df)
-        df = df.dropna(subset=['theme', 'input_char_len', 'is_valid'])
+        df = df.dropna(subset=["theme", "input_char_len", "is_valid"])
         after_count = len(df)
 
         if before_count > after_count:
             logger.warning(f"   Dropped {before_count - after_count} rows with missing values")
 
         # Convert numeric columns
-        df['input_char_len'] = pd.to_numeric(df['input_char_len'], errors='coerce')
-        df['input_word_count'] = pd.to_numeric(df['input_word_count'], errors='coerce')
-        df['is_valid'] = pd.to_numeric(df['is_valid'], errors='coerce').astype(int)
+        df["input_char_len"] = pd.to_numeric(df["input_char_len"], errors="coerce")
+        df["input_word_count"] = pd.to_numeric(df["input_word_count"], errors="coerce")
+        df["is_valid"] = pd.to_numeric(df["is_valid"], errors="coerce").astype(int)
 
         # Remove duplicates
         before_count = len(df)
@@ -230,18 +238,15 @@ class LayoutRiskTrainer:
             logger.info(f"   Removed {before_count - after_count} duplicate rows")
 
         # Validate label values (must be 0 or 1)
-        invalid_labels = df[~df['is_valid'].isin([0, 1])]
+        invalid_labels = df[~df["is_valid"].isin([0, 1])]
         if len(invalid_labels) > 0:
             logger.warning(f"   Found {len(invalid_labels)} rows with invalid labels, removing...")
-            df = df[df['is_valid'].isin([0, 1])]
+            df = df[df["is_valid"].isin([0, 1])]
 
         logger.info(f"   Clean dataset: {len(df)} samples")
         return df
 
-    def _prepare_features_and_labels(
-        self,
-        df: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.Series]:
+    def _prepare_features_and_labels(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
         """
         Extract features (X) and labels (y) from cleaned DataFrame.
 
@@ -263,8 +268,8 @@ class LayoutRiskTrainer:
         logger.info("🔧 Preparing features and labels...")
 
         # Define feature columns
-        numeric_features = ['input_char_len', 'input_word_count']
-        categorical_features = ['theme', 'active_strategy']
+        numeric_features = ["input_char_len", "input_word_count"]
+        categorical_features = ["theme", "active_strategy"]
 
         # Encode categorical features
         df_encoded = df.copy()
@@ -277,23 +282,17 @@ class LayoutRiskTrainer:
                 logger.debug(f"   Encoded '{col}': {len(encoder.classes_)} unique values")
 
         # Select feature columns
-        self.feature_columns = numeric_features + [
-            f"{col}_encoded" for col in categorical_features
-        ]
+        self.feature_columns = numeric_features + [f"{col}_encoded" for col in categorical_features]
 
         X = df_encoded[self.feature_columns]
-        y = df_encoded['is_valid']
+        y = df_encoded["is_valid"]
 
         logger.info(f"   Features: {self.feature_columns}")
         logger.info(f"   Label distribution: {y.value_counts().to_dict()}")
 
         return X, y
 
-    def train_model(
-        self,
-        X: pd.DataFrame,
-        y: pd.Series
-    ) -> RandomForestClassifier:
+    def train_model(self, X: pd.DataFrame, y: pd.Series) -> RandomForestClassifier:
         """
         Train Random Forest classifier.
 
@@ -310,10 +309,11 @@ class LayoutRiskTrainer:
 
         # Train/test split
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y,
+            X,
+            y,
             test_size=self.test_size,
             random_state=self.random_seed,
-            stratify=y  # Preserve label distribution
+            stratify=y,  # Preserve label distribution
         )
 
         logger.info(f"   Train samples: {len(X_train)}")
@@ -327,7 +327,7 @@ class LayoutRiskTrainer:
             min_samples_leaf=RF_MIN_SAMPLES_LEAF,
             random_state=self.random_seed,
             n_jobs=-1,  # Use all CPU cores
-            verbose=0
+            verbose=0,
         )
 
         # Train
@@ -345,10 +345,7 @@ class LayoutRiskTrainer:
         return model
 
     def _evaluate_model(
-        self,
-        model: RandomForestClassifier,
-        X_test: pd.DataFrame,
-        y_test: pd.Series
+        self, model: RandomForestClassifier, X_test: pd.DataFrame, y_test: pd.Series
     ) -> Dict[str, float]:
         """
         Evaluate model performance and validate against thresholds.
@@ -379,8 +376,8 @@ class LayoutRiskTrainer:
             "recall": round(recall, 4),
             "f1_score": round(f1, 4),
             "accuracy": round(accuracy, 4),
-            "train_samples": len(self._X_train) if hasattr(self, '_X_train') else 0,
-            "test_samples": len(y_test)
+            "train_samples": len(self._X_train) if hasattr(self, "_X_train") else 0,
+            "test_samples": len(y_test),
         }
 
         # Log metrics
@@ -395,11 +392,11 @@ class LayoutRiskTrainer:
 
         # Quality gates (Rule #7: Don't silently accept bad models)
         failures = []
-        if metrics['f1_score'] < MIN_F1_SCORE:
+        if metrics["f1_score"] < MIN_F1_SCORE:
             failures.append(f"F1-Score {metrics['f1_score']:.4f} < {MIN_F1_SCORE}")
-        if metrics['precision'] < MIN_PRECISION:
+        if metrics["precision"] < MIN_PRECISION:
             failures.append(f"Precision {metrics['precision']:.4f} < {MIN_PRECISION}")
-        if metrics['recall'] < MIN_RECALL:
+        if metrics["recall"] < MIN_RECALL:
             failures.append(f"Recall {metrics['recall']:.4f} < {MIN_RECALL}")
 
         if failures:
@@ -414,7 +411,7 @@ class LayoutRiskTrainer:
         self,
         model: RandomForestClassifier,
         output_dir: Path,
-        metrics: Optional[Dict[str, float]] = None
+        metrics: Optional[Dict[str, float]] = None,
     ) -> Path:
         """
         Save trained model with versioning and metadata.
@@ -452,20 +449,19 @@ class LayoutRiskTrainer:
                 "max_depth": RF_MAX_DEPTH,
                 "min_samples_split": RF_MIN_SAMPLES_SPLIT,
                 "min_samples_leaf": RF_MIN_SAMPLES_LEAF,
-                "random_seed": self.random_seed
+                "random_seed": self.random_seed,
             },
             "feature_columns": self.feature_columns,
             "label_encoders": {
-                col: encoder.classes_.tolist()
-                for col, encoder in self.label_encoders.items()
-            }
+                col: encoder.classes_.tolist() for col, encoder in self.label_encoders.items()
+            },
         }
 
         if metrics:
             metadata["metrics"] = metrics
 
         metadata_path = output_dir / f"layout_risk_predictor_{timestamp}_metadata.json"
-        with open(metadata_path, 'w') as f:
+        with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)
 
         logger.info(f"   Metadata saved: {metadata_path}")
@@ -474,9 +470,7 @@ class LayoutRiskTrainer:
         return model_path
 
     def train_from_csv(
-        self,
-        csv_path: str,
-        output_dir: str
+        self, csv_path: str, output_dir: str
     ) -> Tuple[RandomForestClassifier, Dict[str, float]]:
         """
         End-to-end training pipeline from CSV to saved model.

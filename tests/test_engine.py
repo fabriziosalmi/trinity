@@ -30,18 +30,15 @@ def mock_content():
     return {
         "brand_name": "Test Portfolio",
         "tagline": "Test tagline",
-        "hero": {
-            "title": "Test Hero Title",
-            "subtitle": "Test subtitle"
-        },
-        "repos": []
+        "hero": {"title": "Test Hero Title", "subtitle": "Test subtitle"},
+        "repos": [],
     }
 
 
 class TestSelfHealingLoop:
     """Test self-healing loop orchestration"""
 
-    @patch('trinity.components.guardian.TrinityGuardian')
+    @patch("trinity.components.guardian.TrinityGuardian")
     def test_successful_build_first_attempt(self, mock_guardian_class, engine, mock_content):
         """Test build succeeds on first attempt (no healing needed)"""
         # Mock Guardian to approve immediately
@@ -50,7 +47,7 @@ class TestSelfHealingLoop:
             "approved": True,
             "reason": "Layout perfect",
             "issues": [],
-            "fix_suggestion": ""
+            "fix_suggestion": "",
         }
         mock_guardian_class.return_value = mock_guardian
 
@@ -58,7 +55,7 @@ class TestSelfHealingLoop:
             mock_content,
             theme="enterprise",
             output_filename="test_output.html",
-            enable_guardian=True
+            enable_guardian=True,
         )
 
         assert isinstance(result, BuildResult)
@@ -71,9 +68,19 @@ class TestSelfHealingLoop:
         # Mock Guardian to reject first 2 attempts, approve on 3rd
         mock_guardian = Mock()
         mock_guardian.audit_layout.side_effect = [
-            {"approved": False, "reason": "Overflow", "issues": ["overflow"], "fix_suggestion": "break-word"},
-            {"approved": False, "reason": "Still overflow", "issues": ["overflow"], "fix_suggestion": "shrink"},
-            {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""}
+            {
+                "approved": False,
+                "reason": "Overflow",
+                "issues": ["overflow"],
+                "fix_suggestion": "break-word",
+            },
+            {
+                "approved": False,
+                "reason": "Still overflow",
+                "issues": ["overflow"],
+                "fix_suggestion": "shrink",
+            },
+            {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""},
         ]
         engine._guardian = mock_guardian  # Inject mock directly
 
@@ -87,15 +94,15 @@ class TestSelfHealingLoop:
                 style_overrides={"heading_primary": "break-all"},
                 content_modified=False,
                 modified_content=None,
-                description="Applied break-word"
+                description="Applied break-word",
             ),
             HealingResult(
                 strategy=HealingStrategy.FONT_SHRINK,
                 style_overrides={"heading_primary": "text-3xl"},
                 content_modified=False,
                 modified_content=None,
-                description="Reduced font size"
-            )
+                description="Reduced font size",
+            ),
         ]
         engine.healer = mock_healer  # Inject mock directly
 
@@ -103,7 +110,7 @@ class TestSelfHealingLoop:
             mock_content,
             theme="brutalist",
             output_filename="test_healing.html",
-            enable_guardian=True
+            enable_guardian=True,
         )
 
         assert result.status == BuildStatus.SUCCESS
@@ -124,7 +131,7 @@ class TestSelfHealingLoop:
             "approved": False,
             "reason": "Persistent overflow",
             "issues": ["overflow"],
-            "fix_suggestion": "Unable to fix"
+            "fix_suggestion": "Unable to fix",
         }
         engine._guardian = mock_guardian  # Inject mock directly
 
@@ -132,7 +139,7 @@ class TestSelfHealingLoop:
             mock_content,
             theme="enterprise",
             output_filename="test_max_retries.html",
-            enable_guardian=True
+            enable_guardian=True,
         )
 
         assert result.status == BuildStatus.REJECTED
@@ -150,7 +157,7 @@ class TestBuildResultModel:
             theme="enterprise",
             attempts=1,
             guardian_report=None,
-            fixes_applied=[]
+            fixes_applied=[],
         )
 
         assert result.status == BuildStatus.SUCCESS
@@ -165,7 +172,7 @@ class TestBuildResultModel:
             theme="brutalist",
             attempts=3,
             guardian_report={"approved": False, "reason": "Unfixable"},
-            fixes_applied=["css_break_word", "font_shrink", "css_truncate"]
+            fixes_applied=["css_break_word", "font_shrink", "css_truncate"],
         )
 
         assert result.status == BuildStatus.REJECTED
@@ -183,7 +190,7 @@ class TestStyleOverrideAccumulation:
         mock_guardian.audit_layout.side_effect = [
             {"approved": False, "reason": "Issue", "issues": [], "fix_suggestion": ""},
             {"approved": False, "reason": "Issue", "issues": [], "fix_suggestion": ""},
-            {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""}
+            {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""},
         ]
         engine._guardian = mock_guardian  # Inject mock directly
 
@@ -197,15 +204,15 @@ class TestStyleOverrideAccumulation:
                 style_overrides={"heading_primary": "break-all"},
                 content_modified=False,
                 modified_content=None,
-                description="Attempt 1"
+                description="Attempt 1",
             ),
             HealingResult(
                 strategy=HealingStrategy.FONT_SHRINK,
                 style_overrides={"body_text": "text-xl"},
                 content_modified=False,
                 modified_content=None,
-                description="Attempt 2"
-            )
+                description="Attempt 2",
+            ),
         ]
         engine.healer = mock_healer  # Inject mock directly
 
@@ -218,15 +225,15 @@ class TestStyleOverrideAccumulation:
             mock_content,
             theme="enterprise",
             output_filename="test_accumulate.html",
-            enable_guardian=True
+            enable_guardian=True,
         )
 
         # Verify builder.build_page was called with accumulated overrides
         # On attempt 3 (final successful build), should have both overrides
         final_call_kwargs = mock_builder.build_page.call_args_list[-1][1]
 
-        if 'style_overrides' in final_call_kwargs:
-            final_overrides = final_call_kwargs['style_overrides']
+        if "style_overrides" in final_call_kwargs:
+            final_overrides = final_call_kwargs["style_overrides"]
             # Should have accumulated both heading_primary and body_text overrides
             assert "heading_primary" in final_overrides
             assert "body_text" in final_overrides

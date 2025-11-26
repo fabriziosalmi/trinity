@@ -12,6 +12,7 @@ Usage:
             engine.generate_content_async("portfolio3.txt", "minimalist"),
         )
 """
+
 import asyncio
 import json
 
@@ -58,7 +59,7 @@ class AsyncContentEngine:
         base_url: str = DEFAULT_LM_STUDIO_URL,
         model_id: str = DEFAULT_MODEL_ID,
         max_retries: int = 3,
-        timeout: int = 60
+        timeout: int = 60,
     ):
         """
         Initialize async content engine.
@@ -101,7 +102,7 @@ class AsyncContentEngine:
                 "You are a minimalist designer. Use clean, simple, essential language. "
                 "Less is more. Extract repository data and rewrite descriptions in "
                 "minimalist style. Return valid JSON only."
-            )
+            ),
         }
 
         return prompts.get(theme, prompts["minimalist"])
@@ -116,11 +117,7 @@ class AsyncContentEngine:
 
         return content_str.strip()
 
-    async def generate_content_async(
-        self,
-        raw_text_path: str,
-        theme: str
-    ) -> Dict[str, Any]:
+    async def generate_content_async(self, raw_text_path: str, theme: str) -> Dict[str, Any]:
         """
         Generate structured content from raw portfolio data using async LLM.
 
@@ -195,9 +192,7 @@ Return ONLY valid JSON with this structure:
 
                 # Use AsyncLLMClient
                 content_str = await self.llm_client.generate_content(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    expect_json=True
+                    prompt=user_prompt, system_prompt=system_prompt, expect_json=True
                 )
 
                 # Clean response
@@ -231,7 +226,7 @@ Return ONLY valid JSON with this structure:
 
                 if attempt < self.max_retries:
                     # Exponential backoff
-                    sleep_time = 2 ** attempt
+                    sleep_time = 2**attempt
                     logger.info(f"Retrying in {sleep_time}s...")
                     await asyncio.sleep(sleep_time)
                 else:
@@ -255,7 +250,7 @@ Return ONLY valid JSON with this structure:
             model_name=self.model_id,
             base_url=self.base_url.replace("/v1", ""),  # Ollama doesn't use /v1
             timeout=self.timeout,
-            max_retries=self.max_retries
+            max_retries=self.max_retries,
         )
         await self.llm_client.__aenter__()
 
@@ -269,6 +264,7 @@ Return ONLY valid JSON with this structure:
 
 # Demo
 if __name__ == "__main__":
+
     async def demo():
         """Demo async content generation."""
         print("=== Async Content Engine Demo ===")
@@ -287,10 +283,7 @@ if __name__ == "__main__":
         try:
             async with AsyncContentEngine() as engine:
                 # Single generation
-                result = await engine.generate_content_async(
-                    str(sample_path),
-                    "brutalist"
-                )
+                result = await engine.generate_content_async(str(sample_path), "brutalist")
                 print(f"\nGenerated content: {result['brand_name']}")
                 print(f"Repos: {len(result['repos'])}")
 
@@ -298,10 +291,7 @@ if __name__ == "__main__":
                 print("\n=== Concurrent Generation (3 themes) ===")
                 themes = ["brutalist", "hacker", "minimalist"]
 
-                tasks = [
-                    engine.generate_content_async(str(sample_path), theme)
-                    for theme in themes
-                ]
+                tasks = [engine.generate_content_async(str(sample_path), theme) for theme in themes]
 
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 

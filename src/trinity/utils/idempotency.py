@@ -13,6 +13,7 @@ Features:
 Reference:
 - https://stripe.com/docs/api/idempotent_requests
 """
+
 import hashlib
 import json
 import threading
@@ -39,6 +40,7 @@ class IdempotentResult:
         expires_at: When result expires
         metadata: Optional metadata
     """
+
     key: str
     result: Any
     timestamp: datetime
@@ -56,7 +58,7 @@ class IdempotentResult:
             "result": self.result,
             "timestamp": self.timestamp.isoformat(),
             "expires_at": self.expires_at.isoformat(),
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -67,7 +69,7 @@ class IdempotentResult:
             result=data["result"],
             timestamp=datetime.fromisoformat(data["timestamp"]),
             expires_at=datetime.fromisoformat(data["expires_at"]),
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
         )
 
 
@@ -94,7 +96,7 @@ class IdempotencyKeyManager:
         self,
         storage_path: Optional[Path] = None,
         default_ttl: int = 3600,
-        enable_persistence: bool = True
+        enable_persistence: bool = True,
     ):
         """
         Initialize idempotency key manager.
@@ -152,7 +154,7 @@ class IdempotencyKeyManager:
         key: str,
         result: Any,
         ttl: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Store operation result with idempotency key.
@@ -168,19 +170,12 @@ class IdempotencyKeyManager:
         expires_at = now + timedelta(seconds=ttl)
 
         idempotent_result = IdempotentResult(
-            key=key,
-            result=result,
-            timestamp=now,
-            expires_at=expires_at,
-            metadata=metadata or {}
+            key=key, result=result, timestamp=now, expires_at=expires_at, metadata=metadata or {}
         )
 
         with self._lock:
             self._cache[key] = idempotent_result
-            logger.info(
-                f"💾 Stored result for key {key[:16]}... "
-                f"(expires in {ttl}s)"
-            )
+            logger.info(f"💾 Stored result for key {key[:16]}... " f"(expires in {ttl}s)")
 
         if self.enable_persistence:
             self._save_to_disk()
@@ -253,10 +248,7 @@ class IdempotencyKeyManager:
         """
         with self._lock:
             initial_count = len(self._cache)
-            self._cache = {
-                k: v for k, v in self._cache.items()
-                if not v.is_expired()
-            }
+            self._cache = {k: v for k, v in self._cache.items() if not v.is_expired()}
             removed = initial_count - len(self._cache)
 
             if removed > 0:
@@ -304,11 +296,9 @@ class IdempotencyKeyManager:
             self.storage_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Convert cache to JSON-serializable format
-            data = {
-                k: v.to_dict() for k, v in self._cache.items()
-            }
+            data = {k: v.to_dict() for k, v in self._cache.items()}
 
-            with open(self.storage_path, 'w') as f:
+            with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
 
             logger.debug(f"Saved {len(data)} entries to {self.storage_path}")
@@ -321,13 +311,10 @@ class IdempotencyKeyManager:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path, "r") as f:
                 data = json.load(f)
 
-            self._cache = {
-                k: IdempotentResult.from_dict(v)
-                for k, v in data.items()
-            }
+            self._cache = {k: IdempotentResult.from_dict(v) for k, v in data.items()}
 
             # Clean up expired entries
             expired = self.cleanup_expired()
@@ -345,7 +332,7 @@ class IdempotencyKeyManager:
 def idempotent(
     manager: IdempotencyKeyManager,
     key_params: Optional[list[str]] = None,
-    ttl: Optional[int] = None
+    ttl: Optional[int] = None,
 ):
     """
     Decorator to make a function idempotent.
@@ -369,6 +356,7 @@ def idempotent(
         >>> result2 = generate_content("brutalist", "My portfolio")
         >>> assert result1 == result2
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -376,6 +364,7 @@ def idempotent(
             if key_params:
                 # Extract specified parameters
                 import inspect
+
                 sig = inspect.signature(func)
                 bound = sig.bind(*args, **kwargs)
                 bound.apply_defaults()
@@ -387,9 +376,7 @@ def idempotent(
                 }
             else:
                 # Use all parameters
-                key_data = {
-                    f"arg_{i}": arg for i, arg in enumerate(args)
-                }
+                key_data = {f"arg_{i}": arg for i, arg in enumerate(args)}
                 key_data.update(kwargs)
 
             # Add function name to key
@@ -408,14 +395,14 @@ def idempotent(
             result = func(*args, **kwargs)
 
             # Store result
-            manager.store_result(key, result, ttl=ttl, metadata={
-                "function": func.__name__,
-                "params": key_data
-            })
+            manager.store_result(
+                key, result, ttl=ttl, metadata={"function": func.__name__, "params": key_data}
+            )
 
             return result
 
         return wrapper
+
     return decorator
 
 

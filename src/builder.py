@@ -5,6 +5,7 @@ Rule #5: Type safety and error handling
 Rule #27: Separation of concerns
 Rule #28: Structured logging
 """
+
 import json
 import logging
 from datetime import datetime
@@ -15,8 +16,7 @@ from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoe
 
 # Configure structured logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -28,16 +28,19 @@ THEMES_CONFIG_PATH = "config/themes.json"
 
 class SiteBuilderError(Exception):
     """Base exception for SiteBuilder errors."""
+
     pass
 
 
 class ThemeNotFoundError(SiteBuilderError):
     """Raised when requested theme doesn't exist."""
+
     pass
 
 
 class TemplateNotFoundError(SiteBuilderError):
     """Raised when template file is missing."""
+
     pass
 
 
@@ -68,16 +71,14 @@ class SiteBuilder:
         # Rule #5: Validate paths at initialization
         self.template_path = Path(template_dir)
         if not self.template_path.exists():
-            raise FileNotFoundError(
-                f"Template directory not found: {self.template_path}"
-            )
+            raise FileNotFoundError(f"Template directory not found: {self.template_path}")
 
         # Rule #64: Autoescape prevents XSS
         self.env = Environment(
             loader=FileSystemLoader(self.template_path),
-            autoescape=select_autoescape(['html', 'xml']),
+            autoescape=select_autoescape(["html", "xml"]),
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
 
         logger.info(f"SiteBuilder initialized with templates from: {self.template_path}")
@@ -108,9 +109,7 @@ class SiteBuilder:
 
             if theme_name not in themes:
                 available = ", ".join(themes.keys())
-                raise ThemeNotFoundError(
-                    f"Theme '{theme_name}' not found. Available: {available}"
-                )
+                raise ThemeNotFoundError(f"Theme '{theme_name}' not found. Available: {available}")
 
             logger.info(f"Loaded theme: {theme_name}")
             return themes[theme_name]
@@ -124,7 +123,7 @@ class SiteBuilder:
         content: Dict[str, Any],
         theme: str,
         output_filename: str = "index.html",
-        template_name: str = "templates/base_layout.html"
+        template_name: str = "templates/base_layout.html",
     ) -> Path:
         """
         Assemble and render complete HTML page.
@@ -161,8 +160,8 @@ class SiteBuilder:
                 meta={
                     "generator": "Trinity Core v1.0",
                     "theme": theme,
-                    "build_date": datetime.utcnow().strftime("%Y-%m-%d")
-                }
+                    "build_date": datetime.utcnow().strftime("%Y-%m-%d"),
+                },
             )
 
             # Write to disk
@@ -198,14 +197,14 @@ if __name__ == "__main__":
         "menu_items": [
             {"label": "About", "url": "#about"},
             {"label": "Projects", "url": "#projects"},
-            {"label": "Contact", "url": "#contact"}
+            {"label": "Contact", "url": "#contact"},
         ],
         "cta": {"label": "Get Started", "url": "/start"},
         "hero": {
             "title": "Build Fast. Ship Faster.",
             "subtitle": "Deterministic layouts meet AI-powered content.",
             "cta_primary": {"label": "View Demo", "url": "#demo"},
-            "cta_secondary": {"label": "Read Docs", "url": "/docs"}
+            "cta_secondary": {"label": "Read Docs", "url": "/docs"},
         },
         "repos": [
             {
@@ -213,9 +212,9 @@ if __name__ == "__main__":
                 "description": "Python-based static site generator with Jinja2 templates.",
                 "url": "https://github.com/example/trinity",
                 "tags": ["Python", "Jinja2", "Static Site"],
-                "stars": 42
+                "stars": 42,
             }
-        ]
+        ],
     }
 
     try:
@@ -225,9 +224,7 @@ if __name__ == "__main__":
         # Build with each theme
         for theme in ["enterprise", "brutalist", "editorial"]:
             output = builder.build_page(
-                content=mock_content,
-                theme=theme,
-                output_filename=f"demo_{theme}.html"
+                content=mock_content, theme=theme, output_filename=f"demo_{theme}.html"
             )
             print(f"✓ Built: {output}")
 

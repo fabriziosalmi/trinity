@@ -7,7 +7,6 @@ Tests cover:
 - Theme loading and validation
 """
 
-
 import pytest
 
 from trinity.components.builder import SiteBuilder
@@ -25,11 +24,8 @@ def mock_content():
     return {
         "brand_name": "Test Site",
         "tagline": "Test tagline",
-        "hero": {
-            "title": "Test Title",
-            "subtitle": "Test subtitle"
-        },
-        "repos": []
+        "hero": {"title": "Test Title", "subtitle": "Test subtitle"},
+        "repos": [],
     }
 
 
@@ -48,20 +44,18 @@ class TestCSSOverrideMerging:
         """Test build with CSS overrides merges classes correctly"""
         style_overrides = {
             "heading_primary": "break-all overflow-wrap-anywhere",
-            "heading_secondary": "line-clamp-2 truncate"
+            "heading_secondary": "line-clamp-2 truncate",
         }
 
         output_path = builder.build_page(
-            mock_content,
-            theme="brutalist",
-            style_overrides=style_overrides
+            mock_content, theme="brutalist", style_overrides=style_overrides
         )
 
         assert output_path is not None
         assert output_path.exists()
 
         # Read generated HTML and verify CSS classes are merged
-        with open(output_path, 'r') as f:
+        with open(output_path, "r") as f:
             html = f.read()
 
         # Should contain both original theme classes AND overrides
@@ -74,12 +68,10 @@ class TestCSSOverrideMerging:
         }
 
         output_path = builder.build_page(
-            mock_content,
-            theme="enterprise",
-            style_overrides=style_overrides
+            mock_content, theme="enterprise", style_overrides=style_overrides
         )
 
-        with open(output_path, 'r') as f:
+        with open(output_path, "r") as f:
             html = f.read()
 
         # Should have BOTH original enterprise hero_title classes AND text-3xl
@@ -88,11 +80,7 @@ class TestCSSOverrideMerging:
 
     def test_empty_overrides_dict(self, builder, mock_content):
         """Test build with empty overrides dict works normally"""
-        output_path = builder.build_page(
-            mock_content,
-            theme="editorial",
-            style_overrides={}
-        )
+        output_path = builder.build_page(mock_content, theme="editorial", style_overrides={})
 
         assert output_path is not None
         assert output_path.exists()
@@ -109,7 +97,7 @@ class TestThemeLoading:
             # Should not raise exception
             output = builder.build_page(
                 {"brand_name": "Test", "hero": {"title": "Test", "subtitle": "Test"}, "repos": []},
-                theme=theme
+                theme=theme,
             )
             assert output is not None
 
@@ -118,5 +106,5 @@ class TestThemeLoading:
         with pytest.raises(Exception):
             builder.build_page(
                 {"brand_name": "Test", "hero": {"title": "Test", "subtitle": "Test"}, "repos": []},
-                theme="nonexistent_theme"
+                theme="nonexistent_theme",
             )

@@ -81,16 +81,17 @@ class TrinityMiner:
         # Check if migration needed (v0.5.0: add style_overrides_raw column)
         needs_migration = False
         if self.dataset_path.exists():
-            with open(self.dataset_path, 'r', encoding='utf-8') as f:
+            with open(self.dataset_path, "r", encoding="utf-8") as f:
                 header = f.readline().strip()
-                if 'style_overrides_raw' not in header:
+                if "style_overrides_raw" not in header:
                     needs_migration = True
                     logger.warning("⚠️  Dataset schema outdated - migration needed")
 
         if needs_migration:
             # Backup old file
-            backup_path = self.dataset_path.with_suffix('.csv.backup')
+            backup_path = self.dataset_path.with_suffix(".csv.backup")
             import shutil
+
             shutil.copy(self.dataset_path, backup_path)
             logger.info(f"📦 Backed up old dataset: {backup_path}")
 
@@ -98,20 +99,22 @@ class TrinityMiner:
             self._migrate_schema()
 
         if not self.dataset_path.exists():
-            with open(self.dataset_path, 'w', newline='', encoding='utf-8') as f:
+            with open(self.dataset_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 # Write header row (v0.5.0 schema with style_overrides_raw)
-                writer.writerow([
-                    'timestamp',
-                    'theme',
-                    'input_char_len',
-                    'input_word_count',
-                    'css_signature',
-                    'active_strategy',
-                    'is_valid',
-                    'failure_reason',
-                    'style_overrides_raw'  # NEW: Actual CSS strings for LSTM training
-                ])
+                writer.writerow(
+                    [
+                        "timestamp",
+                        "theme",
+                        "input_char_len",
+                        "input_word_count",
+                        "css_signature",
+                        "active_strategy",
+                        "is_valid",
+                        "failure_reason",
+                        "style_overrides_raw",  # NEW: Actual CSS strings for LSTM training
+                    ]
+                )
             logger.info(f"✅ Created new training dataset: {self.dataset_path}")
 
     def log_build_event(
@@ -121,7 +124,7 @@ class TrinityMiner:
         strategy: str,
         guardian_verdict: bool,
         guardian_reason: str = "",
-        css_overrides: Optional[Dict[str, str]] = None
+        css_overrides: Optional[Dict[str, str]] = None,
     ) -> None:
         """
         Log a single build event to the training dataset.
@@ -169,19 +172,21 @@ class TrinityMiner:
 
             # Write to CSV (thread-safe append)
             # Use QUOTE_ALL to properly escape JSON strings
-            with open(self.dataset_path, 'a', newline='', encoding='utf-8') as f:
+            with open(self.dataset_path, "a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
-                writer.writerow([
-                    timestamp,
-                    theme,
-                    char_len,
-                    word_count,
-                    css_sig,
-                    strategy,
-                    is_valid,
-                    guardian_reason,
-                    style_overrides_raw  # NEW: Raw CSS string for training
-                ])
+                writer.writerow(
+                    [
+                        timestamp,
+                        theme,
+                        char_len,
+                        word_count,
+                        css_sig,
+                        strategy,
+                        is_valid,
+                        guardian_reason,
+                        style_overrides_raw,  # NEW: Raw CSS string for training
+                    ]
+                )
 
             # Log summary
             verdict_emoji = "✅" if guardian_verdict else "❌"
@@ -273,7 +278,7 @@ class TrinityMiner:
         css_string = json.dumps(sorted_items, sort_keys=True)
 
         # Generate MD5 hash (short and fast)
-        hash_obj = hashlib.md5(css_string.encode('utf-8'))
+        hash_obj = hashlib.md5(css_string.encode("utf-8"))
         return hash_obj.hexdigest()[:12]  # First 12 chars sufficient
 
     def _serialize_css_overrides(self, css_overrides: Optional[Dict[str, str]]) -> str:
@@ -309,8 +314,8 @@ class TrinityMiner:
             df = pd.read_csv(self.dataset_path)
 
             # Add new column with empty values
-            if 'style_overrides_raw' not in df.columns:
-                df['style_overrides_raw'] = ''
+            if "style_overrides_raw" not in df.columns:
+                df["style_overrides_raw"] = ""
 
             # Save migrated data
             df.to_csv(self.dataset_path, index=False)
@@ -343,7 +348,7 @@ class TrinityMiner:
                 "negative_samples": 0,
                 "success_rate": 0.0,
                 "themes": [],
-                "strategies": []
+                "strategies": [],
             }
 
         total = 0
@@ -351,14 +356,14 @@ class TrinityMiner:
         themes = set()
         strategies = set()
 
-        with open(self.dataset_path, 'r', encoding='utf-8') as f:
+        with open(self.dataset_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 total += 1
-                if int(row['is_valid']) == 1:
+                if int(row["is_valid"]) == 1:
                     positive += 1
-                themes.add(row['theme'])
-                strategies.add(row['active_strategy'])
+                themes.add(row["theme"])
+                strategies.add(row["active_strategy"])
 
         negative = total - positive
         success_rate = (positive / total * 100) if total > 0 else 0.0
@@ -369,7 +374,7 @@ class TrinityMiner:
             "negative_samples": negative,
             "success_rate": round(success_rate, 2),
             "themes": sorted(list(themes)),
-            "strategies": sorted(list(strategies))
+            "strategies": sorted(list(strategies)),
         }
 
     def export_for_training(self, output_path: Optional[Path] = None) -> Path:
@@ -393,6 +398,7 @@ class TrinityMiner:
         # For now, just copy the raw dataset
 
         import shutil
+
         shutil.copy(self.dataset_path, output_path)
 
         logger.info(f"📦 Exported training dataset: {output_path}")

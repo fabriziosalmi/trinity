@@ -4,6 +4,7 @@ Rule #7: Graceful degradation on AI failures
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
+
 import asyncio
 import base64
 import json
@@ -15,7 +16,9 @@ from typing import Any, Dict, Optional
 try:
     from playwright.async_api import async_playwright
 except ImportError:
-    raise ImportError("playwright required. Install with: pip install playwright && playwright install chromium")
+    raise ImportError(
+        "playwright required. Install with: pip install playwright && playwright install chromium"
+    )
 
 try:
     from openai import APIConnectionError, APIError, OpenAI
@@ -37,6 +40,7 @@ DEFAULT_VIEWPORT_HEIGHT = 768
 
 class AuditReport(BaseModel):
     """Pydantic schema for Guardian audit report."""
+
     approved: bool = Field(..., description="Whether layout passed inspection")
     status: str = Field(..., description="pass or fail")
     reason: str = Field(..., description="Explanation of decision")
@@ -47,6 +51,7 @@ class AuditReport(BaseModel):
 
 class GuardianError(Exception):
     """Base exception for Guardian errors."""
+
     pass
 
 
@@ -72,7 +77,7 @@ class TrinityGuardian:
         model_id: str = DEFAULT_MODEL_ID,
         viewport_width: int = DEFAULT_VIEWPORT_WIDTH,
         viewport_height: int = DEFAULT_VIEWPORT_HEIGHT,
-        enable_vision_ai: bool = True
+        enable_vision_ai: bool = True,
     ):
         """
         Initialize TrinityGuardian with Qwen VL endpoint.
@@ -131,7 +136,7 @@ class TrinityGuardian:
                 await browser.close()
 
                 # Encode to base64
-                screenshot_b64 = base64.b64encode(screenshot_bytes).decode('utf-8')
+                screenshot_b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
 
                 logger.info(f"✓ Screenshot captured: {len(screenshot_b64)} bytes")
                 return screenshot_b64
@@ -238,19 +243,17 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                         "content": [
                             {
                                 "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{screenshot_b64}"
-                                }
+                                "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"},
                             },
                             {
                                 "type": "text",
-                                "text": "Analyze this webpage screenshot for layout bugs."
-                            }
-                        ]
-                    }
+                                "text": "Analyze this webpage screenshot for layout bugs.",
+                            },
+                        ],
+                    },
                 ],
                 temperature=0.1,  # Low temperature for deterministic analysis
-                max_tokens=500
+                max_tokens=500,
             )
 
             content = response.choices[0].message.content.strip()
@@ -271,21 +274,21 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
             return {
                 "status": "pass",
                 "issues": ["Vision AI unavailable - auto-approved"],
-                "fix_suggestion": "none"
+                "fix_suggestion": "none",
             }
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse Vision AI response: {e}")
             return {
                 "status": "pass",
                 "issues": ["Vision AI response invalid - auto-approved"],
-                "fix_suggestion": "none"
+                "fix_suggestion": "none",
             }
         except Exception as e:
             logger.error(f"Vision analysis failed: {e}")
             return {
                 "status": "pass",
                 "issues": ["Vision AI error - auto-approved"],
-                "fix_suggestion": "none"
+                "fix_suggestion": "none",
             }
 
     def audit_layout(self, html_path: str) -> Dict[str, Any]:
@@ -312,7 +315,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "reason": "DOM overflow detected (horizontal or vertical)",
                 "issues": ["Text or content overflowing container boundaries"],
                 "fix_suggestion": "truncate",
-                "screenshot_path": None
+                "screenshot_path": None,
             }
 
         # Phase 2: Vision AI analysis
@@ -329,7 +332,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                     "reason": "Screenshot unavailable - approved by default",
                     "issues": [],
                     "fix_suggestion": "none",
-                    "screenshot_path": None
+                    "screenshot_path": None,
                 }
 
             vision_analysis = self._analyze_with_vision(screenshot_b64)
@@ -355,7 +358,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "reason": reason,
                 "issues": vision_analysis.get("issues", []),
                 "fix_suggestion": vision_analysis.get("fix_suggestion", "none"),
-                "screenshot_path": None  # Could save to disk if needed
+                "screenshot_path": None,  # Could save to disk if needed
             }
 
         else:
@@ -366,7 +369,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "reason": "DOM overflow detected" if dom_overflow else "DOM checks passed",
                 "issues": ["Horizontal or vertical overflow detected"] if dom_overflow else [],
                 "fix_suggestion": "truncate" if dom_overflow else "none",
-                "screenshot_path": None
+                "screenshot_path": None,
             }
 
 
@@ -387,9 +390,9 @@ if __name__ == "__main__":
         print("=" * 60)
         print(f"Status: {'✅ APPROVED' if report['approved'] else '❌ REJECTED'}")
         print(f"Reason: {report['reason']}")
-        if report['issues']:
+        if report["issues"]:
             print(f"Issues Found: {len(report['issues'])}")
-            for issue in report['issues']:
+            for issue in report["issues"]:
                 print(f"  - {issue}")
         print(f"Fix Suggestion: {report['fix_suggestion']}")
         print("=" * 60)

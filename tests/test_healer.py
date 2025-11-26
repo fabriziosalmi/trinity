@@ -26,7 +26,7 @@ def mock_guardian_report():
         "approved": False,
         "reason": "Layout issues detected",
         "issues": ["Text overflow in hero_title"],
-        "fix_suggestion": "Apply word-break and reduce font size"
+        "fix_suggestion": "Apply word-break and reduce font size",
     }
 
 
@@ -37,9 +37,9 @@ def mock_content():
         "brand_name": "Test Portfolio",
         "hero": {
             "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-            "subtitle": "This is a very long subtitle that might overflow containers"
+            "subtitle": "This is a very long subtitle that might overflow containers",
         },
-        "repos": []
+        "repos": [],
     }
 
 
