@@ -74,6 +74,9 @@ class TrinityEngine:
         # Guardian is lazy-loaded when needed
         self._guardian: Optional[TrinityGuardian] = None
         
+        # Risk prediction model (Phase 3: lazy-load trained model)
+        self._risk_model: Optional[Any] = None
+        
         logger.info("🚀 TrinityEngine initialized")
     
     @property

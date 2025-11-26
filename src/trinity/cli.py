@@ -535,5 +535,136 @@ def mine_generate(
     console.print(f"[dim]Dataset now contains {stats['total_samples']} total samples[/dim]\n")
 
 
+@app.command()
+def train(
+    dataset: str = typer.Option(
+        "data/training_dataset.csv",
+        "--dataset-path",
+        "-d",
+        help="Path to training dataset CSV"
+    ),
+    output_dir: str = typer.Option(
+        "models/",
+        "--output-dir",
+        "-o",
+        help="Directory to save trained model"
+    ),
+):
+    """
+    Train layout risk prediction model from collected dataset.
+    
+    This is Phase 2 of the Neural-Symbolic Architecture: training a Random Forest
+    classifier to predict layout breakage BEFORE rendering.
+    
+    The trainer enforces strict quality gates:
+    - F1 Score >= 0.6
+    - Precision >= 0.5
+    - Recall >= 0.5
+    
+    If the model fails these thresholds, training is aborted (no bad models deployed).
+    
+    Examples:
+        # Train on default dataset
+        trinity train
+        
+        # Train with custom dataset and output directory
+        trinity train --dataset-path data/custom.csv --output-dir production_models/
+    
+    Requirements:
+        - Minimum 10 samples (recommended: 1000+)
+        - Valid CSV with columns: theme, input_char_len, input_word_count, 
+          css_signature, active_strategy, is_valid
+    """
+    from pathlib import Path
+    from trinity.components.trainer import (
+        LayoutRiskTrainer,
+        InsufficientDataError,
+        ModelPerformanceError,
+        DataValidationError
+    )
+    
+    dataset_path = Path(dataset)
+    output_path = Path(output_dir)
+    
+    console.print(f"\n[bold cyan]🧠 Trinity Neural Trainer[/bold cyan]\n")
+    console.print(f"Dataset: [yellow]{dataset_path}[/yellow]")
+    console.print(f"Output: [yellow]{output_path}[/yellow]\n")
+    
+    # Validate inputs
+    if not dataset_path.exists():
+        console.print(f"[red]Error:[/red] Dataset not found: {dataset_path}")
+        console.print("\nRun [cyan]trinity mine-generate --count 1000[/cyan] to collect training data.")
+        raise typer.Exit(code=1)
+    
+    # Create output directory
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize trainer
+    trainer = LayoutRiskTrainer()
+    
+    try:
+        with console.status("[bold green]Training model...") as status:
+            # Train from CSV
+            model, metrics = trainer.train_from_csv(
+                csv_path=str(dataset_path),
+                output_dir=str(output_path)
+            )
+            
+            status.update("[bold green]Training complete!")
+        
+        # Display results
+        console.print("\n[bold green]✅ Training successful![/bold green]\n")
+        
+        # Metrics table
+        table = Table(title="Model Performance", show_header=True, header_style="bold magenta")
+        table.add_column("Metric", style="cyan", no_wrap=True)
+        table.add_column("Value", style="green")
+        table.add_column("Threshold", style="yellow")
+        
+        table.add_row("F1 Score", f"{metrics['f1_score']:.3f}", "≥ 0.600")
+        table.add_row("Precision", f"{metrics['precision']:.3f}", "≥ 0.500")
+        table.add_row("Recall", f"{metrics['recall']:.3f}", "≥ 0.500")
+        table.add_row("Accuracy", f"{metrics['accuracy']:.3f}", "—")
+        table.add_row("Train Samples", str(metrics['train_samples']), "—")
+        table.add_row("Test Samples", str(metrics['test_samples']), "—")
+        
+        console.print(table)
+        
+        # Model location
+        console.print(f"\n[bold]Model saved:[/bold]")
+        console.print(f"  📦 {metrics['model_path']}")
+        console.print(f"  📄 {metrics['model_path'].replace('.pkl', '_metadata.json')}")
+        
+        console.print(f"\n[dim]Next: Integrate model into TrinityEngine for real-time predictions[/dim]\n")
+        
+    except InsufficientDataError as e:
+        console.print(f"\n[red]❌ Insufficient Data[/red]\n")
+        console.print(f"{e}")
+        console.print(f"\n[yellow]Solution:[/yellow] Collect more training samples:")
+        console.print(f"  [cyan]trinity mine-generate --count 1000 --guardian[/cyan]\n")
+        raise typer.Exit(code=1)
+        
+    except DataValidationError as e:
+        console.print(f"\n[red]❌ Invalid Dataset[/red]\n")
+        console.print(f"{e}")
+        console.print(f"\n[yellow]Check:[/yellow] CSV must contain columns:")
+        console.print("  - theme, input_char_len, input_word_count")
+        console.print("  - css_signature, active_strategy, is_valid\n")
+        raise typer.Exit(code=1)
+        
+    except ModelPerformanceError as e:
+        console.print(f"\n[red]❌ Model Quality Gate Failed[/red]\n")
+        console.print(f"{e}")
+        console.print(f"\n[yellow]Solution:[/yellow] Collect more diverse training data:")
+        console.print("  1. Generate 5000+ samples: [cyan]trinity mine-generate --count 5000[/cyan]")
+        console.print("  2. Use multiple themes: [cyan]--themes enterprise,brutalist,editorial[/cyan]")
+        console.print("  3. Enable Guardian: [cyan]--guardian[/cyan] (creates negative samples)\n")
+        raise typer.Exit(code=1)
+        
+    except Exception as e:
+        console.print(f"\n[red]❌ Training failed[/red]: {e}\n")
+        raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()
