@@ -8,10 +8,10 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 try:
-    from openai import OpenAI, APIConnectionError, APIError
+    from openai import APIConnectionError, APIError, OpenAI
 except ImportError:
     raise ImportError("openai package required. Install with: pip install openai")
 
@@ -74,12 +74,12 @@ class ContentEngine:
     - Parse raw portfolio data
     - Generate theme-appropriate copy via LLM
     - Validate and structure output
-    
+
     Does NOT:
     - Build HTML (handled by SiteBuilder)
     - Validate themes (handled by Validator)
     """
-    
+
     def __init__(
         self,
         base_url: str = DEFAULT_LM_STUDIO_URL,
@@ -90,7 +90,7 @@ class ContentEngine:
     ):
         """
         Initialize ContentEngine with LM Studio endpoint.
-        
+
         Args:
             base_url: LM Studio API endpoint
             api_key: API key (dummy for LM Studio)
@@ -102,10 +102,10 @@ class ContentEngine:
         self.model_id = model_id
         self.max_retries = max_retries
         self.enable_text_processing = enable_text_processing
-        
+
         # Initialize OpenAI-compatible client
         self.client = OpenAI(base_url=base_url, api_key=api_key)
-        
+
         # Initialize TextProcessor (optional)
         if self.enable_text_processing and TextProcessor is not None:
             try:
@@ -118,16 +118,16 @@ class ContentEngine:
             self.text_processor = None
             if self.enable_text_processing:
                 logger.info("TextProcessor not available (continuing without text processing)")
-        
+
         logger.info(f"ContentEngine initialized: {base_url} (model: {model_id})")
-    
+
     def _get_system_prompt(self, theme: str) -> str:
         """
         Generate system prompt based on theme personality.
-        
+
         Args:
             theme: Theme name (enterprise, brutalist, editorial)
-            
+
         Returns:
             System prompt string
         """
@@ -141,7 +141,7 @@ class ContentEngine:
             "4. Select the TOP 6 most interesting projects based on stars/activity\n"
             "5. Generate compelling hero section copy matching the theme\n"
         )
-        
+
         # Theme-specific personalities (The Vibe Engine)
         vibes = {
             "enterprise": {
@@ -176,9 +176,9 @@ class ContentEngine:
                 "hero_style": "Compelling editorial headline that sparks curiosity"
             }
         }
-        
+
         vibe = vibes.get(theme, vibes["enterprise"])
-        
+
         # JSON schema template (one-shot learning for Qwen)
         json_structure = {
             "brand_name": "Your Name",
@@ -206,7 +206,7 @@ class ContentEngine:
                 }
             ]
         }
-        
+
         return (
             f"{base_instruction}\n"
             f"ROLE: {vibe['role']}\n"
@@ -216,39 +216,39 @@ class ContentEngine:
             f"REQUIRED JSON STRUCTURE:\n{json.dumps(json_structure, indent=2)}\n\n"
             f"Remember: Output ONLY the JSON object, nothing else."
         )
-    
+
     def _clean_llm_response(self, raw_response: str) -> str:
         """
         Clean LLM response by removing markdown code blocks and extra whitespace.
-        
+
         Args:
             raw_response: Raw LLM output
-            
+
         Returns:
             Cleaned JSON string
         """
         # Remove markdown code blocks
         cleaned = re.sub(r'```(?:json)?\s*', '', raw_response)
         cleaned = re.sub(r'```\s*$', '', cleaned)
-        
+
         # Remove any text before first { or after last }
         match = re.search(r'\{.*\}', cleaned, re.DOTALL)
         if match:
             cleaned = match.group(0)
-        
+
         return cleaned.strip()
-    
+
     def generate_content(self, raw_text_path: str, theme: str) -> Dict[str, Any]:
         """
         Generate structured content from raw portfolio data using LLM.
-        
+
         Args:
             raw_text_path: Path to raw text file with portfolio data
             theme: Theme name for personality selection
-            
+
         Returns:
             Validated content dictionary
-            
+
         Raises:
             ContentEngineError: On LLM failure or validation error
         """
@@ -256,25 +256,25 @@ class ContentEngine:
         path = Path(raw_text_path)
         if not path.exists():
             raise FileNotFoundError(f"Raw data file not found: {path}")
-        
+
         raw_text = path.read_text(encoding="utf-8")
-        
+
         # Truncate if too long for 3B model context (8k tokens ≈ 32k chars)
         max_chars = 30000
         if len(raw_text) > max_chars:
             logger.warning(f"Raw text truncated from {len(raw_text)} to {max_chars} chars")
             raw_text = raw_text[:max_chars]
-        
+
         system_prompt = self._get_system_prompt(theme)
-        
+
         logger.info(f"🧠 Connecting to LM Studio at {self.base_url} (theme: {theme})")
-        
+
         # Rule #7: Retry logic with exponential backoff
         last_error = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"LLM generation attempt {attempt}/{self.max_retries}")
-                
+
                 response = self.client.chat.completions.create(
                     model=self.model_id,
                     messages=[
@@ -285,14 +285,14 @@ class ContentEngine:
                     max_tokens=2500,
                     timeout=60  # 60s timeout
                 )
-                
+
                 content_str = response.choices[0].message.content.strip()
-                
+
                 # Clean response
                 content_str = self._clean_llm_response(content_str)
-                
+
                 logger.debug(f"Cleaned LLM response: {content_str[:200]}...")
-                
+
                 # Parse JSON
                 try:
                     data = json.loads(content_str)
@@ -300,15 +300,15 @@ class ContentEngine:
                     logger.error(f"Invalid JSON from LLM: {content_str[:300]}...")
                     last_error = e
                     continue  # Retry
-                
+
                 # Validate with Pydantic
                 try:
                     validated = GeneratedContentSchema(**data)
                     logger.info(f"✓ Content validated: {len(validated.repos)} repos, theme={theme}")
-                    
+
                     # Convert to dict for processing
                     content_dict = validated.model_dump()
-                    
+
                     # Apply text transformations (The Enforcer)
                     if self.text_processor:
                         try:
@@ -316,53 +316,53 @@ class ContentEngine:
                             logger.info("✓ Text transformations applied")
                         except TextProcessorError as e:
                             logger.warning(f"Text processing failed: {e} (using unprocessed content)")
-                    
+
                     return content_dict
-                    
+
                 except ValidationError as e:
                     logger.error(f"Pydantic validation failed: {e}")
                     last_error = e
                     continue  # Retry
-                
+
             except APIConnectionError as e:
                 logger.error(f"Cannot connect to LM Studio at {self.base_url}")
                 last_error = e
                 # Don't retry connection errors immediately
                 break
-                
+
             except APIError as e:
                 logger.error(f"LM Studio API error: {e}")
                 last_error = e
                 continue  # Retry
-                
+
             except Exception as e:
                 logger.exception("Unexpected error in ContentEngine")
                 last_error = e
                 continue
-        
+
         # All retries failed
                 raise ContentEngineError(
             f"Failed to generate content after {self.max_retries} attempts. "
             f"Last error: {last_error}"
         )
-    
+
     def generate_theme_from_vibe(self, vibe_description: str) -> Dict[str, str]:
         """
         Generate a complete theme configuration from a vibe/style description.
-        
+
         This is the "Text-to-Theme" engine for mass theme generation.
         Enables data augmentation by creating 100+ diverse themes automatically.
-        
+
         Args:
-            vibe_description: Natural language style description 
+            vibe_description: Natural language style description
                             (e.g., "90s Hacker Terminal", "Vaporwave aesthetic")
-        
+
         Returns:
             Dictionary of Tailwind CSS classes for all theme components
-            
+
         Raises:
             ContentEngineError: If theme generation fails after retries
-        
+
         Example:
             >>> brain = ContentEngine()
             >>> theme = brain.generate_theme_from_vibe("Cyberpunk neon city")
@@ -409,12 +409,12 @@ Examples of valid values:
 Output ONLY the JSON object."""
 
         logger.info(f"🎨 Generating theme from vibe: {vibe_description}")
-        
+
         last_error = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"Theme generation attempt {attempt}/{self.max_retries}")
-                
+
                 response = self.client.chat.completions.create(
                     model=self.model_id,
                     messages=[
@@ -425,63 +425,63 @@ Output ONLY the JSON object."""
                     max_tokens=1000,
                     timeout=45
                 )
-                
+
                 theme_str = response.choices[0].message.content.strip()
                 theme_str = self._clean_llm_response(theme_str)
-                
+
                 logger.debug(f"Generated theme JSON: {theme_str[:200]}...")
-                
+
                 # Parse and validate JSON
                 theme_config = json.loads(theme_str)
-                
+
                 # Validate required keys
                 required_keys = [
                     "nav_bg", "body_bg", "text_primary", "text_secondary",
                     "nav_link", "hero_title", "hero_subtitle", "card_bg",
                     "card_title", "card_description", "btn_primary", "btn_secondary", "tagline"
                 ]
-                
+
                 missing_keys = [k for k in required_keys if k not in theme_config]
                 if missing_keys:
                     logger.error(f"Missing theme keys: {missing_keys}")
                     last_error = ValueError(f"Incomplete theme: missing {missing_keys}")
                     continue  # Retry
-                
+
                 # Basic validation: all values should be strings
                 if not all(isinstance(v, str) for v in theme_config.values()):
                     logger.error("Theme values must be strings")
                     last_error = ValueError("Invalid theme value types")
                     continue
-                
+
                 logger.info(f"✓ Theme generated successfully: {len(theme_config)} components")
                 return theme_config
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Invalid JSON from LLM: {theme_str[:300] if 'theme_str' in locals() else 'N/A'}")
                 last_error = e
                 continue
-                
+
             except APIConnectionError as e:
                 logger.error(f"Cannot connect to LM Studio at {self.base_url}")
                 last_error = e
                 break
-                
+
             except APIError as e:
                 logger.error(f"LM Studio API error: {e}")
                 last_error = e
                 continue
-                
+
             except Exception as e:
                 logger.exception("Unexpected error in theme generation")
                 last_error = e
                 continue
-        
+
         # All retries failed
         raise ContentEngineError(
             f"Failed to generate theme after {self.max_retries} attempts. "
             f"Last error: {last_error}"
         )
-    
+
     def generate_content_with_fallback(
         self,
         raw_text_path: str,
@@ -490,12 +490,12 @@ Output ONLY the JSON object."""
     ) -> Dict[str, Any]:
         """
         Generate content with automatic fallback to static data on failure.
-        
+
         Args:
             raw_text_path: Path to raw portfolio data
             theme: Theme name
             fallback_path: Path to fallback JSON (optional)
-            
+
         Returns:
             Generated or fallback content
         """
@@ -503,7 +503,7 @@ Output ONLY the JSON object."""
             return self.generate_content(raw_text_path, theme)
         except ContentEngineError as e:
             logger.warning(f"LLM generation failed: {e}")
-            
+
             if fallback_path and Path(fallback_path).exists():
                 logger.info(f"Loading fallback content from {fallback_path}")
                 with open(fallback_path, "r", encoding="utf-8") as f:
@@ -514,19 +514,19 @@ Output ONLY the JSON object."""
 # Demo usage
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    
+
     engine = ContentEngine()
-    
+
     try:
         content = engine.generate_content(
             raw_text_path="data/raw_portfolio.txt",
             theme="brutalist"
         )
-        
+
         print("\n" + "=" * 60)
         print("GENERATED CONTENT")
         print("=" * 60)
         print(json.dumps(content, indent=2))
-        
+
     except Exception as e:
         print(f"Error: {e}")

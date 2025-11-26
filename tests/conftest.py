@@ -4,9 +4,10 @@ Pytest configuration and shared fixtures
 This file provides common fixtures and configuration for all tests.
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add src directory to Python path for imports
 src_path = Path(__file__).parent.parent / "src"
@@ -35,7 +36,7 @@ def output_dir(project_root):
 def cleanup_output(output_dir):
     """Cleanup test output files after each test"""
     yield
-    
+
     # Cleanup any test HTML files
     if output_dir.exists():
         for html_file in output_dir.glob("test_*.html"):

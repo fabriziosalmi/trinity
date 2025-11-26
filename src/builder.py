@@ -5,12 +5,13 @@ Rule #5: Type safety and error handling
 Rule #27: Separation of concerns
 Rule #28: Structured logging
 """
-import logging
 import json
-from pathlib import Path
+import logging
 from datetime import datetime
-from typing import Dict, Any, Optional
-from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
+from pathlib import Path
+from typing import Any, Dict
+
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 
 # Configure structured logging
 logging.basicConfig(
@@ -48,19 +49,19 @@ class SiteBuilder:
     - Inject content data and theme classes
     - Render static HTML
     - Write output to disk
-    
+
     Does NOT:
     - Generate content (handled by LLM)
     - Modify layout structure (templates are immutable)
     """
-    
+
     def __init__(self, template_dir: str = DEFAULT_TEMPLATE_DIR):
         """
         Initialize builder with template directory.
-        
+
         Args:
             template_dir: Path to Jinja2 templates
-            
+
         Raises:
             FileNotFoundError: If template directory doesn't exist
         """
@@ -70,7 +71,7 @@ class SiteBuilder:
             raise FileNotFoundError(
                 f"Template directory not found: {self.template_path}"
             )
-            
+
         # Rule #64: Autoescape prevents XSS
         self.env = Environment(
             loader=FileSystemLoader(self.template_path),
@@ -78,42 +79,42 @@ class SiteBuilder:
             trim_blocks=True,
             lstrip_blocks=True
         )
-        
+
         logger.info(f"SiteBuilder initialized with templates from: {self.template_path}")
 
     def load_theme_config(self, theme_name: str) -> Dict[str, str]:
         """
         Load CSS class mappings for specified theme.
-        
+
         Args:
             theme_name: Theme identifier (e.g., "enterprise", "brutalist")
-            
+
         Returns:
             Dictionary of CSS class mappings
-            
+
         Raises:
             ThemeNotFoundError: If theme doesn't exist in config
             FileNotFoundError: If themes.json is missing
         """
         # Rule #7: Catch specific errors
         config_path = Path(THEMES_CONFIG_PATH)
-        
+
         if not config_path.exists():
             raise FileNotFoundError(f"Theme configuration not found: {config_path}")
-            
+
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 themes = json.load(f)
-            
+
             if theme_name not in themes:
                 available = ", ".join(themes.keys())
                 raise ThemeNotFoundError(
                     f"Theme '{theme_name}' not found. Available: {available}"
                 )
-                 
+
             logger.info(f"Loaded theme: {theme_name}")
             return themes[theme_name]
-            
+
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in themes.json: {e}")
             raise SiteBuilderError(f"Failed to parse theme config: {e}")
@@ -127,31 +128,31 @@ class SiteBuilder:
     ) -> Path:
         """
         Assemble and render complete HTML page.
-        
+
         Args:
             content: Structured content data (validated elsewhere)
             theme: Theme name to apply
             output_filename: Output file name
             template_name: Base template to use
-            
+
         Returns:
             Path to generated HTML file
-            
+
         Raises:
             TemplateNotFoundError: If template doesn't exist
             SiteBuilderError: If rendering fails
         """
         logger.info(f"Building page: {output_filename} (theme: {theme})")
-        
+
         # Load theme classes
         theme_classes = self.load_theme_config(theme)
-        
+
         # Rule #27: Separation of Concerns (Logic vs Presentation)
         try:
             template = self.env.get_template(template_name)
         except TemplateNotFound as e:
             raise TemplateNotFoundError(f"Template not found: {template_name}") from e
-        
+
         # Render with context
         try:
             rendered_html = template.render(
@@ -163,17 +164,17 @@ class SiteBuilder:
                     "build_date": datetime.utcnow().strftime("%Y-%m-%d")
                 }
             )
-            
+
             # Write to disk
             output_path = Path(OUTPUT_DIR) / output_filename
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(rendered_html)
-                
+
             logger.info(f"✓ Successfully generated: {output_path} ({len(rendered_html)} bytes)")
             return output_path
-            
+
         except Exception as e:
             # Rule #7: Don't swallow errors
             logger.critical(f"Rendering failed for {output_filename}: {e}")
@@ -216,11 +217,11 @@ if __name__ == "__main__":
             }
         ]
     }
-    
+
     try:
         builder = SiteBuilder()
         print(f"Available themes: {builder.list_available_themes()}")
-        
+
         # Build with each theme
         for theme in ["enterprise", "brutalist", "editorial"]:
             output = builder.build_page(
@@ -229,7 +230,7 @@ if __name__ == "__main__":
                 output_filename=f"demo_{theme}.html"
             )
             print(f"✓ Built: {output}")
-            
+
     except Exception as e:
         logger.error(f"Demo failed: {e}")
         raise

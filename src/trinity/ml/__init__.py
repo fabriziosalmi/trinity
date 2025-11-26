@@ -12,7 +12,7 @@ Components:
 Phase: v0.5.0 (Generative Style Engine)
 """
 
-from trinity.ml.tokenizer import TailwindTokenizer
 from trinity.ml.models import LSTMStyleGenerator
+from trinity.ml.tokenizer import TailwindTokenizer
 
 __all__ = ["TailwindTokenizer", "LSTMStyleGenerator"]

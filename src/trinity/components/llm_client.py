@@ -4,11 +4,11 @@ Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
-import logging
 import json
+import logging
 import time
-from typing import Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, Optional
 
 try:
     import httpx
@@ -41,12 +41,12 @@ class LLMClient:
     - Send prompts to local LLM (Ollama/LlamaCPP)
     - Handle retries and timeouts
     - Parse JSON responses
-    
+
     Does NOT:
     - Validate content schema (handled by validator)
     - Render HTML (handled by builder)
     """
-    
+
     def __init__(
         self,
         provider: str = "ollama",
@@ -58,7 +58,7 @@ class LLMClient:
     ):
         """
         Initialize LLM client.
-        
+
         Args:
             provider: Provider type (ollama, llamacpp)
             model_name: Model identifier
@@ -73,13 +73,13 @@ class LLMClient:
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
-        
+
         # HTTP client with sensible defaults
         self.client = httpx.Client(
             timeout=httpx.Timeout(timeout),
             follow_redirects=True
         )
-        
+
         logger.info(
             f"LLMClient initialized: {provider}/{model_name} @ {base_url}"
         )
@@ -114,45 +114,45 @@ class LLMClient:
     ) -> str:
         """
         Send prompt to LLM and return response.
-        
+
         Args:
             prompt: User prompt
             system_prompt: System/instruction prompt
             expect_json: Whether to validate JSON response
-            
+
         Returns:
             LLM response text
-            
+
         Raises:
             LLMClientError: On connection/timeout/parse errors
         """
         endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
         payload = self._build_request_payload(prompt, system_prompt)
-        
+
         # Rule #7: Retry logic with exponential backoff
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"LLM request (attempt {attempt}/{self.max_retries})")
-                
+
                 response = self.client.post(
                     endpoint,
                     json=payload,
                     headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
-                
+
                 # Parse response
                 result = response.json()
-                
+
                 # Extract text based on provider
                 if self.provider == LLMProvider.OLLAMA:
                     text = result.get("response", "")
                 else:
                     text = result.get("content", "")
-                
+
                 if not text:
                     raise LLMClientError("Empty response from LLM")
-                
+
                 # Validate JSON if expected
                 if expect_json:
                     try:
@@ -160,30 +160,30 @@ class LLMClient:
                     except json.JSONDecodeError as e:
                         logger.warning(f"Response is not valid JSON: {e}")
                         # Don't fail - let validator handle it
-                
+
                 logger.info(f"✓ LLM response received ({len(text)} chars)")
                 return text
-                
+
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
-                    
+
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM timeout after {self.max_retries} attempts")
-                    
+
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
                 raise LLMClientError(f"LLM client error: {e}")
-            
+
             # Exponential backoff
             if attempt < self.max_retries:
                 sleep_time = 2 ** attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 time.sleep(sleep_time)
-        
+
         raise LLMClientError("Max retries exceeded")
 
     def close(self):

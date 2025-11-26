@@ -5,9 +5,9 @@ Provides structured logging with file and console handlers.
 """
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
-from logging.handlers import RotatingFileHandler
 
 
 def setup_logger(
@@ -19,24 +19,24 @@ def setup_logger(
 ) -> logging.Logger:
     """
     Setup centralized logger with console and file handlers.
-    
+
     Args:
         name: Logger name
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_file: Path to log file (optional)
         max_bytes: Max log file size before rotation
         backup_count: Number of backup log files to keep
-        
+
     Returns:
         Configured logger instance
     """
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, log_level.upper()))
-    
+
     # Prevent duplicate handlers
     if logger.handlers:
         return logger
-    
+
     # Console handler with color support
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
@@ -45,7 +45,7 @@ def setup_logger(
     )
     console_handler.setFormatter(console_format)
     logger.addHandler(console_handler)
-    
+
     # File handler with rotation (if log_file specified)
     if log_file:
         log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -62,7 +62,7 @@ def setup_logger(
         )
         file_handler.setFormatter(file_format)
         logger.addHandler(file_handler)
-    
+
     return logger
 
 

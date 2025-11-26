@@ -6,10 +6,11 @@ Rule #27: Separation of concerns
 Rule #28: Structured logging
 """
 import json
-from pathlib import Path
-from typing import Dict, Any, Optional
 from datetime import datetime
-from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 
 try:
     import yaml
@@ -50,19 +51,19 @@ class SiteBuilder:
     - Inject content data and theme classes
     - Render static HTML
     - Write output to disk
-    
+
     Does NOT:
     - Generate content (handled by LLM)
     - Modify layout structure (templates are immutable)
     """
-    
+
     def __init__(self, template_dir: str = DEFAULT_TEMPLATE_DIR):
         """
         Initialize builder with template directory.
-        
+
         Args:
             template_dir: Path to Jinja2 templates
-            
+
         Raises:
             FileNotFoundError: If template directory doesn't exist
         """
@@ -72,7 +73,7 @@ class SiteBuilder:
             raise FileNotFoundError(
                 f"Template directory not found: {self.template_path}"
             )
-            
+
         # Rule #64: Autoescape prevents XSS
         self.env = Environment(
             loader=FileSystemLoader(self.template_path),
@@ -80,21 +81,21 @@ class SiteBuilder:
             trim_blocks=True,
             lstrip_blocks=True
         )
-        
+
         logger.info(f"SiteBuilder initialized with templates from: {self.template_path}")
 
     def load_theme_config(self, theme_name: str) -> Dict[str, str]:
         """
         Load CSS class mappings for specified theme.
-        
+
         Supports both YAML (preferred) and JSON (legacy) formats.
-        
+
         Args:
             theme_name: Theme identifier (e.g., "enterprise", "brutalist")
-            
+
         Returns:
             Dictionary of CSS class mappings
-            
+
         Raises:
             ThemeNotFoundError: If theme doesn't exist in config
             FileNotFoundError: If neither themes.yaml nor themes.json exists
@@ -103,14 +104,14 @@ class SiteBuilder:
         # Try YAML first (new format)
         yaml_path = Path(THEMES_CONFIG_PATH)
         json_path = Path(THEMES_CONFIG_PATH_LEGACY)
-        
+
         config_path = yaml_path if yaml_path.exists() else json_path
-        
+
         if not config_path.exists():
             raise FileNotFoundError(
                 f"Theme configuration not found. Expected: {yaml_path} or {json_path}"
             )
-            
+
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 if config_path.suffix == ".yaml" or config_path.suffix == ".yml":
@@ -119,16 +120,16 @@ class SiteBuilder:
                 else:
                     themes = json.load(f)
                     logger.warning(
-                        f"Loading from legacy JSON format. "
-                        f"Consider migrating to YAML: python scripts/migrate_themes_to_yaml.py"
+                        "Loading from legacy JSON format. "
+                        "Consider migrating to YAML: python scripts/migrate_themes_to_yaml.py"
                     )
-            
+
             if theme_name not in themes:
                 available = ", ".join(themes.keys())
                 raise ThemeNotFoundError(
                     f"Theme '{theme_name}' not found. Available: {available}"
                 )
-            
+
             # Extract classes from YAML structure (has metadata) or use direct mapping (JSON)
             theme_config = themes[theme_name]
             if isinstance(theme_config, dict) and "classes" in theme_config:
@@ -139,7 +140,7 @@ class SiteBuilder:
                 # JSON format (legacy)
                 logger.info(f"Loaded theme: {theme_name} (JSON legacy)")
                 return theme_config
-            
+
         except (yaml.YAMLError, json.JSONDecodeError) as e:
             logger.error(f"Invalid theme config format: {e}")
             raise SiteBuilderError(f"Failed to parse theme config: {e}")
@@ -154,7 +155,7 @@ class SiteBuilder:
     ) -> Path:
         """
         Assemble and render complete HTML page.
-        
+
         Args:
             content: Structured content data (validated elsewhere)
             theme: Theme name to apply
@@ -162,19 +163,19 @@ class SiteBuilder:
             template_name: Base template to use
             style_overrides: Optional CSS class overrides from SmartHealer
                            Format: {"hero_title": "text-2xl break-all", ...}
-            
+
         Returns:
             Path to generated HTML file
-            
+
         Raises:
             TemplateNotFoundError: If template doesn't exist
             SiteBuilderError: If rendering fails
         """
         logger.info(f"Building page: {output_filename} (theme: {theme})")
-        
+
         # Load theme classes
         theme_classes = self.load_theme_config(theme)
-        
+
         # Merge style overrides from SmartHealer
         if style_overrides:
             logger.info(f"🎨 Applying {len(style_overrides)} CSS overrides from SmartHealer")
@@ -188,13 +189,13 @@ class SiteBuilder:
                     # New key not in theme - add it
                     theme_classes[key] = override_classes
                     logger.debug(f"  {key}: NEW → '{override_classes}'")
-        
+
         # Rule #27: Separation of Concerns (Logic vs Presentation)
         try:
             template = self.env.get_template(template_name)
         except TemplateNotFound as e:
             raise TemplateNotFoundError(f"Template not found: {template_name}") from e
-        
+
         # Render with context
         try:
             rendered_html = template.render(
@@ -206,17 +207,17 @@ class SiteBuilder:
                     "build_date": datetime.utcnow().strftime("%Y-%m-%d")
                 }
             )
-            
+
             # Write to disk
             output_path = Path(OUTPUT_DIR) / output_filename
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(rendered_html)
-                
+
             logger.info(f"✓ Successfully generated: {output_path} ({len(rendered_html)} bytes)")
             return output_path
-            
+
         except Exception as e:
             # Rule #7: Don't swallow errors
             logger.critical(f"Rendering failed for {output_filename}: {e}")
@@ -259,11 +260,11 @@ if __name__ == "__main__":
             }
         ]
     }
-    
+
     try:
         builder = SiteBuilder()
         print(f"Available themes: {builder.list_available_themes()}")
-        
+
         # Build with each theme
         for theme in ["enterprise", "brutalist", "editorial"]:
             output = builder.build_page(
@@ -272,7 +273,7 @@ if __name__ == "__main__":
                 output_filename=f"demo_{theme}.html"
             )
             print(f"✓ Built: {output}")
-            
+
     except Exception as e:
         logger.error(f"Demo failed: {e}")
         raise

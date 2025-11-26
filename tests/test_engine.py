@@ -8,11 +8,13 @@ Tests cover:
 - Guardian integration
 """
 
-import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
-from trinity.engine import TrinityEngine, BuildResult, BuildStatus
+
+import pytest
+
 from trinity.config import TrinityConfig
+from trinity.engine import BuildResult, BuildStatus, TrinityEngine
 
 
 @pytest.fixture
@@ -38,7 +40,7 @@ def mock_content():
 
 class TestSelfHealingLoop:
     """Test self-healing loop orchestration"""
-    
+
     @patch('trinity.components.guardian.TrinityGuardian')
     def test_successful_build_first_attempt(self, mock_guardian_class, engine, mock_content):
         """Test build succeeds on first attempt (no healing needed)"""
@@ -51,19 +53,19 @@ class TestSelfHealingLoop:
             "fix_suggestion": ""
         }
         mock_guardian_class.return_value = mock_guardian
-        
+
         result = engine.build_with_self_healing(
-            mock_content, 
+            mock_content,
             theme="enterprise",
             output_filename="test_output.html",
             enable_guardian=True
         )
-        
+
         assert isinstance(result, BuildResult)
         assert result.status == BuildStatus.SUCCESS
         assert result.attempts == 1
         assert len(result.fixes_applied) == 0
-    
+
     def test_healing_loop_with_css_fixes(self, engine, mock_content):
         """Test healing loop applies CSS strategies"""
         # Mock Guardian to reject first 2 attempts, approve on 3rd
@@ -74,11 +76,11 @@ class TestSelfHealingLoop:
             {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""}
         ]
         engine._guardian = mock_guardian  # Inject mock directly
-        
+
         # Mock Healer to return CSS strategies
         mock_healer = Mock()
-        from trinity.components.healer import HealingStrategy, HealingResult
-        
+        from trinity.components.healer import HealingResult, HealingStrategy
+
         mock_healer.heal_layout.side_effect = [
             HealingResult(
                 strategy=HealingStrategy.CSS_BREAK_WORD,
@@ -96,26 +98,26 @@ class TestSelfHealingLoop:
             )
         ]
         engine.healer = mock_healer  # Inject mock directly
-        
+
         result = engine.build_with_self_healing(
-            mock_content, 
+            mock_content,
             theme="brutalist",
             output_filename="test_healing.html",
             enable_guardian=True
         )
-        
+
         assert result.status == BuildStatus.SUCCESS
         assert result.attempts == 3
         assert len(result.fixes_applied) == 2
         # Check that strategy names appear in fixes_applied (may include attempt number)
         assert any("css_break_word" in fix for fix in result.fixes_applied)
         assert any("font_shrink" in fix for fix in result.fixes_applied)
-    
+
     def test_max_retries_reached(self, engine, mock_content):
         """Test that engine stops after max_retries"""
         # Configure for 2 max retries
         engine.config.max_retries = 2
-        
+
         # Mock Guardian to always reject
         mock_guardian = Mock()
         mock_guardian.audit_layout.return_value = {
@@ -125,21 +127,21 @@ class TestSelfHealingLoop:
             "fix_suggestion": "Unable to fix"
         }
         engine._guardian = mock_guardian  # Inject mock directly
-            
+
         result = engine.build_with_self_healing(
-            mock_content, 
+            mock_content,
             theme="enterprise",
             output_filename="test_max_retries.html",
             enable_guardian=True
         )
-        
+
         assert result.status == BuildStatus.REJECTED
         assert result.attempts == engine.config.max_retries
 
 
 class TestBuildResultModel:
     """Test BuildResult Pydantic model"""
-    
+
     def test_create_success_result(self):
         """Test creating SUCCESS BuildResult"""
         result = BuildResult(
@@ -150,11 +152,11 @@ class TestBuildResultModel:
             guardian_report=None,
             fixes_applied=[]
         )
-        
+
         assert result.status == BuildStatus.SUCCESS
         assert result.attempts == 1
         assert len(result.fixes_applied) == 0
-    
+
     def test_create_rejected_result(self):
         """Test creating REJECTED BuildResult"""
         result = BuildResult(
@@ -165,7 +167,7 @@ class TestBuildResultModel:
             guardian_report={"approved": False, "reason": "Unfixable"},
             fixes_applied=["css_break_word", "font_shrink", "css_truncate"]
         )
-        
+
         assert result.status == BuildStatus.REJECTED
         assert result.attempts == 3
         assert len(result.fixes_applied) == 3
@@ -173,7 +175,7 @@ class TestBuildResultModel:
 
 class TestStyleOverrideAccumulation:
     """Test that style_overrides accumulate across healing attempts"""
-    
+
     def test_overrides_accumulate(self, engine, mock_content):
         """Test that CSS overrides from multiple attempts are accumulated"""
         # Mock Guardian to reject 2 times, then approve
@@ -184,11 +186,11 @@ class TestStyleOverrideAccumulation:
             {"approved": True, "reason": "Fixed", "issues": [], "fix_suggestion": ""}
         ]
         engine._guardian = mock_guardian  # Inject mock directly
-        
+
         # Mock Healer to return different overrides each time
         mock_healer = Mock()
-        from trinity.components.healer import HealingStrategy, HealingResult
-        
+        from trinity.components.healer import HealingResult, HealingStrategy
+
         mock_healer.heal_layout.side_effect = [
             HealingResult(
                 strategy=HealingStrategy.CSS_BREAK_WORD,
@@ -206,23 +208,23 @@ class TestStyleOverrideAccumulation:
             )
         ]
         engine.healer = mock_healer  # Inject mock directly
-        
+
         # Mock Builder to track style_overrides passed to it
         mock_builder = Mock()
         mock_builder.build_page.return_value = Path("/tmp/test.html")
         engine.builder = mock_builder  # Inject mock directly
-        
-        result = engine.build_with_self_healing(
-            mock_content, 
+
+        engine.build_with_self_healing(
+            mock_content,
             theme="enterprise",
             output_filename="test_accumulate.html",
             enable_guardian=True
         )
-        
+
         # Verify builder.build_page was called with accumulated overrides
         # On attempt 3 (final successful build), should have both overrides
         final_call_kwargs = mock_builder.build_page.call_args_list[-1][1]
-        
+
         if 'style_overrides' in final_call_kwargs:
             final_overrides = final_call_kwargs['style_overrides']
             # Should have accumulated both heading_primary and body_text overrides

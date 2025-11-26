@@ -13,12 +13,12 @@ A deterministic static site builder that combines:
 __version__ = "0.2.0"
 __author__ = "Trinity Team"
 
-from trinity.components.builder import SiteBuilder, SiteBuilderError
 from trinity.components.brain import ContentEngine, ContentEngineError
-from trinity.components.guardian import TrinityGuardian, GuardianError
+from trinity.components.builder import SiteBuilder, SiteBuilderError
 from trinity.components.dataminer import TrinityMiner
-from trinity.engine import TrinityEngine, BuildResult
+from trinity.components.guardian import GuardianError, TrinityGuardian
 from trinity.config import TrinityConfig
+from trinity.engine import BuildResult, TrinityEngine
 
 __all__ = [
     "TrinityEngine",

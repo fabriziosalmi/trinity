@@ -9,7 +9,7 @@ import base64
 import json
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 try:
     from playwright.async_api import async_playwright
@@ -17,11 +17,11 @@ except ImportError:
     raise ImportError("playwright required. Install with: pip install playwright && playwright install chromium")
 
 try:
-    from openai import OpenAI, APIConnectionError, APIError
+    from openai import APIConnectionError, APIError, OpenAI
 except ImportError:
     raise ImportError("openai required. Install with: pip install openai")
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from trinity.utils.logger import get_logger
 
@@ -53,19 +53,19 @@ class GuardianError(Exception):
 class TrinityGuardian:
     """
     Vision-powered layout quality assurance system.
-    
+
     Responsibilities:
     - Render HTML in headless browser
     - Perform hybrid checks (DOM + Vision AI)
     - Detect layout bugs (overflow, overlap, broken rendering)
     - Return actionable fix suggestions
-    
+
     Does NOT:
     - Fix layouts automatically (that's for future iterations)
     - Generate content (handled by ContentEngine)
     - Build HTML (handled by SiteBuilder)
     """
-    
+
     def __init__(
         self,
         base_url: str = DEFAULT_LM_STUDIO_URL,
@@ -76,7 +76,7 @@ class TrinityGuardian:
     ):
         """
         Initialize TrinityGuardian with Qwen VL endpoint.
-        
+
         Args:
             base_url: LM Studio API endpoint
             model_id: Vision model identifier
@@ -89,27 +89,27 @@ class TrinityGuardian:
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
         self.enable_vision_ai = enable_vision_ai
-        
+
         # Initialize OpenAI-compatible client for Vision API
         if self.enable_vision_ai:
             self.client = OpenAI(base_url=base_url, api_key="lm-studio")
-        
+
         logger.info(f"👁️  TrinityGuardian initialized (vision_ai={enable_vision_ai})")
-    
+
     async def _capture_screenshot(self, html_path: str) -> Optional[str]:
         """
         Render HTML in headless browser and capture screenshot.
-        
+
         Args:
             html_path: Absolute path to HTML file
-            
+
         Returns:
             Base64-encoded screenshot or None on failure
         """
         path = Path(html_path)
         if not path.exists():
             raise FileNotFoundError(f"HTML file not found: {path}")
-        
+
         try:
             async with async_playwright() as p:
                 # Launch headless Chromium
@@ -117,62 +117,62 @@ class TrinityGuardian:
                 page = await browser.new_page(
                     viewport={"width": self.viewport_width, "height": self.viewport_height}
                 )
-                
+
                 # Load HTML file (use file:// URL)
                 await page.goto(f"file://{path.resolve()}")
-                
+
                 # Wait for page to fully render
                 await page.wait_for_load_state("networkidle")
                 await asyncio.sleep(1)  # Extra safety margin for CSS animations
-                
+
                 # Capture screenshot
                 screenshot_bytes = await page.screenshot(full_page=True)
-                
+
                 await browser.close()
-                
+
                 # Encode to base64
                 screenshot_b64 = base64.b64encode(screenshot_bytes).decode('utf-8')
-                
+
                 logger.info(f"✓ Screenshot captured: {len(screenshot_b64)} bytes")
                 return screenshot_b64
-                
+
         except Exception as e:
             logger.error(f"Screenshot capture failed: {e}")
             return None
-    
+
     async def _check_dom_overflow(self, html_path: str) -> bool:
         """
         Fast DOM-based check for overflow issues.
-        
+
         Args:
             html_path: Absolute path to HTML file
-            
+
         Returns:
             True if overflow detected, False otherwise
         """
         path = Path(html_path)
-        
+
         try:
             async with async_playwright() as p:
                 browser = await p.chromium.launch(headless=True)
                 page = await browser.new_page()
-                
+
                 await page.goto(f"file://{path.resolve()}")
                 await page.wait_for_load_state("networkidle")
-                
+
                 # Inject JavaScript to check for overflow
                 overflow_detected = await page.evaluate("""
                     () => {
                         const elements = Array.from(document.querySelectorAll('*'));
                         const overflowing = elements.filter(el => {
                             // Skip accessibility elements that are intentionally hidden
-                            if (el.classList.contains('sr-only') || 
+                            if (el.classList.contains('sr-only') ||
                                 el.classList.contains('hidden') ||
                                 el.style.display === 'none' ||
                                 el.offsetParent === null) {
                                 return false;
                             }
-                            
+
                             // Check horizontal overflow
                             if (el.scrollWidth > el.clientWidth + 5) {  // 5px tolerance
                                 return true;
@@ -184,7 +184,7 @@ class TrinityGuardian:
                             }
                             return false;
                         });
-                        
+
                         if (overflowing.length > 0) {
                             console.log('Overflow detected in:', overflowing.map(el => el.tagName + '.' + el.className));
                             return true;
@@ -192,25 +192,25 @@ class TrinityGuardian:
                         return false;
                     }
                 """)
-                
+
                 await browser.close()
-                
+
                 if overflow_detected:
                     logger.warning("⚠️  DOM overflow detected via JavaScript")
-                
+
                 return overflow_detected
-                
+
         except Exception as e:
             logger.error(f"DOM overflow check failed: {e}")
             return False
-    
+
     def _analyze_with_vision(self, screenshot_b64: str) -> Dict[str, Any]:
         """
         Analyze screenshot using Qwen VL vision model.
-        
+
         Args:
             screenshot_b64: Base64-encoded screenshot
-            
+
         Returns:
             Analysis result dictionary
         """
@@ -236,7 +236,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
 
         try:
             logger.info("🧠 Sending screenshot to Qwen VL for analysis...")
-            
+
             response = self.client.chat.completions.create(
                 model=self.model_id,
                 messages=[
@@ -260,19 +260,19 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 temperature=0.1,  # Low temperature for deterministic analysis
                 max_tokens=500
             )
-            
+
             content = response.choices[0].message.content.strip()
-            
+
             # Clean response (remove markdown if present)
             if content.startswith("```json"):
                 content = content.replace("```json", "").replace("```", "").strip()
-            
+
             # Parse JSON
             analysis = json.loads(content)
-            
+
             logger.info(f"✓ Vision analysis complete: {analysis.get('status', 'unknown')}")
             return analysis
-            
+
         except (APIConnectionError, APIError) as e:
             logger.error(f"Qwen VL connection failed: {e}")
             # Rule #7: Graceful degradation
@@ -295,23 +295,23 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "issues": ["Vision AI error - auto-approved"],
                 "fix_suggestion": "none"
             }
-    
+
     def audit_layout(self, html_path: str) -> Dict[str, Any]:
         """
         Perform complete layout audit (DOM + Vision AI).
-        
+
         Args:
             html_path: Absolute path to HTML file
-            
+
         Returns:
             Audit report dictionary
         """
         logger.info(f"👁️  Guardian inspecting: {html_path}")
-        
+
         # Phase 1: Fast DOM check
         logger.info("Phase 1: DOM overflow detection...")
         dom_overflow = asyncio.run(self._check_dom_overflow(html_path))
-        
+
         if dom_overflow and not self.enable_vision_ai:
             # Early exit if DOM check fails and Vision AI is disabled
             return {
@@ -322,13 +322,13 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "fix_suggestion": "truncate",
                 "screenshot_path": None
             }
-        
+
         # Phase 2: Vision AI analysis
         if self.enable_vision_ai:
             logger.info("Phase 2: Vision AI analysis (Qwen VL)...")
-            
+
             screenshot_b64 = asyncio.run(self._capture_screenshot(html_path))
-            
+
             if not screenshot_b64:
                 logger.warning("Screenshot capture failed - auto-approving")
                 return {
@@ -339,12 +339,12 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                     "fix_suggestion": "none",
                     "screenshot_path": None
                 }
-            
+
             vision_analysis = self._analyze_with_vision(screenshot_b64)
-            
+
             # Combine DOM + Vision results
             approved = vision_analysis["status"] == "pass" and not dom_overflow
-            
+
             if dom_overflow and vision_analysis["status"] == "pass":
                 # DOM detected overflow but Vision AI says it's fine
                 # Trust Vision AI (it might be intentional overflow/scroll)
@@ -356,7 +356,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
             else:
                 approved = True
                 reason = "Layout passed all checks"
-            
+
             return {
                 "approved": approved,
                 "status": "pass" if approved else "fail",
@@ -365,7 +365,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 "fix_suggestion": vision_analysis.get("fix_suggestion", "none"),
                 "screenshot_path": None  # Could save to disk if needed
             }
-        
+
         else:
             # Vision AI disabled, rely only on DOM check
             return {
@@ -381,15 +381,15 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
 # Demo usage
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    
+
     # Test with a real HTML file
     test_file = Path("output/index_brutalist_llm.html")
-    
+
     if test_file.exists():
         guardian = TrinityGuardian(enable_vision_ai=True)
-        
+
         report = guardian.audit_layout(str(test_file.resolve()))
-        
+
         print("\n" + "=" * 60)
         print("GUARDIAN AUDIT REPORT")
         print("=" * 60)

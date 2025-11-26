@@ -8,7 +8,7 @@ Replaces generic 'except Exception' blocks with domain-specific exceptions.
 
 class TrinityError(Exception):
     """Base exception for all Trinity errors."""
-    
+
     def __init__(self, message: str, details: dict = None):
         self.message = message
         self.details = details or {}

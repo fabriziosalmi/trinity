@@ -4,13 +4,13 @@ Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation
 """
-import json
-import time
 import asyncio
-from typing import Dict, Any, Optional
+import json
+import sys
+import time
 from enum import Enum
 from pathlib import Path
-import sys
+from typing import Any, Dict, Optional
 
 try:
     import httpx
@@ -57,12 +57,12 @@ class LLMClient:
     - Send prompts to local LLM (Ollama/LlamaCPP)
     - Handle retries and timeouts
     - Parse JSON responses
-    
+
     Does NOT:
     - Validate content schema (handled by validator)
     - Render HTML (handled by builder)
     """
-    
+
     def __init__(
         self,
         provider: str = "ollama",
@@ -74,7 +74,7 @@ class LLMClient:
     ):
         """
         Initialize LLM client.
-        
+
         Args:
             provider: Provider type (ollama, llamacpp)
             model_name: Model identifier
@@ -89,13 +89,13 @@ class LLMClient:
         self.timeout = timeout
         self.max_retries = max_retries
         self.temperature = temperature
-        
+
         # HTTP client with sensible defaults
         self.client = httpx.Client(
             timeout=httpx.Timeout(timeout),
             follow_redirects=True
         )
-        
+
         logger.info("llm_client_initialized", extra={
             "provider": provider,
             "model": model_name,
@@ -135,45 +135,45 @@ class LLMClient:
     ) -> str:
         """
         Send prompt to LLM and return response.
-        
+
         Args:
             prompt: User prompt
             system_prompt: System/instruction prompt
             expect_json: Whether to validate JSON response
-            
+
         Returns:
             LLM response text
-            
+
         Raises:
             LLMClientError: On connection/timeout/parse errors
         """
         endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
         payload = self._build_request_payload(prompt, system_prompt)
-        
+
         # Rule #7: Retry logic with exponential backoff
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"LLM request (attempt {attempt}/{self.max_retries})")
-                
+
                 response = self.client.post(
                     endpoint,
                     json=payload,
                     headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
-                
+
                 # Parse response
                 result = response.json()
-                
+
                 # Extract text based on provider
                 if self.provider == LLMProvider.OLLAMA:
                     text = result.get("response", "")
                 else:
                     text = result.get("content", "")
-                
+
                 if not text:
                     raise LLMClientError("Empty response from LLM")
-                
+
                 # Validate JSON if expected
                 if expect_json:
                     try:
@@ -181,30 +181,30 @@ class LLMClient:
                     except json.JSONDecodeError as e:
                         logger.warning(f"Response is not valid JSON: {e}")
                         # Don't fail - let validator handle it
-                
+
                 logger.info(f"✓ LLM response received ({len(text)} chars)")
                 return text
-                
+
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
-                    
+
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM timeout after {self.max_retries} attempts")
-                    
+
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
                 raise LLMClientError(f"LLM client error: {e}")
-            
+
             # Exponential backoff
             if attempt < self.max_retries:
                 sleep_time = 2 ** attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 time.sleep(sleep_time)
-        
+
         raise LLMClientError("Max retries exceeded")
 
     def close(self):
@@ -222,21 +222,21 @@ class LLMClient:
 class AsyncLLMClient:
     """
     Async fault-tolerant LLM API client.
-    
+
     Provides async/await interface for concurrent LLM requests.
     Use this for high-throughput scenarios (6x faster than sync).
-    
+
     Responsibilities:
     - Send prompts to local LLM (Ollama/LlamaCPP) asynchronously
     - Handle retries and timeouts with async/await
     - Parse JSON responses
     - Support concurrent requests with asyncio.gather()
-    
+
     Does NOT:
     - Validate content schema (handled by validator)
     - Render HTML (handled by builder)
     """
-    
+
     def __init__(
         self,
         provider: str = "ollama",
@@ -250,7 +250,7 @@ class AsyncLLMClient:
     ):
         """
         Initialize async LLM client.
-        
+
         Args:
             provider: Provider type (ollama, llamacpp)
             model_name: Model identifier
@@ -269,13 +269,13 @@ class AsyncLLMClient:
         self.temperature = temperature
         self.enable_cache = enable_cache
         self.cache_ttl = cache_ttl
-        
+
         # Async HTTP client (created in __aenter__)
         self.client: Optional[httpx.AsyncClient] = None
-        
+
         # Cache manager (created in __aenter__ if enabled)
         self.cache: Optional[CacheManager] = None
-        
+
         logger.info(
             f"AsyncLLMClient initialized: {provider}/{model_name} @ {base_url} "
             f"(cache={'enabled' if enable_cache else 'disabled'})"
@@ -312,27 +312,27 @@ class AsyncLLMClient:
     ) -> str:
         """
         Send prompt to LLM asynchronously and return response.
-        
+
         Uses multi-tier caching to reduce costs and improve latency:
         - Memory cache: ~0.01ms (instant)
         - Redis cache: ~1ms (if enabled)
         - Filesystem cache: ~10ms (fallback)
-        
+
         Args:
             prompt: User prompt
             system_prompt: System/instruction prompt
             expect_json: Whether to validate JSON response
             use_cache: Whether to use cache for this request
-            
+
         Returns:
             LLM response text (from cache or fresh generation)
-            
+
         Raises:
             LLMClientError: On connection/timeout/parse errors
         """
         if self.client is None:
             raise LLMClientError("Client not initialized. Use 'async with AsyncLLMClient()' context manager.")
-        
+
         # Check cache first (if enabled)
         cache_key = None
         if self.enable_cache and use_cache and self.cache and CACHE_AVAILABLE:
@@ -341,42 +341,42 @@ class AsyncLLMClient:
                 system_prompt or "",
                 self.model_name
             )
-            
+
             cached_response = await self.cache.get_async(cache_key)
             if cached_response:
                 logger.info(f"✓ Cache HIT: {cache_key[:16]}... (saved LLM call)")
                 return cached_response
-            
+
             logger.debug(f"Cache MISS: {cache_key[:16]}...")
-        
+
         # Generate fresh response
         endpoint = f"{self.base_url}/api/generate" if self.provider == LLMProvider.OLLAMA else f"{self.base_url}/completion"
         payload = self._build_request_payload(prompt, system_prompt)
-        
+
         # Rule #7: Retry logic with exponential backoff
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"Async LLM request (attempt {attempt}/{self.max_retries})")
-                
+
                 response = await self.client.post(
                     endpoint,
                     json=payload,
                     headers={"Content-Type": "application/json"}
                 )
                 response.raise_for_status()
-                
+
                 # Parse response
                 result = response.json()
-                
+
                 # Extract text based on provider
                 if self.provider == LLMProvider.OLLAMA:
                     text = result.get("response", "")
                 else:
                     text = result.get("content", "")
-                
+
                 if not text:
                     raise LLMClientError("Empty response from LLM")
-                
+
                 # Validate JSON if expected
                 if expect_json:
                     try:
@@ -384,9 +384,9 @@ class AsyncLLMClient:
                     except json.JSONDecodeError as e:
                         logger.warning(f"Response is not valid JSON: {e}")
                         # Don't fail - let validator handle it
-                
+
                 logger.info(f"✓ Async LLM response received ({len(text)} chars)")
-                
+
                 # Cache the response (if enabled)
                 if self.enable_cache and use_cache and cache_key and self.cache and CACHE_AVAILABLE:
                     try:
@@ -394,29 +394,29 @@ class AsyncLLMClient:
                         logger.debug(f"Cached response: {cache_key[:16]}... (ttl={self.cache_ttl}s)")
                     except Exception as e:
                         logger.warning(f"Failed to cache response: {e}")
-                
+
                 return text
-                
+
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM request failed after {self.max_retries} attempts: {e}")
-                    
+
             except httpx.TimeoutException:
                 logger.warning(f"Request timeout (attempt {attempt})")
                 if attempt == self.max_retries:
                     raise LLMClientError(f"LLM timeout after {self.max_retries} attempts")
-                    
+
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
                 raise LLMClientError(f"LLM client error: {e}")
-            
+
             # Exponential backoff (async)
             if attempt < self.max_retries:
                 sleep_time = 2 ** attempt
                 logger.info(f"Retrying in {sleep_time}s...")
                 await asyncio.sleep(sleep_time)
-        
+
         raise LLMClientError("Max retries exceeded")
 
     async def __aenter__(self):
@@ -426,7 +426,7 @@ class AsyncLLMClient:
             follow_redirects=True,
             http2=True  # Enable HTTP/2 for better performance
         )
-        
+
         # Initialize cache (if enabled and available)
         if self.enable_cache and CACHE_AVAILABLE:
             try:
@@ -441,7 +441,7 @@ class AsyncLLMClient:
             except Exception as e:
                 logger.warning(f"Cache initialization failed, continuing without cache: {e}")
                 self.cache = None
-        
+
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -449,7 +449,7 @@ class AsyncLLMClient:
         if self.client:
             await self.client.aclose()
             logger.info("AsyncLLMClient closed")
-        
+
         if self.cache:
             await self.cache.__aexit__(exc_type, exc_val, exc_tb)
             logger.info("Cache closed")
@@ -458,7 +458,7 @@ class AsyncLLMClient:
 # Demo usage
 if __name__ == "__main__":
     import sys
-    
+
     # Sync demo
     print("=== Sync LLM Client Demo ===")
     with LLMClient() as client:
@@ -470,7 +470,7 @@ if __name__ == "__main__":
             print(f"Sync Response: {response}")
         except LLMClientError as e:
             print(f"Sync Error: {e}")
-    
+
     # Async demo
     print("\n=== Async LLM Client Demo ===")
     async def async_demo():
@@ -482,7 +482,7 @@ if __name__ == "__main__":
                     expect_json=True
                 )
                 print(f"Async Response: {response}")
-                
+
                 # Concurrent requests (6x throughput!)
                 print("\n=== Concurrent Requests Demo ===")
                 prompts = [
@@ -490,18 +490,18 @@ if __name__ == "__main__":
                     "Say 'Request 2' in JSON",
                     "Say 'Request 3' in JSON",
                 ]
-                
+
                 tasks = [
                     client.generate_content(prompt, expect_json=True)
                     for prompt in prompts
                 ]
-                
+
                 responses = await asyncio.gather(*tasks)
                 for i, resp in enumerate(responses, 1):
                     print(f"Concurrent Response {i}: {resp}")
-                    
+
             except LLMClientError as e:
                 print(f"Async Error: {e}")
-    
+
     asyncio.run(async_demo())
 
