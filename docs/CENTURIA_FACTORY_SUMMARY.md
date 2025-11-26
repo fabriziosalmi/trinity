@@ -274,7 +274,7 @@ poetry run trinity train
 **Result:** 100 diverse themes → Model learns DOM physics  
 **Impact:** Expected F1-Score: 0.918 → 0.95+  
 
-**Bottom Line:** We don't just generate themes. We teach machines to understand layout.
+**Bottom Line:** This system generates themes and teaches machines to understand layout physics.
 
 ---
 

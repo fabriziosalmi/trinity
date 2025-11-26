@@ -3,8 +3,13 @@
 Complete Docker development environment for Trinity Core static site generator.
 
 ## Prerequisites
-- Docker Desktop installed and running
-- LM Studio running at http://192.168.100.12:1234 (optional for demo mode)
+
+- **Docker Desktop >= 24.0** (latest stable recommended)
+- **Docker Compose >= 2.20** (included with Docker Desktop)
+- **LM Studio >= 0.2.0** with Qwen 2.5 Coder model (optional for LLM content generation)
+  - Default endpoint: `http://192.168.100.12:1234`
+  - Alternative: Any OpenAI-compatible API
+- **Disk Space:** ~500MB for Docker images + models
 
 ## Verify Setup
 ```bash
@@ -145,4 +150,4 @@ See `docs/DOCKER.md` for:
 
 ---
 
-**Ready to Deploy?** The Docker setup is production-ready. Just change `LM_STUDIO_URL` to your hosted LLM API.
+**Ready to Deploy?** The Docker setup is production-ready. Change `LM_STUDIO_URL` to your hosted LLM API endpoint.

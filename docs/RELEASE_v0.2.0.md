@@ -150,7 +150,7 @@ Attempt 3: CSS_TRUNCATE → Adding ellipsis
 
 ## 🎯 What Makes This "Come Cristo Comanda"
 
-1. **README as Manifesto:** Not just docs - it tells a story, explains the "why"
+1. **README as Manifesto:** Documentation that tells a story and explains the "why"
 2. **Professional Structure:** LICENSE, CI/CD, tests - enterprise-grade
 3. **Smart Documentation:** themes.json comments help both humans and AI
 4. **Comprehensive Testing:** 50+ tests covering all critical paths

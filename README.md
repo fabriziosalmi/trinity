@@ -4,7 +4,7 @@
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)](https://github.com/yourusername/trinity-core)
-[![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/yourusername/trinity-core/releases)
+[![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/yourusername/trinity-core/releases)
 
 > **The Static Site Generator that predicts and fixes its own layout bugs before deployment.**
 
@@ -101,6 +101,17 @@ Trinity Core v0.3.0:
 - DOM overflow detection (JavaScript)
 - Vision AI analysis (Qwen VL - optional)
 - **Now optional:** ML predictor reduces need for expensive browser tests
+
+---
+
+## 📚 Documentation
+
+- **[Quick Start](#-quick-start-docker)** - Get running in 5 minutes
+- **[CLI Reference](#-cli-usage)** - Complete command documentation
+- **[Neural-Symbolic Architecture](docs/NEURAL_SYMBOLIC_ARCHITECTURE.md)** - ML system design
+- **[Centuria Factory](docs/CENTURIA_FACTORY_SUMMARY.md)** - Theme generation system
+- **[Docker Setup](DOCKER_README.md)** - Container deployment
+- **[Contributing](CONTRIBUTING.md)** - Development setup and guidelines
 
 ---
 
