@@ -165,6 +165,14 @@ class TrinityGuardian:
                     () => {
                         const elements = Array.from(document.querySelectorAll('*'));
                         const overflowing = elements.filter(el => {
+                            // Skip accessibility elements that are intentionally hidden
+                            if (el.classList.contains('sr-only') || 
+                                el.classList.contains('hidden') ||
+                                el.style.display === 'none' ||
+                                el.offsetParent === null) {
+                                return false;
+                            }
+                            
                             // Check horizontal overflow
                             if (el.scrollWidth > el.clientWidth + 5) {  // 5px tolerance
                                 return true;

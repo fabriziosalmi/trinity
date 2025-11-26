@@ -107,6 +107,11 @@ class SmartHealer:
         This handles pathological strings like "AAAAAAAAAAAAA..." without spaces.
         
         Injects: break-all, whitespace-normal, overflow-wrap-anywhere
+        
+        CRITICAL FIX (2025-01-26): Use correct theme_classes keys that match templates:
+        - heading_primary (hero h1, section h2)
+        - heading_secondary (card h3)
+        - body_text (all <p> tags)
         """
         logger.info("📊 Strategy 1: CSS_BREAK_WORD - Adding nuclear break-all classes")
         
@@ -117,19 +122,23 @@ class SmartHealer:
         nuclear_css = "break-all whitespace-normal overflow-wrap-anywhere"
         
         overrides = {
+            # Template keys (match theme_classes.X in templates)
+            "heading_primary": nuclear_css,     # Hero h1, section h2
+            "heading_secondary": nuclear_css,   # Card h3
+            "body_text": nuclear_css,           # All <p> tags
+            # Legacy keys (for backward compatibility)
             "hero_title": nuclear_css,
             "hero_subtitle": nuclear_css,
             "card_title": nuclear_css,
             "card_description": nuclear_css,
             "tagline": nuclear_css,
-            "body_text": nuclear_css,  # Catch-all
         }
         
         return HealingResult(
             strategy=HealingStrategy.CSS_BREAK_WORD,
             style_overrides=overrides,
             content_modified=False,
-            description="Injected NUCLEAR break-all (mid-word breaking) to all text components"
+            description="Injected NUCLEAR break-all (mid-word breaking) to all text components via theme_classes keys"
         )
     
     def _apply_font_shrink_strategy(
@@ -141,15 +150,18 @@ class SmartHealer:
         Strategy 2: Reduce font sizes progressively.
         
         Finds text-Nxl classes and reduces them by one level.
+        Uses theme_classes keys to match templates.
         """
         logger.info("📊 Strategy 2: FONT_SHRINK - Reducing font sizes")
         
         overrides = {
-            # Shrink hero title from text-5xl/4xl to text-3xl
+            # Template keys (match theme_classes.X)
+            "heading_primary": "text-3xl break-all",     # Shrink hero/section headings
+            "heading_secondary": "text-xl break-all",     # Shrink card headings
+            "body_text": "text-base break-words",         # Keep body readable
+            # Legacy keys
             "hero_title": "text-3xl break-all",
-            # Shrink subtitle if present
             "hero_subtitle": "text-lg break-words",
-            # Shrink card titles
             "card_title": "text-xl break-all",
         }
         
@@ -157,7 +169,7 @@ class SmartHealer:
             strategy=HealingStrategy.FONT_SHRINK,
             style_overrides=overrides,
             content_modified=False,
-            description="Reduced font sizes: hero (text-3xl), cards (text-xl)"
+            description="Reduced font sizes: headings (text-3xl/xl), body (text-base)"
         )
     
     def _apply_truncate_strategy(self, report: Dict[str, Any]) -> HealingResult:
@@ -165,10 +177,16 @@ class SmartHealer:
         Strategy 3: Add CSS truncate/ellipsis classes.
         
         Uses Tailwind's truncate, line-clamp utilities.
+        Uses theme_classes keys to match templates.
         """
         logger.info("📊 Strategy 3: CSS_TRUNCATE - Adding ellipsis classes")
         
         overrides = {
+            # Template keys (match theme_classes.X)
+            "heading_primary": "truncate text-2xl",       # Hero/section headings
+            "heading_secondary": "truncate text-lg",      # Card headings
+            "body_text": "line-clamp-3 text-sm",          # Body paragraphs
+            # Legacy keys
             "hero_title": "truncate text-2xl",
             "hero_subtitle": "line-clamp-2 text-base",
             "card_title": "truncate text-lg",
