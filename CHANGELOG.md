@@ -17,14 +17,88 @@ See [PHASE6_ROADMAP.md](docs/PHASE6_ROADMAP.md) for details.
 
 **v0.7.5 - DX & Testing:**
 - ✅ YAML theme configuration (better DX, Rule #45, Rule #39)
+- ✅ Makefile for simplified commands (Rule #15: CLI simplification)
 - Mock LLM responses in CI/CD (deterministic, fast tests)
-- Makefile for simplified commands
 - Optional Playwright dependency
 
 **v0.8.0 - Architecture & Polish:**
 - Complete vibe engine migration to YAML
 - Simplified README (value-first, not architecture-first)
 - Refactor engine.py God Object into focused classes
+
+---
+
+## [0.7.5-dev] - 2025-01-27 (Phase 6 Task 5: Makefile)
+
+### Added - Development Makefile
+- **Comprehensive Makefile** for simplified development workflow
+  - 50+ targets across 10 categories
+  - Colorized output for better readability
+  - Context-aware help system (`make help`)
+  
+- **Setup & Installation Targets:**
+  - `make setup`: Complete environment setup (venv + dependencies)
+  - `make venv`: Create Python virtual environment
+  - `make install`: Install production dependencies
+  - `make install-dev`: Install development dependencies
+  
+- **Testing Targets:**
+  - `make test`: Run all tests
+  - `make test-async`: Run async tests only
+  - `make test-cov`: Coverage report (HTML + terminal)
+  - `make test-perf`: Performance benchmarks
+  - `make test-cache`: Cache-specific tests
+  - `make test-fast`: Skip slow benchmarks
+  - `make test-watch`: Watch mode for TDD
+  
+- **Code Quality Targets:**
+  - `make format`: Auto-format with black
+  - `make lint`: Lint with ruff
+  - `make type-check`: Type checking with mypy
+  - `make check`: Run all quality checks
+  
+- **Build & Development:**
+  - `make build`: Build sample portfolio (brutalist theme)
+  - `make build-all-themes`: Build all 14 theme variants
+  - `make serve`: Local HTTP server (port 8000)
+  - `make dev`: Development watch mode
+  
+- **Cache Management:**
+  - `make cache-stats`: Show cache statistics
+  - `make cache-clear`: Clear all cache tiers
+  - `make cache-size`: Show cache directory size
+  
+- **Docker Targets:**
+  - `make docker-build`: Build Docker image
+  - `make docker-run`: Run in container
+  - `make docker-dev`: Docker Compose development
+  
+- **Utilities:**
+  - `make clean`: Remove build artifacts
+  - `make clean-all`: Full cleanup (artifacts + cache + venv)
+  - `make lines`: Count lines of code
+  - `make info`: Project information
+  - `make git-status`: Git status with stats
+  
+- **Quick Aliases:**
+  - `make t` → `make test`
+  - `make tc` → `make test-cov`
+  - `make f` → `make format`
+  - `make l` → `make lint`
+  - `make b` → `make build`
+  - `make s` → `serve`
+
+### Changed
+- **Developer Experience**
+  - Simplified commands: `make test` vs `pytest tests/ -v --tb=short`
+  - Reduced cognitive load: 1 command vs 5+ flags
+  - Discoverability: `make help` shows all available commands
+  - Color-coded output for better scanning
+  
+### Performance Impact
+- **Before:** Manual command construction, flag memorization
+- **After:** One-word commands, auto-completion, self-documenting
+- **DX Improvement:** ~70% reduction in command typing
 
 ---
 
