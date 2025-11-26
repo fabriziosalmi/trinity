@@ -2,7 +2,7 @@
 # Rule #96: No clever one-liners, explicit logic
 # Uses Microsoft's official Playwright image with Python + Chromium pre-installed
 
-FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy
+FROM mcr.microsoft.com/playwright/python:v1.55.0-jammy
 
 # Set working directory
 WORKDIR /app
