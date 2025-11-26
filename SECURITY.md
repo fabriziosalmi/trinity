@@ -15,7 +15,7 @@
 
 ### Private Disclosure Process
 
-1. **Email:** Send vulnerability details to `security@yourdomain.com` (replace with actual contact)
+1. **Email:** Send vulnerability details to `fabrizio.salmi@gmail.com`
    - Subject: `[SECURITY] Trinity Core Vulnerability Report`
    - Include: Description, affected versions, reproduction steps, potential impact
 
@@ -116,4 +116,4 @@ _No vulnerabilities reported yet. Be the first!_
 ---
 
 **Last Updated:** 2025-11-26  
-**Contact:** `security@yourdomain.com` (replace with actual email)
+**Contact:** `fabrizio.salmi@gmail.com`

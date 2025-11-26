@@ -3,8 +3,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)](https://github.com/yourusername/trinity-core)
-[![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/yourusername/trinity-core/releases)
+[![SOTA](https://img.shields.io/badge/status-SOTA-orange.svg)](https://github.com/fabriziosalmi/trinity)
+[![Version](https://img.shields.io/badge/version-0.4.0-green.svg)](https://github.com/fabriziosalmi/trinity/releases)
 
 > **The Static Site Generator that predicts and fixes its own layout bugs before deployment.**
 
@@ -127,8 +127,8 @@ Trinity Core v0.3.0:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/trinity-core.git
-cd trinity-core
+git clone https://github.com/fabriziosalmi/trinity.git
+cd trinity
 
 # Start Docker services
 ./dev.sh start
@@ -421,7 +421,7 @@ auto_fix_enabled: true
 ## 📁 Project Structure
 
 ```
-trinity-core/
+trinity/
 ├── src/trinity/                    # Main package
 │   ├── __init__.py                # Package exports
 │   ├── cli.py                     # Typer CLI (9 commands)

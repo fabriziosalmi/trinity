@@ -15,8 +15,8 @@ Thank you for considering contributing to Trinity Core! This document provides g
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/trinity-core.git
-cd trinity-core
+git clone https://github.com/fabriziosalmi/trinity.git
+cd trinity
 
 # Install dependencies with Poetry
 poetry install
@@ -204,7 +204,7 @@ All PRs require:
 ## Project Structure
 
 ```
-trinity-core/
+trinity/
 ├── src/trinity/              # Core package
 │   ├── components/           # ML models, builders, healers
 │   ├── cli.py               # CLI entry point
@@ -240,8 +240,8 @@ Releases are managed by project maintainers:
 
 ## Support and Communication
 
-- **Bug Reports:** [GitHub Issues](https://github.com/yourusername/trinity-core/issues)
-- **Feature Requests:** [GitHub Discussions](https://github.com/yourusername/trinity-core/discussions)
+- **Bug Reports:** [GitHub Issues](https://github.com/fabriziosalmi/trinity/issues)
+- **Feature Requests:** [GitHub Discussions](https://github.com/fabriziosalmi/trinity/discussions)
 - **Security Vulnerabilities:** See [SECURITY.md](SECURITY.md)
 
 ## License

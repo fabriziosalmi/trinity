@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trinity-core"
-version = "0.2.0"
+version = "0.4.0"
 description = "AI-powered static site generator with deterministic layouts and self-healing QA"
 authors = [
     {name = "Trinity Team"}
@@ -56,10 +56,10 @@ dev = [
 trinity = "trinity.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/example/trinity-core"
-Documentation = "https://github.com/example/trinity-core/docs"
-Repository = "https://github.com/example/trinity-core"
-Issues = "https://github.com/example/trinity-core/issues"
+Homepage = "https://github.com/fabriziosalmi/trinity"
+Documentation = "https://github.com/fabriziosalmi/trinity/tree/main/docs"
+Repository = "https://github.com/fabriziosalmi/trinity"
+Issues = "https://github.com/fabriziosalmi/trinity/issues"
 
 [tool.poetry]
 packages = [{include = "trinity", from = "src"}]
