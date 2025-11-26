@@ -108,10 +108,10 @@ jobs:
     
     - name: Build Docker image
       run: |
-        docker-compose build trinity-builder
+        docker compose build trinity-builder
     
     - name: Test Docker container
       run: |
-        docker-compose up -d trinity-builder
-        docker-compose exec -T trinity-builder trinity --version
-        docker-compose down
+        docker compose up -d trinity-builder
+        docker compose exec -T trinity-builder trinity --version
+        docker compose down
