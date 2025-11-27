@@ -81,7 +81,7 @@ docker-compose exec trinity-builder trinity build --theme brutalist
 ### ⚡ Production-Ready
 - **Circuit Breakers**: Graceful degradation on LLM failures
 - **Idempotency**: Same input = same output (deterministic builds)
-- **Structured Logging**: JSON logs ready for ELK/Datadog/CloudWatch
+- **Structured Logging**: JSON logs ready for ELK/Datadog/CloudWatch (stdout in Production)
 - **Immutable Config**: Type-safe, validated settings
 
 ---
@@ -244,6 +244,9 @@ export LLM_MODEL=qwen2.5-coder:7b
 # Or cloud LLMs
 export OPENAI_API_KEY=your_key
 export LLM_PROVIDER=openai
+
+# Production Telemetry
+export TRINITY_ENV=Production  # Enable JSON logs to stdout
 ```
 
 ### Advanced Configuration
