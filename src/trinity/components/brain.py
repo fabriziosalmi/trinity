@@ -61,7 +61,7 @@ class GeneratedContentSchema(BaseModel):
     brand_name: str = Field(..., min_length=1, max_length=100)
     tagline: Optional[str] = None
     hero: HeroSchema
-    repos: List[RepositorySchema] = Field(..., min_items=1, max_items=20)
+    repos: List[RepositorySchema] = Field(..., min_length=1, max_length=20)
     menu_items: List[Dict[str, str]] = Field(default_factory=list)
     cta: Optional[Dict[str, str]] = None
 

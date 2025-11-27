@@ -1,18 +1,24 @@
 """
-Trinity ML Predictor - Phase 3: The Pre-Cognition Layer
+Trinity ML Predictor - Phase 3: The Pre-Cognition Layer (v0.8.0 Multiclass)
 
-Loads trained Random Forest model and predicts layout breakage risk
-BEFORE rendering, enabling pre-emptive healing strategies.
+Loads trained Random Forest model and predicts WHICH healing strategy to use
+BEFORE rendering, enabling smart pre-emptive healing.
 
-Architecture:
-    Input: (content, theme, css_signature) → Feature Engineering
-    Model: Trained Random Forest Classifier (.pkl from trainer.py)
-    Output: Probability of failure (0.0 - 1.0)
+Architecture (v0.8.0):
+    Input: (content, theme, css_density, pathological_score) → Feature Engineering
+    Model: Trained Random Forest Multiclass Classifier (.pkl from trainer.py)
+    Output: Best strategy recommendation (0=NONE, 1=BREAK_WORD, 2=FONT_SHRINK, 
+                                          3=TRUNCATE, 4=CONTENT_CUT)
 
-    If risk > 0.7 (70% chance of breakage):
-        → Skip NONE strategy
-        → Apply CSS_BREAK_WORD immediately
-        → Save 1-2 seconds per risky build
+    Multiclass Output:
+        - Strategy ID with highest probability
+        - Confidence scores for all strategies
+        - Actionable recommendation for Engine
+
+    If model recommends FONT_SHRINK (ID=2):
+        → Skip NONE and CSS_BREAK_WORD
+        → Start directly with FONT_SHRINK
+        → Save 2-3 healing iterations
 
 ⚠️  SECURITY WARNING (Rule #6):
     This module loads pickle-serialized models (.pkl files).
@@ -29,6 +35,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import joblib
 import numpy as np
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
@@ -126,18 +133,29 @@ class LayoutRiskPredictor:
             logger.info(f"   F1-Score: {f1_score}")
 
     def _prepare_features(
-        self, content: Dict[str, Any], theme: str, css_signature: str = "NONE"
+        self, 
+        content: Dict[str, Any], 
+        theme: str, 
+        css_signature: str = "NONE",
+        css_density_spacing: int = 0,
+        css_density_layout: int = 0,
+        pathological_score: float = 0.0
     ) -> Optional[list]:
         """
-        Prepare features for prediction (MUST match Trainer preprocessing).
+        Prepare features for prediction (v0.8.0: MUST match Trainer preprocessing).
 
         Args:
             content: Content dictionary
             theme: Theme name
             css_signature: Current CSS healing strategy
+            css_density_spacing: Count of spacing classes (NEW v0.8.0)
+            css_density_layout: Count of layout classes (NEW v0.8.0)
+            pathological_score: Risk score for pathological strings (NEW v0.8.0)
 
         Returns:
-            Feature list [char_len, word_count, theme_encoded, strategy_encoded]
+            Feature list matching trainer's feature_columns:
+            [char_len, word_count, css_density_spacing, css_density_layout, 
+             pathological_score, theme_encoded, strategy_encoded]
             or None if encoding fails
         """
         # Calculate char_len and word_count (same as TrinityMiner)
@@ -173,13 +191,24 @@ class LayoutRiskPredictor:
             logger.warning(f"⚠️  Unseen strategy '{css_signature}', using fallback encoding")
             strategy_encoded = -1
 
-        return [char_len, word_count, theme_encoded, strategy_encoded]
+        # v0.8.0: Return features in same order as trainer
+        # [input_char_len, input_word_count, css_density_spacing, css_density_layout,
+        #  pathological_score, theme_encoded, strategy_encoded]
+        return [
+            char_len, 
+            word_count, 
+            css_density_spacing,
+            css_density_layout,
+            pathological_score,
+            theme_encoded, 
+            strategy_encoded
+        ]
 
     def predict_risk(
         self, content: Dict[str, Any], theme: str, css_signature: str = "NONE"
     ) -> Tuple[float, bool]:
         """
-        Predict layout breakage risk.
+        Predict layout breakage risk (DEPRECATED: use predict_best_strategy for v0.8.0).
 
         Args:
             content: Content dictionary
@@ -191,25 +220,32 @@ class LayoutRiskPredictor:
             - risk_score: 0.0 - 1.0 (probability of failure)
             - prediction_available: True if model loaded, False if fallback
         """
+        logger.warning("⚠️  predict_risk() is DEPRECATED. Use predict_best_strategy() for multiclass.")
+        
         # Rule #7: Graceful degradation if model not loaded
         if not self.is_loaded or self.model is None:
             logger.debug("Predictor in fallback mode (no model)")
             return (0.5, False)  # Neutral prediction
 
         try:
-            # Prepare features
+            # Prepare features (v0.8.0: use defaults for new features)
             features = self._prepare_features(content, theme, css_signature)
 
             if features is None:
                 logger.error("Feature preparation failed")
                 return (0.5, False)
 
-            # Predict probability of class 0 (Failure)
-            # Model.predict_proba returns [[prob_class_0, prob_class_1]]
-            proba = self.model.predict_proba([features])[0]
+            # Predict probability with DataFrame (eliminates sklearn warnings)
+            feature_names = [
+                "input_char_len", "input_word_count", 
+                "css_density_spacing", "css_density_layout", "pathological_score",
+                "theme_encoded", "active_strategy_encoded"
+            ]
+            X = pd.DataFrame([features], columns=feature_names)
+            proba = self.model.predict_proba(X)[0]
 
-            # Risk = probability of failure (class 0)
-            risk_score = proba[0]
+            # For binary compatibility: return prob of failure (first class or max prob)
+            risk_score = max(proba) if len(proba) > 2 else proba[0]
 
             logger.debug(
                 f"🔮 Predicted risk: {risk_score:.2%} (theme={theme}, char_len={features[0]})"
@@ -220,6 +256,117 @@ class LayoutRiskPredictor:
         except Exception as e:
             logger.error(f"Prediction failed: {e}", exc_info=True)
             return (0.5, False)  # Fallback to neutral
+
+    def predict_best_strategy(
+        self, 
+        content: Dict[str, Any], 
+        theme: str,
+        css_density_spacing: int = 0,
+        css_density_layout: int = 0,
+        pathological_score: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Predict best healing strategy using multiclass model (v0.8.0).
+
+        Args:
+            content: Content dictionary
+            theme: Theme name
+            css_density_spacing: Count of spacing classes
+            css_density_layout: Count of layout classes
+            pathological_score: Pathological string risk score
+
+        Returns:
+            Dict with:
+                - strategy_id: Recommended strategy ID (0-4, 99)
+                - strategy_name: Human-readable name (NONE, CSS_BREAK_WORD, etc.)
+                - confidence: Confidence score (0.0-1.0)
+                - probabilities: Dict of all strategy probabilities
+                - prediction_available: Whether model was available
+        """
+        # Strategy ID to name mapping
+        STRATEGY_MAP = {
+            0: "NONE",
+            1: "CSS_BREAK_WORD",
+            2: "FONT_SHRINK",
+            3: "CSS_TRUNCATE",
+            4: "CONTENT_CUT",
+            99: "UNRESOLVED_FAIL"
+        }
+
+        # Rule #7: Graceful degradation if model not loaded
+        if not self.is_loaded or self.model is None:
+            logger.debug("Predictor in fallback mode (no model)")
+            return {
+                "strategy_id": 1,  # Default to CSS_BREAK_WORD
+                "strategy_name": "CSS_BREAK_WORD",
+                "confidence": 0.5,
+                "probabilities": {},
+                "prediction_available": False
+            }
+
+        try:
+            # Prepare features
+            features = self._prepare_features(
+                content, theme, "NONE",
+                css_density_spacing, css_density_layout, pathological_score
+            )
+
+            if features is None:
+                logger.error("Feature preparation failed")
+                return {
+                    "strategy_id": 1,
+                    "strategy_name": "CSS_BREAK_WORD",
+                    "confidence": 0.5,
+                    "probabilities": {},
+                    "prediction_available": False
+                }
+
+            # Multiclass prediction with DataFrame (eliminates sklearn warnings)
+            feature_names = [
+                "input_char_len", "input_word_count", 
+                "css_density_spacing", "css_density_layout", "pathological_score",
+                "theme_encoded", "active_strategy_encoded"
+            ]
+            X = pd.DataFrame([features], columns=feature_names)
+            
+            proba = self.model.predict_proba(X)[0]
+            predicted_class = self.model.predict(X)[0]
+
+            # Build probability dict using model.classes_ (handles non-contiguous labels like 0,99)
+            probabilities = {
+                STRATEGY_MAP.get(int(class_id), f"UNKNOWN_{class_id}"): float(prob)
+                for class_id, prob in zip(self.model.classes_, proba)
+            }
+
+            strategy_id = int(predicted_class)
+            strategy_name = STRATEGY_MAP.get(strategy_id, "UNKNOWN")
+            
+            # Get confidence from correct position in proba array
+            class_index = list(self.model.classes_).index(predicted_class)
+            confidence = float(proba[class_index]) if class_index < len(proba) else 0.5
+
+            logger.info(
+                f"🔮 Recommended strategy: {strategy_name} (confidence: {confidence:.2%})"
+            )
+            logger.debug(f"   All probabilities: {probabilities}")
+
+            return {
+                "strategy_id": strategy_id,
+                "strategy_name": strategy_name,
+                "confidence": confidence,
+                "probabilities": probabilities,
+                "prediction_available": True
+            }
+
+        except Exception as e:
+            logger.error(f"Multiclass prediction failed: {e}", exc_info=True)
+            return {
+                "strategy_id": 1,
+                "strategy_name": "CSS_BREAK_WORD",
+                "confidence": 0.5,
+                "probabilities": {},
+                "prediction_available": False
+            }
 
     def get_recommendation(self, risk_score: float) -> Dict[str, Any]:
         """

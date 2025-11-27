@@ -32,7 +32,7 @@ Usage:
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
@@ -181,14 +181,23 @@ class LayoutRiskTrainer:
                 f"Run 'trinity mine-generate --count 1000' to collect more data."
             )
 
-        # Validate critical columns exist
+        # Validate critical columns exist (v0.8.0: resolved_strategy_id preferred)
         required_columns = [
             "theme",
             "input_char_len",
             "input_word_count",
             "active_strategy",
-            "is_valid",
         ]
+        # Check for multiclass target (preferred) or fallback to binary
+        has_multiclass = "resolved_strategy_id" in df.columns
+        has_binary = "is_valid" in df.columns
+        
+        if not has_multiclass and not has_binary:
+            raise DataValidationError(
+                "Missing target column: need 'resolved_strategy_id' (multiclass) "
+                "or 'is_valid' (binary fallback)"
+            )
+        
         missing = set(required_columns) - set(df.columns)
         if missing:
             raise DataValidationError(f"Missing required columns: {missing}")
@@ -216,18 +225,35 @@ class LayoutRiskTrainer:
         """
         logger.info("🧹 Cleaning data...")
 
-        # Remove rows with missing critical values
+        # Remove rows with missing critical values (v0.8.0: flexible target)
         before_count = len(df)
-        df = df.dropna(subset=["theme", "input_char_len", "is_valid"])
+        critical_cols = ["theme", "input_char_len"]
+        # Add target column (multiclass preferred, binary fallback)
+        if "resolved_strategy_id" in df.columns:
+            critical_cols.append("resolved_strategy_id")
+        elif "is_valid" in df.columns:
+            critical_cols.append("is_valid")
+        
+        df = df.dropna(subset=critical_cols)
         after_count = len(df)
 
         if before_count > after_count:
             logger.warning(f"   Dropped {before_count - after_count} rows with missing values")
 
-        # Convert numeric columns
+        # Convert numeric columns (v0.8.0: include new density features)
         df["input_char_len"] = pd.to_numeric(df["input_char_len"], errors="coerce")
         df["input_word_count"] = pd.to_numeric(df["input_word_count"], errors="coerce")
-        df["is_valid"] = pd.to_numeric(df["is_valid"], errors="coerce").astype(int)
+        
+        # Handle new v0.8.0 features (fill missing with 0)
+        for col in ["css_density_spacing", "css_density_layout", "pathological_score"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+        
+        # Convert target column (multiclass or binary)
+        if "resolved_strategy_id" in df.columns:
+            df["resolved_strategy_id"] = pd.to_numeric(df["resolved_strategy_id"], errors="coerce").astype(int)
+        if "is_valid" in df.columns:
+            df["is_valid"] = pd.to_numeric(df["is_valid"], errors="coerce").astype(int)
 
         # Remove duplicates
         before_count = len(df)
@@ -237,11 +263,19 @@ class LayoutRiskTrainer:
         if before_count > after_count:
             logger.info(f"   Removed {before_count - after_count} duplicate rows")
 
-        # Validate label values (must be 0 or 1)
-        invalid_labels = df[~df["is_valid"].isin([0, 1])]
-        if len(invalid_labels) > 0:
-            logger.warning(f"   Found {len(invalid_labels)} rows with invalid labels, removing...")
-            df = df[df["is_valid"].isin([0, 1])]
+        # Validate label values (v0.8.0: multiclass 0-4,99 or binary 0-1)
+        if "resolved_strategy_id" in df.columns:
+            valid_ids = [0, 1, 2, 3, 4, 99]
+            invalid_labels = df[~df["resolved_strategy_id"].isin(valid_ids)]
+            if len(invalid_labels) > 0:
+                logger.warning(f"   Found {len(invalid_labels)} rows with invalid multiclass labels, removing...")
+                df = df[df["resolved_strategy_id"].isin(valid_ids)]
+        elif "is_valid" in df.columns:
+            # Binary validation
+            invalid_labels = df[~df["is_valid"].isin([0, 1])]
+            if len(invalid_labels) > 0:
+                logger.warning(f"   Found {len(invalid_labels)} rows with invalid binary labels, removing...")
+                df = df[df["is_valid"].isin([0, 1])]
 
         logger.info(f"   Clean dataset: {len(df)} samples")
         return df
@@ -250,14 +284,18 @@ class LayoutRiskTrainer:
         """
         Extract features (X) and labels (y) from cleaned DataFrame.
 
-        Features:
+        Features (v0.8.0):
             - input_char_len (numeric)
             - input_word_count (numeric)
+            - css_density_spacing (numeric) - NEW v0.8.0
+            - css_density_layout (numeric) - NEW v0.8.0
+            - pathological_score (numeric) - NEW v0.8.0
             - theme (categorical → encoded)
             - active_strategy (categorical → encoded)
 
-        Label:
-            - is_valid (0 or 1)
+        Label (v0.8.0 MULTICLASS):
+            - resolved_strategy_id (0=NONE_SUCCESS, 1=CSS_BREAK_WORD, 2=FONT_SHRINK, 
+                                    3=CSS_TRUNCATE, 4=CONTENT_CUT, 99=UNRESOLVED_FAIL)
 
         Args:
             df: Cleaned DataFrame
@@ -265,11 +303,23 @@ class LayoutRiskTrainer:
         Returns:
             Tuple of (X features, y labels)
         """
-        logger.info("🔧 Preparing features and labels...")
+        logger.info("🔧 Preparing features and labels (v0.8.0 multiclass)...")
 
-        # Define feature columns
-        numeric_features = ["input_char_len", "input_word_count"]
+        # Define feature columns (v0.8.0: add density features)
+        numeric_features = [
+            "input_char_len", 
+            "input_word_count",
+            "css_density_spacing",   # NEW v0.8.0
+            "css_density_layout",    # NEW v0.8.0
+            "pathological_score"     # NEW v0.8.0
+        ]
         categorical_features = ["theme", "active_strategy"]
+        
+        # Handle missing new columns (backward compatibility)
+        for col in numeric_features:
+            if col not in df.columns:
+                logger.warning(f"   Missing column '{col}', filling with 0")
+                df[col] = 0
 
         # Encode categorical features
         df_encoded = df.copy()
@@ -285,7 +335,15 @@ class LayoutRiskTrainer:
         self.feature_columns = numeric_features + [f"{col}_encoded" for col in categorical_features]
 
         X = df_encoded[self.feature_columns]
-        y = df_encoded["is_valid"]
+        
+        # NEW v0.8.0: Use resolved_strategy_id as target (multiclass)
+        if "resolved_strategy_id" in df_encoded.columns:
+            y = df_encoded["resolved_strategy_id"]
+            logger.info("   Using MULTICLASS target: resolved_strategy_id")
+        else:
+            # Fallback to binary for backward compatibility
+            y = df_encoded["is_valid"]
+            logger.warning("   Falling back to BINARY target: is_valid (consider re-mining data)")
 
         logger.info(f"   Features: {self.feature_columns}")
         logger.info(f"   Label distribution: {y.value_counts().to_dict()}")
@@ -349,6 +407,8 @@ class LayoutRiskTrainer:
     ) -> Dict[str, float]:
         """
         Evaluate model performance and validate against thresholds.
+        
+        v0.8.0: Supports both binary and multiclass evaluation.
 
         Implements quality gates to prevent deploying garbage models.
 
@@ -364,11 +424,18 @@ class LayoutRiskTrainer:
             ModelPerformanceError: If model fails to meet minimum thresholds
         """
         y_pred = model.predict(X_test)
+        
+        # Detect if multiclass (more than 2 unique labels OR non-binary labels like 0,99)
+        unique_labels = sorted(y_test.unique())
+        is_binary = len(unique_labels) == 2 and set(unique_labels) == {0, 1}
+        is_multiclass = not is_binary
 
-        # Calculate metrics
-        precision = precision_score(y_test, y_pred, zero_division=0)
-        recall = recall_score(y_test, y_pred, zero_division=0)
-        f1 = f1_score(y_test, y_pred, zero_division=0)
+        # Calculate metrics (use weighted average for multiclass or non-standard binary)
+        average_method = "binary" if is_binary else "weighted"
+        
+        precision = precision_score(y_test, y_pred, average=average_method, zero_division=0)
+        recall = recall_score(y_test, y_pred, average=average_method, zero_division=0)
+        f1 = f1_score(y_test, y_pred, average=average_method, zero_division=0)
         accuracy = accuracy_score(y_test, y_pred)
 
         metrics = {
@@ -381,14 +448,26 @@ class LayoutRiskTrainer:
         }
 
         # Log metrics
-        logger.info("   📊 Metrics:")
+        logger.info(f"   📊 Metrics ({'multiclass' if is_multiclass else 'binary'}):")
         logger.info(f"      Precision: {metrics['precision']:.4f}")
         logger.info(f"      Recall:    {metrics['recall']:.4f}")
         logger.info(f"      F1-Score:  {metrics['f1_score']:.4f}")
         logger.info(f"      Accuracy:  {metrics['accuracy']:.4f}")
 
-        # Detailed classification report
-        logger.debug("\n" + classification_report(y_test, y_pred, zero_division=0))
+        # Detailed classification report (v0.8.0: per-class metrics for multiclass)
+        if is_multiclass:
+            logger.info("   📋 Per-Class Performance:")
+            # Map strategy IDs to names for readability
+            num_classes = len(unique_labels)
+            target_names = ["NONE", "BREAK_WORD", "FONT_SHRINK", "TRUNCATE", "CONTENT_CUT", "UNRESOLVED"]
+            report = classification_report(
+                y_test, y_pred, 
+                zero_division=0,
+                target_names=target_names[:num_classes]
+            )
+            logger.info("\n" + report)
+        else:
+            logger.debug("\n" + classification_report(y_test, y_pred, zero_division=0))
 
         # Quality gates (Rule #7: Don't silently accept bad models)
         failures = []
@@ -429,7 +508,7 @@ class LayoutRiskTrainer:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate timestamped filename (avoid overwriting)
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         model_filename = f"layout_risk_predictor_{timestamp}.pkl"
         model_path = output_dir / model_filename
 
@@ -456,6 +535,27 @@ class LayoutRiskTrainer:
                 col: encoder.classes_.tolist() for col, encoder in self.label_encoders.items()
             },
         }
+
+        # NEW v0.8.0: XAI - Feature Importance (Explainability)
+        if hasattr(model, "feature_importances_"):
+            importances = model.feature_importances_
+            feature_importance_dict = dict(zip(self.feature_columns, importances))
+            
+            # Sort by importance (descending) and take top 10
+            sorted_features = sorted(
+                feature_importance_dict.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )[:10]
+            
+            metadata["feature_importance_top10"] = [
+                {"feature": name, "importance": round(float(importance), 4)}
+                for name, importance in sorted_features
+            ]
+            
+            logger.info("📊 Top 3 Important Features (XAI):")
+            for name, importance in sorted_features[:3]:
+                logger.info(f"   {name}: {importance:.4f}")
 
         if metrics:
             metadata["metrics"] = metrics

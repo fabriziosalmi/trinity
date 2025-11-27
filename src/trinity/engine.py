@@ -10,7 +10,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from trinity.components.brain import ContentEngine
 from trinity.components.builder import SiteBuilder
@@ -37,6 +37,8 @@ class BuildStatus(str, Enum):
 
 class BuildResult(BaseModel):
     """Structured build result."""
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     status: BuildStatus
     output_path: Optional[Path] = None
@@ -45,9 +47,6 @@ class BuildResult(BaseModel):
     guardian_report: Optional[Dict[str, Any]] = None
     fixes_applied: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class TrinityEngine:
@@ -154,41 +153,72 @@ class TrinityEngine:
         current_style_overrides: Dict[str, str] = {}  # Track CSS overrides
         fixes_applied = []
 
-        # 🔮 Phase 3: Pre-Cognition (predict risk before first render)
+        # 🔮 Phase 3: Pre-Cognition (v0.8.0: predict WHICH strategy, not just risk)
         if enable_guardian and self.config.predictive_enabled:
-            risk_score, prediction_available = self.predictor.predict_risk(
-                content=content, theme=theme, css_signature="NONE"
+            # v0.8.0: Calculate density features for multiclass prediction
+            css_density_spacing = 0  # TODO: Extract from theme
+            css_density_layout = 0   # TODO: Extract from theme
+            
+            # Calculate pathological score from content
+            from trinity.components.dataminer import TrinityMiner
+            miner = TrinityMiner()
+            pathological_score = miner._calculate_pathological_score(content)
+            
+            # Get multiclass strategy recommendation
+            prediction = self.predictor.predict_best_strategy(
+                content=content,
+                theme=theme,
+                css_density_spacing=css_density_spacing,
+                css_density_layout=css_density_layout,
+                pathological_score=pathological_score
             )
 
-            if prediction_available:
-                recommendation = self.predictor.get_recommendation(risk_score)
-                logger.info(f"🔮 Neural Predictor: {recommendation['reason']}")
+            if prediction["prediction_available"]:
+                strategy_name = prediction["strategy_name"]
+                confidence = prediction["confidence"]
+                
+                logger.info(
+                    f"🔮 Neural Predictor: Recommends {strategy_name} "
+                    f"(confidence: {confidence:.0%})"
+                )
 
-                # Pre-emptive healing if high risk
-                if recommendation["skip_none_strategy"]:
-                    # FIX: Safe formatting - risk_score might not be float
-                    try:
-                        risk_val = float(risk_score) if risk_score is not None else 0.0
-                        logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_val:.0%})")
-                    except (ValueError, TypeError):
-                        logger.warning(f"⚡ Activating pre-emptive healer (risk={risk_score})")
-                    # Apply CSS_BREAK_WORD immediately (skip NONE attempt)
-                    # Create a mock guardian report to trigger CSS_BREAK_WORD strategy
+                # Smart strategy selection based on ML recommendation
+                if strategy_name != "NONE" and confidence > 0.6:
+                    logger.warning(
+                        f"⚡ Skipping to recommended strategy: {strategy_name} "
+                        f"(predicted by multiclass model)"
+                    )
+                    
+                    # Map strategy name to attempt number for healer
+                    strategy_to_attempt = {
+                        "CSS_BREAK_WORD": 1,
+                        "FONT_SHRINK": 2,
+                        "CSS_TRUNCATE": 3,
+                        "CONTENT_CUT": 4
+                    }
+                    
+                    recommended_attempt = strategy_to_attempt.get(strategy_name, 1)
+                    
+                    # Create mock guardian report for pre-emptive healing
                     mock_report = {
                         "approved": False,
                         "status": "fail",
-                        "reason": "ML predicted high risk",
-                        "issues": ["Predicted layout overflow"],
-                        "fix_suggestion": "break-word",
+                        "reason": f"ML predicted {strategy_name} needed",
+                        "issues": [f"Multiclass model recommends {strategy_name}"],
+                        "fix_suggestion": strategy_name.lower(),
                     }
+                    
                     preemptive_fix = self.healer.heal_layout(
                         guardian_report=mock_report,
                         content=content,
-                        attempt=1,  # Force CSS_BREAK_WORD
+                        attempt=recommended_attempt,  # Use ML-recommended strategy
                     )
+                    
                     if preemptive_fix.style_overrides:
                         current_style_overrides = preemptive_fix.style_overrides
-                        fixes_applied.append("Pre-emptive CSS_BREAK_WORD (ML predicted failure)")
+                        fixes_applied.append(
+                            f"Pre-emptive {strategy_name} (ML confidence: {confidence:.0%})"
+                        )
 
         while attempt < max_retries:
             attempt += 1

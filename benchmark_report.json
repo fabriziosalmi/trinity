@@ -1,0 +1,123 @@
+{
+  "stats": {
+    "with_predictor": {
+      "avg_time": 2.7742735624313353,
+      "std_time": 0.46708918309199954,
+      "success_rate": 100.0
+    },
+    "without_predictor": {
+      "avg_time": 2.6128984928131103,
+      "std_time": 0.025185757213884077,
+      "success_rate": 100.0
+    },
+    "improvement": {
+      "time_reduction_percent": -6.176094098645396
+    }
+  },
+  "results": {
+    "with_predictor": [
+      {
+        "time_seconds": 4.090176105499268,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.5823707580566406,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.6768290996551514,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.781764030456543,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.6492879390716553,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.57637882232666,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.5521748065948486,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.6117959022521973,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.640409231185913,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.5815489292144775,
+        "success": true,
+        "theme": "brutalist"
+      }
+    ],
+    "without_predictor": [
+      {
+        "time_seconds": 2.6372501850128174,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.608949899673462,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.6514410972595215,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.573225975036621,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.629969835281372,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.6070148944854736,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.6203088760375977,
+        "success": true,
+        "theme": "brutalist"
+      },
+      {
+        "time_seconds": 2.628106117248535,
+        "success": true,
+        "theme": "enterprise"
+      },
+      {
+        "time_seconds": 2.5832011699676514,
+        "success": true,
+        "theme": "editorial"
+      },
+      {
+        "time_seconds": 2.5895168781280518,
+        "success": true,
+        "theme": "brutalist"
+      }
+    ]
+  }
+}
