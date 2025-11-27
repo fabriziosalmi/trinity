@@ -1,5 +1,5 @@
 """
-Trinity Core - Secrets Management
+Trinity - Secrets Management
 
 Secure storage and retrieval of API keys and sensitive configuration.
 Integrates with system keyring and supports multiple backends.

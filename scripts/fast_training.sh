@@ -1,5 +1,5 @@
 #!/bin/bash
-# Trinity Core - Fast Training Routine (for testing)
+# Trinity - Fast Training Routine (for testing)
 # 10 themes + 100 samples = Quick validation
 
 set -e

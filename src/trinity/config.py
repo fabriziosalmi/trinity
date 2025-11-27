@@ -14,7 +14,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class TrinityConfig(BaseSettings):
     """
-    Centralized configuration for Trinity Core.
+    Centralized configuration for Trinity.
 
     Priority (highest to lowest):
     1. Environment variables (TRINITY_*)

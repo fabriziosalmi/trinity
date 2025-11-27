@@ -1,5 +1,5 @@
 #!/bin/bash
-# Trinity Core - Nightly Training Routine
+# Trinity - Nightly Training Routine
 # Generates 100 themes → Mines 2000+ samples → Trains production model
 # 
 # Expected runtime: 2-3 hours

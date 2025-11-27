@@ -4,7 +4,7 @@
 
 ## Overview
 
-Trinity Core uses structured logging to enable:
+Trinity uses structured logging to enable:
 - **Log Aggregation**: ELK Stack, Datadog, CloudWatch, etc.
 - **Performance Analysis**: Track request duration, cache hit rates
 - **Debugging**: Correlation IDs, structured context
@@ -436,7 +436,7 @@ print(f"Cache hit rate: {hit_rate:.1f}%")
 ```json
 {
   "dashboard": {
-    "title": "Trinity Core Metrics",
+    "title": "Trinity Metrics",
     "panels": [
       {
         "title": "Request Rate",

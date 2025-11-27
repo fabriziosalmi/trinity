@@ -1,5 +1,5 @@
 """
-Trinity Core - Idempotency Key Manager
+Trinity - Idempotency Key Manager
 
 Ensures operations can be safely retried without duplicate side effects.
 Critical for content generation and healing operations.

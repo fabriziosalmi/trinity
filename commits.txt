@@ -1211,7 +1211,7 @@ Subject: refactor: Finalize v0.4.0 - SOTA Compliance & Security Hardening
 - Cleaned up Zombie Code/TODOs (Rule #9)
 - Verified ML Pipeline with F1=0.789
 
-Trinity Core is now Production Ready.
+Trinity is now Production Ready.
 
 CHANGES:
 
@@ -1248,7 +1248,7 @@ Author: fabriziosalmi
 Date: Wed Nov 26 14:26:01 2025 +0100
 Subject: feat: Complete Neural-Symbolic Architecture with trained production model
 
-MILESTONE: Trinity Core v0.3.0 - Full ML Pipeline Operational
+MILESTONE: Trinity v0.3.0 - Full ML Pipeline Operational
 
 DATA COLLECTION FIX:
 - Fixed TrinityMiner to log builds when Guardian is disabled
@@ -1531,7 +1531,7 @@ Files changed: 6 (3 new, 3 updated)
 Lines added: ~900+
 Dataset collected: 15 initial samples
 
-Trinity Core is now ready for ML-powered predictive self-healing. 🚀🧠
+Trinity is now ready for ML-powered predictive self-healing. 🚀🧠
 
 CHANGES:
 
@@ -1561,7 +1561,7 @@ Subject: feat: Enterprise-grade repository finalization for v0.2.0
 
 🏛️ The Final Polish: 'Come Cristo Comanda'
 
-This commit transforms Trinity Core into a professional, production-ready
+This commit transforms Trinity into a professional, production-ready
 repository with comprehensive documentation, CI/CD, and testing infrastructure.
 
 **NEW FILES:**
@@ -1721,7 +1721,7 @@ CHANGES:
 COMMIT_HASH: 9b156920a5197ff106eeaa37d3e222bfd1ee0984
 Author: fabriziosalmi
 Date: Wed Nov 26 13:11:42 2025 +0100
-Subject: refactor: Transform Trinity Core into modular Python package (FASE 1)
+Subject: refactor: Transform Trinity into modular Python package (FASE 1)
 
 🏗️ Architecture Transformation (SOLID Principles):
 
@@ -1899,7 +1899,7 @@ CHANGES:
 COMMIT_HASH: 8a0a2602a50ff41822169e9baeaf0bdf3fe3f34a
 Author: fabriziosalmi
 Date: Wed Nov 26 10:55:53 2025 +0100
-Subject: feat: Trinity Core v1.0 - Industrial Static Site Generator
+Subject: feat: Trinity v1.0 - Industrial Static Site Generator
 
 🏗️ Architecture:
 - Golden Skeletons: Human-crafted HTML/Tailwind templates (navbar, hero, repo grid)

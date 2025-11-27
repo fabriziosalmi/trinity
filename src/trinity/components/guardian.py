@@ -1,5 +1,5 @@
 """
-Trinity Core - Guardian Module (Vision-Augmented QA)
+Trinity - Guardian Module (Vision-Augmented QA)
 Rule #7: Graceful degradation on AI failures
 Rule #28: Structured logging
 Rule #5: Type safety and validation

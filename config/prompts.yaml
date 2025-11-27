@@ -1,4 +1,4 @@
-# Trinity Core - LLM Prompt Templates
+# Trinity - LLM Prompt Templates
 # Externalized from brain.py for maintainability and configurability
 
 content_generation:

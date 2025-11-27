@@ -1,6 +1,6 @@
 #!/bin/bash
-# Trinity Core - Demo Script for Terminal Recording
-# This script demonstrates the key features of Trinity Core v0.6.0
+# Trinity - Demo Script for Terminal Recording
+# This script demonstrates the key features of Trinity v0.6.0
 
 # Activate virtual environment if it exists
 if [ -d "venv" ]; then
@@ -43,7 +43,7 @@ clear
 echo -e "${BOLD}${CYAN}"
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║                                                           ║"
-echo "║           🏛️  TRINITY CORE v0.6.0 DEMO                   ║"
+echo "║           🏛️  TRINITY v0.6.0 DEMO                   ║"
 echo "║                                                           ║"
 echo "║   AI-Powered Static Site Generator                       ║"
 echo "║   with Production-Ready Architecture                     ║"
@@ -290,7 +290,7 @@ sleep 2
 # 10. Summary
 echo ""
 echo -e "${BOLD}${CYAN}════════════════════════════════════════════════════════════${NC}"
-echo -e "${BOLD}${GREEN}✨ Trinity Core Features Demonstrated:${NC}"
+echo -e "${BOLD}${GREEN}✨ Trinity Features Demonstrated:${NC}"
 echo ""
 echo -e "  ${GREEN}✅${NC} Immutable Configuration with Dependency Injection"
 echo -e "  ${GREEN}✅${NC} Custom Exception Hierarchy (15+ types)"

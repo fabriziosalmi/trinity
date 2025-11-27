@@ -15,7 +15,7 @@ source venv/bin/activate
 
 clear
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}   Trinity Core - Self-Healing Layout Demo${NC}"
+echo -e "${BLUE}   Trinity - Self-Healing Layout Demo${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 sleep 2

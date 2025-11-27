@@ -1,5 +1,5 @@
 """
-Trinity Core - Content Engine (The Brain)
+Trinity - Content Engine (The Brain)
 Rule #7: Explicit error handling with retries
 Rule #28: Structured logging
 Rule #5: Type safety with Pydantic validation

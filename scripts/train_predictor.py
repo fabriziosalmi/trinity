@@ -50,7 +50,7 @@ import typer
 from rich.console import Console
 from rich.progress import Progress
 
-app = typer.Typer(help="Train ML models for Trinity Core")
+app = typer.Typer(help="Train ML models for Trinity")
 console = Console()
 
 

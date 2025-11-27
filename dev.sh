@@ -1,5 +1,5 @@
 #!/bin/bash
-# dev.sh - Trinity Core Development Helper Script
+# dev.sh - Trinity Development Helper Script
 # Rule #96: Explicit commands with error handling
 
 set -e  # Exit on error
@@ -30,7 +30,7 @@ print_warning() {
 
 # Command functions
 cmd_start() {
-    print_status "Starting Trinity Core services..."
+    print_status "Starting Trinity services..."
     docker-compose up -d
     
     # Wait for services to be healthy
@@ -42,13 +42,13 @@ cmd_start() {
 }
 
 cmd_stop() {
-    print_status "Stopping Trinity Core services..."
+    print_status "Stopping Trinity services..."
     docker-compose down
     print_success "Services stopped"
 }
 
 cmd_restart() {
-    print_status "Restarting Trinity Core services..."
+    print_status "Restarting Trinity services..."
     docker-compose restart
     sleep 2
     cmd_status
@@ -159,7 +159,7 @@ cmd_rebuild() {
 
 cmd_help() {
     cat << EOF
-Trinity Core - Development Script
+Trinity - Development Script
 
 USAGE:
     ./dev.sh <command> [arguments]

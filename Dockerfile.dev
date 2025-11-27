@@ -1,4 +1,4 @@
-# Dockerfile.dev - Development Environment for Trinity Core
+# Dockerfile.dev - Development Environment for Trinity
 # Rule #96: No clever one-liners, explicit logic
 # Uses Microsoft's official Playwright image with Python + Chromium pre-installed
 

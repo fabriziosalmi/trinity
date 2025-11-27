@@ -1,4 +1,4 @@
-# Trinity Core - Terminal Recording Guide
+# Trinity - Terminal Recording Guide
 
 ## Quick Start
 
@@ -148,7 +148,7 @@ asciinema rec trinity-demo.cast
 
 ```bash
 # Header
-echo "🏛️  Trinity Core v0.6.0 - Production-Ready Architecture"
+echo "🏛️  Trinity v0.6.0 - Production-Ready Architecture"
 echo ""
 
 # 1. Configuration
@@ -246,7 +246,7 @@ montage demo-*.png -tile 2x3 -geometry +5+5 docs/assets/demo-collage.png
 ## Example README Section
 
 ```markdown
-# 🏛️ Trinity Core
+# 🏛️ Trinity
 
 <p align="center">
   <img src="https://asciinema.org/a/YOUR_RECORDING_ID.svg" alt="Trinity Demo" width="800">
@@ -254,7 +254,7 @@ montage demo-*.png -tile 2x3 -geometry +5+5 docs/assets/demo-collage.png
 
 > **AI-Powered Static Site Generator with Production-Ready Architecture**
 
-Trinity Core v0.6.0 introduces enterprise-grade features:
+Trinity v0.6.0 introduces enterprise-grade features:
 - 🔒 Immutable Configuration
 - 🔌 Circuit Breakers
 - 🔑 Idempotency

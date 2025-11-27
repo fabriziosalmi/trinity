@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Core - Main Entry Point (Legacy Wrapper)
+Trinity - Main Entry Point (Legacy Wrapper)
 
 DEPRECATED: This file is maintained for backward compatibility only.
 Use the modern CLI instead:

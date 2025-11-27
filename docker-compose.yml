@@ -1,4 +1,4 @@
-# docker-compose.yml - Trinity Core Development Stack
+# docker-compose.yml - Trinity Development Stack
 # Rule #28: Structured logging and clear service separation
 
 services:

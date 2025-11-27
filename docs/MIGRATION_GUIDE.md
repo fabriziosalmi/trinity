@@ -1,4 +1,4 @@
-# Trinity Core - Migration Guide to v0.6.0
+# Trinity - Migration Guide to v0.6.0
 
 ## Overview
 

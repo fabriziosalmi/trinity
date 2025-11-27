@@ -37,7 +37,7 @@ Model predicts breakage BEFORE rendering → Apply optimal fix on first try → 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│              TRINITY CORE v0.4.0 (CENTURIA FACTORY)             │
+│              TRINITY v0.4.0 (CENTURIA FACTORY)             │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐

@@ -1,5 +1,5 @@
 """
-Trinity Core v0.6.0 - Integration Example
+Trinity v0.6.0 - Integration Example
 
 Demonstrates the new architecture with all refactoring improvements:
 - Immutable configuration with dependency injection

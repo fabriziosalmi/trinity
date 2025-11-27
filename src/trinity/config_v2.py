@@ -22,7 +22,7 @@ from trinity.exceptions import ConfigurationError, PathResolutionError, ThemeNot
 
 class ImmutableTrinityConfig(BaseSettings):
     """
-    Immutable configuration for Trinity Core.
+    Immutable configuration for Trinity.
 
     Design principles:
     - Frozen after initialization (no mutation)

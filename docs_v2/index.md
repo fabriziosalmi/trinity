@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "Trinity Core"
+  name: "Trinity"
   text: "AI-Powered Site Generator"
   tagline: "Stop debugging broken layouts. Let AI fix them automatically."
   actions:
@@ -38,7 +38,7 @@ features:
 
 ## Why Trinity?
 
-| Feature | Traditional SSG | Trinity Core |
+| Feature | Traditional SSG | Trinity |
 |---------|----------------|--------------|
 | **Content** | Manual writing | AI-powered |
 | **Layout Issues** | Debug after deploy | Auto-detected & fixed |

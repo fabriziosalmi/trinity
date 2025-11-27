@@ -1,4 +1,4 @@
-# Trinity Core v0.6.0 - Complete Refactoring Index
+# Trinity v0.6.0 - Complete Refactoring Index
 
 ## 📋 Quick Reference
 

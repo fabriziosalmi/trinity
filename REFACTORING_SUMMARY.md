@@ -1,4 +1,4 @@
-# Trinity Core - Refactoring Implementation Summary
+# Trinity - Refactoring Implementation Summary
 
 ## Executive Summary
 

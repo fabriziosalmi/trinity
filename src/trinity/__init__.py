@@ -1,5 +1,5 @@
 """
-Trinity Core - AI-Powered Static Site Generator
+Trinity - AI-Powered Static Site Generator
 with Self-Healing Layout QA and Neural-Symbolic Learning
 
 A deterministic static site builder that combines:

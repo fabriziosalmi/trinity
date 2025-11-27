@@ -1,5 +1,5 @@
 """
-Trinity Core - Validator
+Trinity - Validator
 Rule #95: Validate accessibility and HTML standards
 Rule #5: Type safety with Pydantic
 Rule #28: Structured logging

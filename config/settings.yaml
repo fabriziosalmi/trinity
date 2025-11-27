@@ -1,4 +1,4 @@
-# Trinity Core Settings
+# Trinity Settings
 # This file is loaded by Dynaconf and Pydantic Settings
 # Environment variables take precedence (TRINITY_*)
 

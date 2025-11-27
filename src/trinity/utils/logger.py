@@ -1,5 +1,5 @@
 """
-Centralized logging configuration for Trinity Core.
+Centralized logging configuration for Trinity.
 
 Provides structured logging with file and console handlers.
 """

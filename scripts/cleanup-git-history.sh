@@ -1,5 +1,5 @@
 #!/bin/bash
-# Trinity Core - Git History Cleanup Script
+# Trinity - Git History Cleanup Script
 # This script removes sensitive data from git history using git-filter-repo
 
 set -e
@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${YELLOW}⚠️  Trinity Core - Git History Cleanup${NC}"
+echo -e "${YELLOW}⚠️  Trinity - Git History Cleanup${NC}"
 echo ""
 echo "This script will remove sensitive data from git history:"
 echo "  • Hardcoded IP addresses (192.168.100.12)"

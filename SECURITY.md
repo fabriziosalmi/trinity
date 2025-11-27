@@ -16,7 +16,7 @@
 ### Private Disclosure Process
 
 1. **Email:** Send vulnerability details to `fabrizio.salmi@gmail.com`
-   - Subject: `[SECURITY] Trinity Core Vulnerability Report`
+   - Subject: `[SECURITY] Trinity Vulnerability Report`
    - Include: Description, affected versions, reproduction steps, potential impact
 
 2. **Expected Response Time:**
@@ -38,7 +38,7 @@
 
 #### Pickle Model Loading (CRITICAL)
 
-Trinity Core uses `joblib` (pickle-based) for ML model serialization. **NEVER load models from untrusted sources.**
+Trinity uses `joblib` (pickle-based) for ML model serialization. **NEVER load models from untrusted sources.**
 
 - **Risk:** Pickle can execute arbitrary Python code during deserialization
 - **Mitigation:** Only load models you trained yourself or from verified sources
@@ -59,7 +59,7 @@ model = joblib.load("model.pkl")  # Can execute malicious code
 
 #### LLM Endpoint Configuration
 
-Trinity Core connects to local LLM servers (e.g., LM Studio). Ensure endpoints are trusted:
+Trinity connects to local LLM servers (e.g., LM Studio). Ensure endpoints are trusted:
 
 - **Default:** `http://localhost:1234` (configure via LM_STUDIO_URL env var)
 - **Risk:** Malicious LLM endpoint could inject harmful content

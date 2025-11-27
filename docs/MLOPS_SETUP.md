@@ -1,4 +1,4 @@
-# Trinity Core - MLOps Setup Guide
+# Trinity - MLOps Setup Guide
 
 ## Overview
 

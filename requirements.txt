@@ -1,4 +1,4 @@
-# Trinity Core Dependencies
+# Trinity Dependencies
 # Rule: Pinned versions for reproducibility
 
 # Core Framework

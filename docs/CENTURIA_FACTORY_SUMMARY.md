@@ -288,4 +288,4 @@ poetry run trinity train
 ---
 
 *"The difference between memorization and understanding is dataset diversity."*  
-— Trinity Core Philosophy
+— Trinity Philosophy

@@ -1,5 +1,5 @@
 """
-Structured Logger for Trinity Core
+Structured Logger for Trinity
 
 Provides structured JSON logging with context, correlation IDs, and performance tracking.
 Designed for log aggregation systems (ELK, Datadog, CloudWatch, etc.).

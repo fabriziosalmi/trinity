@@ -1,10 +1,10 @@
-# Trinity Core v0.2.0 - Architecture Refactoring (FASE 1)
+# Trinity v0.2.0 - Architecture Refactoring (FASE 1)
 
 ## ✅ What's Been Accomplished
 
 ### 🏗️ **Complete Package Transformation**
 
-Trinity Core è stato trasformato da script monolitico a **Python Package modulare** seguendo i principi SOLID.
+Trinity è stato trasformato da script monolitico a **Python Package modulare** seguendo i principi SOLID.
 
 ```
 /trinity-core

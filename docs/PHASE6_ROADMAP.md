@@ -1,4 +1,4 @@
-# Trinity Core - Phase 6 Roadmap (v0.6.x → v0.8.0)
+# Trinity - Phase 6 Roadmap (v0.6.x → v0.8.0)
 
 > **Status:** Planning  
 > **Current Version:** v0.6.0  

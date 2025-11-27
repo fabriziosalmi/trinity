@@ -1,5 +1,5 @@
 """
-Trinity Core - LLM Client
+Trinity - LLM Client
 Rule #7: Explicit error handling for network calls
 Rule #28: Structured logging
 Rule #5: Type safety and validation

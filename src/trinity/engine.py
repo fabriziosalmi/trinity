@@ -52,7 +52,7 @@ class BuildResult(BaseModel):
 
 class TrinityEngine:
     """
-    Main orchestrator for Trinity Core.
+    Main orchestrator for Trinity.
 
     Coordinates:
     - Content generation (Brain)

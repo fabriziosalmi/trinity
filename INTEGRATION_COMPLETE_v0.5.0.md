@@ -271,7 +271,7 @@ Validated against whitelist + arbitrary values `[0.9rem]`.
 ## 🙏 Credits
 
 **Phase 4/5 Implementation:** GitHub Copilot (Claude Sonnet 4.5)  
-**Framework:** Trinity Core by @fabriziosalmi  
+**Framework:** Trinity by @fabriziosalmi  
 **Date:** November 26, 2025
 
 ---

@@ -1,5 +1,5 @@
 """
-Trinity Core - Multi-Tier Cache Manager
+Trinity - Multi-Tier Cache Manager
 
 Implements 3-tier caching for LLM responses:
 1. Memory (LRU, 100 entries, instant)

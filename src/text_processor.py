@@ -1,5 +1,5 @@
 """
-Trinity Core - Text Processor (The Enforcer)
+Trinity - Text Processor (The Enforcer)
 Rule #8: No magic strings - all rules from config
 Rule #14: Single responsibility - only text transformation
 Rule #7: Explicit error handling with graceful degradation

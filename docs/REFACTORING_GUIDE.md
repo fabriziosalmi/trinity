@@ -1,4 +1,4 @@
-# Trinity Core - Architectural Refactoring Guide
+# Trinity - Architectural Refactoring Guide
 
 ## Overview
 

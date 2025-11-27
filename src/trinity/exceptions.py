@@ -1,5 +1,5 @@
 """
-Trinity Core - Custom Exception Hierarchy
+Trinity - Custom Exception Hierarchy
 
 Provides specific exception types for better error handling and debugging.
 Replaces generic 'except Exception' blocks with domain-specific exceptions.

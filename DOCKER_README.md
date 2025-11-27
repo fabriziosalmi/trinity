@@ -1,6 +1,6 @@
-# 🐋 Trinity Core - Docker Quick Start
+# 🐋 Trinity - Docker Quick Start
 
-Complete Docker development environment for Trinity Core static site generator.
+Complete Docker development environment for Trinity static site generator.
 
 ## Prerequisites
 

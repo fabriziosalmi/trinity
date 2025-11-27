@@ -1,5 +1,5 @@
 """
-Test suite for Trinity Core v0.2.0
+Test suite for Trinity v0.2.0
 
 Tests are organized by component:
 - test_healer.py: SmartHealer progressive strategies

@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}==============================================================${NC}"
-echo -e "${BLUE}Trinity Core - Docker Setup Verification${NC}"
+echo -e "${BLUE}Trinity - Docker Setup Verification${NC}"
 echo -e "${BLUE}==============================================================${NC}"
 echo ""
 

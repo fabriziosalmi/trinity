@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Trinity Core",
+  title: "Trinity",
   description: "AI-powered portfolio generator with self-healing layouts",
   
   // GitHub Pages base path
@@ -166,7 +166,7 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:locale', content: 'en' }],
-    ['meta', { name: 'og:site_name', content: 'Trinity Core Documentation' }],
+    ['meta', { name: 'og:site_name', content: 'Trinity Documentation' }],
     ['meta', { name: 'og:image', content: 'https://trinity-core.org/og-image.png' }]
   ]
 })

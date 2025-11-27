@@ -1,5 +1,5 @@
 @echo off
-REM dev.bat - Trinity Core Development Helper Script (Windows)
+REM dev.bat - Trinity Development Helper Script (Windows)
 REM Rule #96: Explicit commands with error handling
 
 setlocal enabledelayedexpansion
@@ -25,19 +25,19 @@ echo.
 goto :help
 
 :start
-echo [Trinity] Starting Trinity Core services...
+echo [Trinity] Starting Trinity services...
 docker-compose up -d
 timeout /t 3 /nobreak >nul
 goto :status
 
 :stop
-echo [Trinity] Stopping Trinity Core services...
+echo [Trinity] Stopping Trinity services...
 docker-compose down
 echo [SUCCESS] Services stopped
 goto :eof
 
 :restart
-echo [Trinity] Restarting Trinity Core services...
+echo [Trinity] Restarting Trinity services...
 docker-compose restart
 timeout /t 2 /nobreak >nul
 goto :status
@@ -114,7 +114,7 @@ echo [SUCCESS] Rebuild complete
 goto :eof
 
 :help
-echo Trinity Core - Development Script (Windows)
+echo Trinity - Development Script (Windows)
 echo.
 echo USAGE:
 echo     dev.bat ^<command^> [arguments]

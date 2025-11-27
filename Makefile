@@ -317,11 +317,11 @@ s: serve ## Alias for 'serve'
 ##@ Info
 
 version: ## Show Trinity version
-	@echo "$(CYAN)Trinity Core$(RESET)"
+	@echo "$(CYAN)Trinity$(RESET)"
 	@grep "^## \[" CHANGELOG.md | head -1
 
 info: ## Show project information
-	@echo "$(CYAN)Trinity Core - AI Portfolio Generator$(RESET)"
+	@echo "$(CYAN)Trinity - AI Portfolio Generator$(RESET)"
 	@echo ""
 	@echo "Version: $(shell grep '^## \[' CHANGELOG.md | head -1 | cut -d'[' -f2 | cut -d']' -f1)"
 	@echo "Python: $(shell $(PYTHON) --version)"

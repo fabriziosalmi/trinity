@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Core - Main Entry Point
+Trinity - Main Entry Point
 Rule #96: No clever one-liners, explicit logic
 Rule #28: Structured logging
 Rule #5: Type safety and error handling
@@ -83,7 +83,7 @@ def build_site_from_mock_data(theme: str = "enterprise", enable_guardian: bool =
     
     # Mock content matching ContentSchema
     mock_content = {
-        "brand_name": "Trinity Core",
+        "brand_name": "Trinity",
         "tagline": "Deterministic Layouts. AI-Powered Content.",
         "menu_items": [
             {"label": "Features", "url": "#features"},
@@ -270,7 +270,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Trinity Core - Static Site Generator",
+        description="Trinity - Static Site Generator",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

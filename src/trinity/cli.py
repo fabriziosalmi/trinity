@@ -1,5 +1,5 @@
 """
-Trinity Core CLI - Modern Command Line Interface
+Trinity CLI - Modern Command Line Interface
 
 Built with Typer for excellent UX and type safety.
 """
@@ -21,7 +21,7 @@ from trinity.utils.logger import setup_logger
 # Initialize Typer app
 app = typer.Typer(
     name="trinity",
-    help="Trinity Core - AI-Powered Static Site Generator with Self-Healing QA",
+    help="Trinity - AI-Powered Static Site Generator with Self-Healing QA",
     add_completion=False,
 )
 
@@ -31,7 +31,7 @@ console = Console()
 def version_callback(value: bool):
     """Print version and exit."""
     if value:
-        console.print(f"Trinity Core v{__version__}", style="bold green")
+        console.print(f"Trinity v{__version__}", style="bold green")
         raise typer.Exit()
 
 
@@ -46,7 +46,7 @@ def main(
         is_eager=True,
     ),
 ):
-    """Trinity Core - Build AI-powered static sites with self-healing QA."""
+    """Trinity - Build AI-powered static sites with self-healing QA."""
     pass
 
 
@@ -96,7 +96,7 @@ def build(
     config = TrinityConfig()
     logger = setup_logger(log_level=log_level, log_file=config.log_file)
 
-    console.print(f"\n[bold cyan]Trinity Core v{__version__}[/bold cyan]")
+    console.print(f"\n[bold cyan]Trinity v{__version__}[/bold cyan]")
     console.print(f"Building: [yellow]{output}[/yellow] (theme: [green]{theme}[/green])\n")
 
     # Initialize engine
@@ -307,7 +307,7 @@ def _display_build_result(result):
 def _get_mock_content():
     """Get mock content for demo builds."""
     return {
-        "brand_name": "Trinity Core",
+        "brand_name": "Trinity",
         "tagline": "Deterministic Layouts. AI-Powered Content.",
         "menu_items": [
             {"label": "Features", "url": "#features"},

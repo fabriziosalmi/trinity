@@ -75,7 +75,7 @@
   },
   "_meta": {
     "version": "1.0",
-    "description": "Content transformation rules for Trinity Core themes",
+    "description": "Content transformation rules for Trinity themes",
     "notes": [
       "Add new themes by defining transformation rules",
       "field_mapping uses dot notation for nested fields",

@@ -1,8 +1,8 @@
-# Trinity Core - Architecture Overview
+# Trinity - Architecture Overview
 
 > **Deep dive into the neural-generative pipeline**
 
-This document explains the technical architecture behind Trinity Core's self-healing static site generation system.
+This document explains the technical architecture behind Trinity's self-healing static site generation system.
 
 ---
 
@@ -22,11 +22,11 @@ This document explains the technical architecture behind Trinity Core's self-hea
 
 ## System Overview
 
-Trinity Core implements a **5-layer neural-generative pipeline** for AI-powered static site generation with automatic layout healing.
+Trinity implements a **5-layer neural-generative pipeline** for AI-powered static site generation with automatic layout healing.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  TRINITY CORE v0.7.0 (PHASE 6)                  │
+│                  TRINITY v0.7.0 (PHASE 6)                  │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐

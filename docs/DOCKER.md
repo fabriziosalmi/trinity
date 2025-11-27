@@ -1,4 +1,4 @@
-# Trinity Core - Docker Development Guide
+# Trinity - Docker Development Guide
 
 ## Quick Start
 
@@ -123,7 +123,7 @@ cat logs/trinity.log
 ```
 
 ### LM Studio Connection
-Docker containers cannot use `localhost` to reach the host. Trinity Core uses:
+Docker containers cannot use `localhost` to reach the host. Trinity uses:
 
 **Environment Variable**: `LM_STUDIO_URL=http://host.docker.internal:1234/v1`
 
@@ -311,7 +311,7 @@ docker run -p 8080:80 \
 
 ### GitHub Actions Example
 ```yaml
-name: Trinity Core CI
+name: Trinity CI
 
 on: [push, pull_request]
 

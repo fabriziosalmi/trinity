@@ -1,5 +1,5 @@
 """
-Trinity Core - Async Content Engine (Async Brain)
+Trinity - Async Content Engine (Async Brain)
 
 Async version of ContentEngine using AsyncLLMClient.
 Provides 6x throughput improvement for concurrent content generation.

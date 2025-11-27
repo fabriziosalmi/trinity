@@ -1,5 +1,5 @@
 """
-Trinity Core - Circuit Breaker Pattern
+Trinity - Circuit Breaker Pattern
 
 Implements circuit breaker for external dependencies (LLM API, Playwright)
 to prevent cascading failures and provide graceful degradation.

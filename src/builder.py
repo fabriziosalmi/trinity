@@ -1,5 +1,5 @@
 """
-Trinity Core - Site Builder
+Trinity - Site Builder
 Rule #14: Single Responsibility (Assembly only, not content generation)
 Rule #5: Type safety and error handling
 Rule #27: Separation of concerns
@@ -158,7 +158,7 @@ class SiteBuilder:
                 content=content,
                 theme_classes=theme_classes,
                 meta={
-                    "generator": "Trinity Core v1.0",
+                    "generator": "Trinity v1.0",
                     "theme": theme,
                     "build_date": datetime.utcnow().strftime("%Y-%m-%d"),
                 },

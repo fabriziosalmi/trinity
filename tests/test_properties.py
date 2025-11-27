@@ -1,5 +1,5 @@
 """
-Property-based tests for Trinity Core using Hypothesis.
+Property-based tests for Trinity using Hypothesis.
 
 These tests verify invariants and edge cases that are difficult to
 catch with example-based tests.

@@ -1,6 +1,6 @@
-# Contributing to Trinity Core
+# Contributing to Trinity
 
-Thank you for considering contributing to Trinity Core! This document provides guidelines for development setup, code standards, and contribution workflow.
+Thank you for considering contributing to Trinity! This document provides guidelines for development setup, code standards, and contribution workflow.
 
 ## Development Setup
 

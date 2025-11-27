@@ -1,6 +1,6 @@
 # Trinity Scripts
 
-Automation scripts for Trinity Core development and ML training.
+Automation scripts for Trinity development and ML training.
 
 ## 📁 Available Scripts
 

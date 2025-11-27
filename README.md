@@ -1,4 +1,4 @@
-# 🏛️ Trinity Core
+# 🏛️ Trinity
 
 > **AI-powered portfolio generator that actually works in production**
 
@@ -88,7 +88,7 @@ docker-compose exec trinity-builder trinity build --theme brutalist
 
 ## 🎯 Why Trinity?
 
-| Feature | Traditional SSG | Trinity Core |
+| Feature | Traditional SSG | Trinity |
 |---------|----------------|--------------|
 | **Content Generation** | Manual writing | AI-powered (GPT, Claude, local LLMs) |
 | **Layout Issues** | Debug after deploy | Auto-detected and fixed |
