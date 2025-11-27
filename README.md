@@ -18,7 +18,7 @@ Stop wasting time debugging broken layouts. Trinity generates beautiful, respons
   <a href="#-features">✨ Features</a> •
   <a href="#-why-trinity">🎯 Why Trinity?</a> •
   <a href="#-examples">📚 Examples</a> •
-  <a href="docs/">📖 Documentation</a>
+  <a href="https://fabriziosalmi.github.io/trinity/">📖 Documentation</a>
 </p>
 
 ---

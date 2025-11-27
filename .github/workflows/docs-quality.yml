@@ -6,12 +6,12 @@ on:
     branches: [main]
     paths:
       - '**.md'
-      - 'docs/**'
+      - 'docs_v2/**'
   pull_request:
     branches: [main]
     paths:
       - '**.md'
-      - 'docs/**'
+      - 'docs_v2/**'
   schedule:
     # Run weekly on Mondays at 00:00 UTC to catch link rot
     - cron: '0 0 * * 1'

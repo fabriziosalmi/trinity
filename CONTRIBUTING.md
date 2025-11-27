@@ -8,8 +8,23 @@ Thank you for considering contributing to Trinity! This document provides guidel
 
 - **Python >= 3.10** (3.12 recommended)
 - **Poetry >= 1.6** for dependency management
+- **Node.js >= 18** (for documentation site only)
 - **Docker Desktop >= 24.0** (optional, for containerized development)
 - **LM Studio >= 0.2.0** with Qwen 2.5 Coder model (optional, for LLM features)
+
+### Dependency Management
+
+Trinity uses **two separate dependency systems**:
+
+1. **Python (Poetry)** - Core application and ML models
+   - `pyproject.toml` - Source of truth for Python dependencies
+   - `requirements.txt` - Generated from Poetry for Docker/CI compatibility
+   
+2. **Node.js (npm)** - Documentation site only (VitePress)
+   - `package.json` - Documentation tooling (build/preview docs_v2/)
+   - **Not** used for the core Trinity application
+
+**Why both?** The Python app is the product. Node.js is only for building/previewing the VitePress documentation site.
 
 ### Local Installation
 
@@ -18,7 +33,7 @@ Thank you for considering contributing to Trinity! This document provides guidel
 git clone https://github.com/fabriziosalmi/trinity.git
 cd trinity
 
-# Install dependencies with Poetry
+# Install Python dependencies with Poetry
 poetry install
 
 # Activate virtual environment
@@ -26,6 +41,9 @@ poetry shell
 
 # Verify installation
 trinity --version
+
+# (Optional) Install npm deps only if working on docs_v2/
+npm install  # Only needed for VitePress documentation
 ```
 
 ### Environment Configuration
