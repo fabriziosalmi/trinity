@@ -5,6 +5,7 @@ Tests the 6x throughput improvement target for async implementation.
 """
 
 import asyncio
+import json
 import time
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -60,50 +61,92 @@ class TestAsyncPerformance:
     """Test async performance improvements."""
 
     @pytest.mark.asyncio
-    async def test_async_single_generation(self, sample_portfolio_file):
+    async def test_async_single_generation(self, sample_portfolio_file, mocker):
         """Test async single content generation."""
-        try:
-            async with AsyncContentEngine() as engine:
-                result = await engine.generate_content_async(sample_portfolio_file, "brutalist")
+        # Mock AsyncLLMClient
+        mock_response = json.dumps({
+            "brand_name": "Test Brand",
+            "tagline": "Test Tagline",
+            "hero": {
+                "title": "Test Title",
+                "subtitle": "Test Subtitle",
+                "cta_primary": {"label": "Go", "url": "#"},
+                "cta_secondary": {"label": "Back", "url": "#"}
+            },
+            "repos": [
+                {
+                    "name": "repo1",
+                    "description": "desc1",
+                    "url": "http://repo1",
+                    "stars": 10,
+                    "language": "Python",
+                    "tags": ["tag1"]
+                }
+            ],
+            "menu_items": [],
+            "cta": {"label": "Click", "url": "#"}
+        })
+        
+        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", return_value=mock_response)
 
-                assert result is not None
-                assert "brand_name" in result
-                assert "repos" in result
-                assert len(result["repos"]) > 0
+        async with AsyncContentEngine() as engine:
+            result = await engine.generate_content_async(sample_portfolio_file, "brutalist")
 
-        except ContentEngineError as e:
-            pytest.skip(f"LLM not available: {e}")
+            assert result is not None
+            assert "brand_name" in result
+            assert "repos" in result
+            assert len(result["repos"]) > 0
 
     @pytest.mark.asyncio
-    async def test_async_concurrent_generation(self, sample_portfolio_file):
+    async def test_async_concurrent_generation(self, sample_portfolio_file, mocker):
         """Test concurrent async generation."""
         themes = ["brutalist", "hacker", "minimalist"]
 
-        try:
-            async with AsyncContentEngine() as engine:
-                # Generate all themes concurrently
-                tasks = [
-                    engine.generate_content_async(sample_portfolio_file, theme) for theme in themes
-                ]
+        # Mock AsyncLLMClient
+        mock_response = json.dumps({
+            "brand_name": "Test Brand",
+            "tagline": "Test Tagline",
+            "hero": {
+                "title": "Test Title",
+                "subtitle": "Test Subtitle",
+                "cta_primary": {"label": "Go", "url": "#"},
+                "cta_secondary": {"label": "Back", "url": "#"}
+            },
+            "repos": [
+                {
+                    "name": "repo1",
+                    "description": "desc1",
+                    "url": "http://repo1",
+                    "stars": 10,
+                    "language": "Python",
+                    "tags": ["tag1"]
+                }
+            ],
+            "menu_items": [],
+            "cta": {"label": "Click", "url": "#"}
+        })
+        
+        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", return_value=mock_response)
 
-                results = await asyncio.gather(*tasks, return_exceptions=True)
+        async with AsyncContentEngine() as engine:
+            # Generate all themes concurrently
+            tasks = [
+                engine.generate_content_async(sample_portfolio_file, theme) for theme in themes
+            ]
 
-                # Check results
-                assert len(results) == len(themes)
+            results = await asyncio.gather(*tasks, return_exceptions=True)
 
-                for theme, result in zip(themes, results):
-                    if isinstance(result, Exception):
-                        pytest.skip(f"LLM not available for {theme}: {result}")
-                    else:
-                        assert result is not None
-                        assert "brand_name" in result
+            # Check results
+            assert len(results) == len(themes)
 
-        except ContentEngineError as e:
-            pytest.skip(f"LLM not available: {e}")
+            for theme, result in zip(themes, results):
+                assert not isinstance(result, Exception)
+                assert result is not None
+                assert "brand_name" in result
 
     @pytest.mark.asyncio
     @pytest.mark.slow
-    async def test_performance_comparison(self, sample_portfolio_file):
+    async def test_performance_comparison(self, sample_portfolio_file, mocker):
         """
         Compare sync vs async performance.
 
@@ -112,50 +155,79 @@ class TestAsyncPerformance:
         """
         num_requests = 3
         theme = "minimalist"
+        delay = 0.1
+        
+        mock_content = json.dumps({
+            "brand_name": "Test Brand",
+            "tagline": "Test Tagline",
+            "hero": {
+                "title": "Test Title",
+                "subtitle": "Test Subtitle",
+                "cta_primary": {"label": "Go", "url": "#"},
+                "cta_secondary": {"label": "Back", "url": "#"}
+            },
+            "repos": [
+                {
+                    "name": "repo1",
+                    "description": "desc1",
+                    "url": "http://repo1",
+                    "stars": 10,
+                    "language": "Python",
+                    "tags": ["tag1"]
+                }
+            ],
+            "menu_items": [],
+            "cta": {"label": "Click", "url": "#"}
+        })
+
+        # Mock Sync ContentEngine (OpenAI client)
+        mock_openai_resp = mocker.Mock()
+        mock_openai_resp.choices = [mocker.Mock(message=mocker.Mock(content=mock_content))]
+        
+        def sync_side_effect(*args, **kwargs):
+            time.sleep(delay)
+            return mock_openai_resp
+
+        mocker.patch("openai.resources.chat.Completions.create", side_effect=sync_side_effect)
+
+        # Mock Async ContentEngine (AsyncLLMClient)
+        async def async_side_effect(*args, **kwargs):
+            await asyncio.sleep(delay)
+            return mock_content
+
+        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", side_effect=async_side_effect)
 
         # Sync benchmark
         print("\n=== Sync Performance Benchmark ===")
-        try:
-            sync_start = time.time()
+        sync_start = time.time()
 
-            engine = ContentEngine()
-            for i in range(num_requests):
-                result = engine.generate_content(sample_portfolio_file, theme)
-                print(f"  Sync request {i+1}/{num_requests}: ✓")
+        engine = ContentEngine()
+        for i in range(num_requests):
+            result = engine.generate_content(sample_portfolio_file, theme)
+            print(f"  Sync request {i+1}/{num_requests}: ✓")
 
-            sync_duration = time.time() - sync_start
-            print(f"Total sync time: {sync_duration:.2f}s")
-            print(f"Avg per request: {sync_duration/num_requests:.2f}s")
-
-        except ContentEngineError as e:
-            pytest.skip(f"Sync LLM not available: {e}")
-        except Exception as e:
-            pytest.skip(f"Sync test failed: {e}")
+        sync_duration = time.time() - sync_start
+        print(f"Total sync time: {sync_duration:.2f}s")
+        print(f"Avg per request: {sync_duration/num_requests:.2f}s")
 
         # Async benchmark
         print("\n=== Async Performance Benchmark ===")
-        try:
-            async_start = time.time()
+        async_start = time.time()
 
-            async with AsyncContentEngine() as engine:
-                tasks = [
-                    engine.generate_content_async(sample_portfolio_file, theme)
-                    for i in range(num_requests)
-                ]
+        async with AsyncContentEngine() as engine:
+            tasks = [
+                engine.generate_content_async(sample_portfolio_file, theme)
+                for i in range(num_requests)
+            ]
 
-                results = await asyncio.gather(*tasks)
+            results = await asyncio.gather(*tasks)
 
-                for i, result in enumerate(results):
-                    print(f"  Async request {i+1}/{num_requests}: ✓")
+            for i, result in enumerate(results):
+                print(f"  Async request {i+1}/{num_requests}: ✓")
 
-            async_duration = time.time() - async_start
-            print(f"Total async time: {async_duration:.2f}s")
-            print(f"Avg per request: {async_duration/num_requests:.2f}s")
-
-        except ContentEngineError as e:
-            pytest.skip(f"Async LLM not available: {e}")
-        except Exception as e:
-            pytest.skip(f"Async test failed: {e}")
+        async_duration = time.time() - async_start
+        print(f"Total async time: {async_duration:.2f}s")
+        print(f"Avg per request: {async_duration/num_requests:.2f}s")
 
         # Performance analysis
         speedup = sync_duration / async_duration if async_duration > 0 else 0
@@ -211,7 +283,7 @@ class TestBackwardCompatibility:
 
 
 @pytest.mark.asyncio
-async def test_high_concurrency(sample_portfolio_file):
+async def test_high_concurrency(sample_portfolio_file, mocker):
     """
     Test high concurrency scenario (10+ concurrent requests).
 
@@ -220,43 +292,68 @@ async def test_high_concurrency(sample_portfolio_file):
     """
     num_requests = 10
     theme = "minimalist"
+    delay = 0.05 # Faster delay for high concurrency test
 
     print(f"\n=== High Concurrency Test ({num_requests} requests) ===")
+    
+    mock_content = json.dumps({
+        "brand_name": "Test Brand",
+        "tagline": "Test Tagline",
+        "hero": {
+            "title": "Test Title",
+            "subtitle": "Test Subtitle",
+            "cta_primary": {"label": "Go", "url": "#"},
+            "cta_secondary": {"label": "Back", "url": "#"}
+        },
+        "repos": [
+            {
+                "name": "repo1",
+                "description": "desc1",
+                "url": "http://repo1",
+                "stars": 10,
+                "language": "Python",
+                "tags": ["tag1"]
+            }
+        ],
+        "menu_items": [],
+        "cta": {"label": "Click", "url": "#"}
+    })
 
-    try:
-        start = time.time()
+    # Mock Async ContentEngine (AsyncLLMClient)
+    async def async_side_effect(*args, **kwargs):
+        await asyncio.sleep(delay)
+        return mock_content
 
-        async with AsyncContentEngine() as engine:
-            tasks = [
-                engine.generate_content_async(sample_portfolio_file, theme)
-                for _ in range(num_requests)
-            ]
+    mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", side_effect=async_side_effect)
 
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+    start = time.time()
 
-            duration = time.time() - start
+    async with AsyncContentEngine() as engine:
+        tasks = [
+            engine.generate_content_async(sample_portfolio_file, theme)
+            for _ in range(num_requests)
+        ]
 
-            # Count successes
-            successes = sum(1 for r in results if not isinstance(r, Exception))
-            failures = num_requests - successes
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            print(f"Duration: {duration:.2f}s")
-            print(f"Throughput: {num_requests/duration:.1f} req/s")
-            print(f"Successes: {successes}/{num_requests}")
-            print(f"Failures: {failures}/{num_requests}")
+        duration = time.time() - start
 
-            # At least 50% should succeed
-            assert successes >= num_requests * 0.5, f"Too many failures: {failures}/{num_requests}"
+        # Count successes
+        successes = sum(1 for r in results if not isinstance(r, Exception))
+        failures = num_requests - successes
 
-            # Should achieve at least 5 req/s (vs ~1 req/s sync)
-            throughput = num_requests / duration
-            assert (
-                throughput >= 5.0
-            ), f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
+        print(f"Duration: {duration:.2f}s")
+        print(f"Throughput: {num_requests/duration:.1f} req/s")
+        print(f"Successes: {successes}/{num_requests}")
+        print(f"Failures: {failures}/{num_requests}")
 
-            print(f"✓ High concurrency test PASSED ({throughput:.1f} req/s)")
+        # At least 50% should succeed
+        assert successes >= num_requests * 0.5, f"Too many failures: {failures}/{num_requests}"
 
-    except ContentEngineError as e:
-        pytest.skip(f"LLM not available: {e}")
-    except Exception as e:
-        pytest.skip(f"Test failed: {e}")
+        # Should achieve at least 5 req/s (vs ~1 req/s sync)
+        throughput = num_requests / duration
+        assert (
+            throughput >= 5.0
+        ), f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
+
+        print(f"✓ High concurrency test PASSED ({throughput:.1f} req/s)")

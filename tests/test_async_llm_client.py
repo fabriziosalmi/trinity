@@ -24,72 +24,96 @@ class TestAsyncLLMClient:
         # Note: httpx doesn't expose is_closed, so we just verify no errors
 
     @pytest.mark.asyncio
-    async def test_async_generate_content_basic(self):
+    async def test_async_generate_content_basic(self, mocker):
         """Test basic async content generation."""
+        # Mock the HTTP response
+        mock_response = mocker.Mock()
+        mock_response.json.return_value = {"response": '{"message": "Hello"}'}
+        mock_response.status_code = 200
+        
+        # Mock the post method
+        mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
+
         async with AsyncLLMClient(base_url="http://localhost:11434") as client:
-            try:
-                response = await client.generate_content(
-                    prompt='Say "Hello" in JSON format: {"message": "..."}', expect_json=True
-                )
-                assert response
-                assert len(response) > 0
-            except LLMClientError as e:
-                pytest.skip(f"LLM not available: {e}")
+            response = await client.generate_content(
+                prompt='Say "Hello" in JSON format: {"message": "..."}', expect_json=True
+            )
+            assert response
+            assert len(response) > 0
+            assert "Hello" in response
 
     @pytest.mark.asyncio
-    async def test_concurrent_requests(self):
+    async def test_concurrent_requests(self, mocker):
         """Test concurrent request handling."""
+        # Mock the HTTP response
+        mock_response = mocker.Mock()
+        mock_response.json.return_value = {"response": '{"message": "Response"}'}
+        mock_response.status_code = 200
+        
+        # Mock the post method
+        mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
+
         async with AsyncLLMClient(base_url="http://localhost:11434") as client:
-            try:
-                prompts = [
-                    'Say "Request 1" in JSON',
-                    'Say "Request 2" in JSON',
-                    'Say "Request 3" in JSON',
-                ]
+            prompts = [
+                'Say "Request 1" in JSON',
+                'Say "Request 2" in JSON',
+                'Say "Request 3" in JSON',
+            ]
 
-                # Send all requests concurrently
-                tasks = [client.generate_content(prompt, expect_json=True) for prompt in prompts]
+            # Send all requests concurrently
+            tasks = [client.generate_content(prompt, expect_json=True) for prompt in prompts]
 
-                responses = await asyncio.gather(*tasks, return_exceptions=True)
+            responses = await asyncio.gather(*tasks, return_exceptions=True)
 
-                # At least verify we got responses
-                assert len(responses) == len(prompts)
+            # At least verify we got responses
+            assert len(responses) == len(prompts)
 
-                # Check no exceptions (or all are same exception type)
-                for resp in responses:
-                    if isinstance(resp, Exception):
-                        pytest.skip(f"LLM not available: {resp}")
-
-            except LLMClientError as e:
-                pytest.skip(f"LLM not available: {e}")
+            # Check no exceptions
+            for resp in responses:
+                assert not isinstance(resp, Exception)
 
     @pytest.mark.asyncio
-    async def test_performance_comparison(self):
-        """Compare sync vs async performance (skip if LLM unavailable)."""
+    async def test_performance_comparison(self, mocker):
+        """Compare sync vs async performance (mocked with delay)."""
         num_requests = 3
+        delay = 0.1
+
+        # Mock Sync Client
+        def sync_side_effect(*args, **kwargs):
+            time.sleep(delay)
+            mock_resp = mocker.Mock()
+            mock_resp.json.return_value = {"response": '{"message": "Sync"}'}
+            mock_resp.status_code = 200
+            return mock_resp
+
+        mocker.patch("httpx.Client.post", side_effect=sync_side_effect)
+
+        # Mock Async Client
+        async def async_side_effect(*args, **kwargs):
+            await asyncio.sleep(delay)
+            mock_resp = mocker.Mock()
+            mock_resp.json.return_value = {"response": '{"message": "Async"}'}
+            mock_resp.status_code = 200
+            return mock_resp
+
+        mocker.patch("httpx.AsyncClient.post", side_effect=async_side_effect)
 
         # Sync benchmark
-        try:
-            start_sync = time.time()
-            with LLMClient(base_url="http://localhost:11434") as client:
-                for i in range(num_requests):
-                    client.generate_content(prompt=f'Say "Sync {i}" in JSON', expect_json=True)
-            sync_time = time.time() - start_sync
-        except LLMClientError:
-            pytest.skip("LLM not available for sync test")
+        start_sync = time.time()
+        with LLMClient(base_url="http://localhost:11434") as client:
+            for i in range(num_requests):
+                client.generate_content(prompt=f'Say "Sync {i}" in JSON', expect_json=True)
+        sync_time = time.time() - start_sync
 
         # Async benchmark
-        try:
-            start_async = time.time()
-            async with AsyncLLMClient(base_url="http://localhost:11434") as client:
-                tasks = [
-                    client.generate_content(prompt=f'Say "Async {i}" in JSON', expect_json=True)
-                    for i in range(num_requests)
-                ]
-                await asyncio.gather(*tasks)
-            async_time = time.time() - start_async
-        except LLMClientError:
-            pytest.skip("LLM not available for async test")
+        start_async = time.time()
+        async with AsyncLLMClient(base_url="http://localhost:11434") as client:
+            tasks = [
+                client.generate_content(prompt=f'Say "Async {i}" in JSON', expect_json=True)
+                for i in range(num_requests)
+            ]
+            await asyncio.gather(*tasks)
+        async_time = time.time() - start_async
 
         # Async should be faster (or at least not slower)
         speedup = sync_time / async_time if async_time > 0 else 0
@@ -99,8 +123,10 @@ class TestAsyncLLMClient:
         print(f"  Async: {async_time:.2f}s")
         print(f"  Speedup: {speedup:.1f}x")
 
-        # With 3 concurrent requests, we expect at least 2x speedup
-        # (conservative target, should be closer to 3x)
+        # With concurrent requests and simulated delay, we expect speedup
+        # Sync: 3 * 0.1 = 0.3s
+        # Async: 0.1s (concurrent)
+        # Speedup should be around 3x
         assert speedup >= 1.5, f"Expected speedup >= 1.5x, got {speedup:.1f}x"
 
     @pytest.mark.asyncio
@@ -123,11 +149,17 @@ class TestAsyncLLMClient:
 class TestSyncBackwardCompatibility:
     """Ensure sync client still works."""
 
-    def test_sync_client_basic(self):
+    def test_sync_client_basic(self, mocker):
         """Test sync client still functions."""
+        # Mock the HTTP response
+        mock_response = mocker.Mock()
+        mock_response.json.return_value = {"response": '{"message": "Hello"}'}
+        mock_response.status_code = 200
+        
+        # Mock the post method
+        mocker.patch("httpx.Client.post", return_value=mock_response)
+
         with LLMClient(base_url="http://localhost:11434") as client:
-            try:
-                response = client.generate_content(prompt='Say "Hello" in JSON', expect_json=True)
-                assert response
-            except LLMClientError as e:
-                pytest.skip(f"LLM not available: {e}")
+            response = client.generate_content(prompt='Say "Hello" in JSON', expect_json=True)
+            assert response
+            assert "Hello" in response

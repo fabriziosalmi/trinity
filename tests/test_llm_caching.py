@@ -8,26 +8,31 @@ from trinity.components.llm_client import AsyncLLMClient, LLMClientError
 
 
 @pytest.mark.asyncio
-async def test_cache_basic():
+async def test_cache_basic(mocker):
     """Test basic caching functionality."""
+    # Mock the HTTP response
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = {"response": '{"message": "Hello Cache"}'}
+    mock_response.status_code = 200
+    
+    # Mock the post method
+    mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
+
     # Enable caching
     async with AsyncLLMClient(enable_cache=True, cache_ttl=60) as client:
         prompt = "Say 'Hello Cache' in JSON format"
 
         # First call (cache miss, would call LLM)
-        try:
-            response1 = await client.generate_content(prompt, use_cache=True)
+        response1 = await client.generate_content(prompt, use_cache=True)
 
-            # Second call (cache hit, instant)
-            response2 = await client.generate_content(prompt, use_cache=True)
+        # Second call (cache hit, instant)
+        response2 = await client.generate_content(prompt, use_cache=True)
 
-            # Responses should be identical (from cache)
-            assert response1 == response2
-
-        except LLMClientError as e:
-            # LLM not available, skip test
-            pytest.skip(f"LLM not available: {e}")
-
+        # Responses should be identical (from cache)
+        assert response1 == response2
+        
+        # Verify LLM was called only once
+        assert mock_post.call_count == 1
 
 @pytest.mark.asyncio
 async def test_cache_disabled():
@@ -36,39 +41,54 @@ async def test_cache_disabled():
         # Cache should not be initialized
         assert client.cache is None
 
-
 @pytest.mark.asyncio
-async def test_cache_bypass():
+async def test_cache_bypass(mocker):
     """Test cache bypass with use_cache=False."""
+    # Mock the HTTP response
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = {"response": '{"message": "Random"}'}
+    mock_response.status_code = 200
+    
+    # Mock the post method
+    mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
+
     async with AsyncLLMClient(enable_cache=True) as client:
         prompt = "Generate random number in JSON"
 
-        try:
-            # Both calls should go to LLM (not cached)
-            response1 = await client.generate_content(prompt, use_cache=False)
-            response2 = await client.generate_content(prompt, use_cache=False)
+        # Both calls should go to LLM (not cached)
+        response1 = await client.generate_content(prompt, use_cache=False)
+        response2 = await client.generate_content(prompt, use_cache=False)
 
-            # Responses might be different (random)
-            assert response1 is not None
-            assert response2 is not None
-
-        except LLMClientError as e:
-            pytest.skip(f"LLM not available: {e}")
-
+        # Responses might be different (random)
+        assert response1 is not None
+        assert response2 is not None
+        
+        # Verify LLM was called twice
+        assert mock_post.call_count == 2
 
 @pytest.mark.asyncio
-async def test_cache_different_prompts():
+async def test_cache_different_prompts(mocker):
     """Test that different prompts get different cache keys."""
+    # Mock the HTTP response
+    mock_response = mocker.Mock()
+    mock_response.json.side_effect = [
+        {"response": '{"message": "A"}'},
+        {"response": '{"message": "B"}'}
+    ]
+    mock_response.status_code = 200
+    
+    # Mock the post method
+    mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
+
     async with AsyncLLMClient(enable_cache=True) as client:
-        try:
-            response1 = await client.generate_content("Say 'A' in JSON")
-            response2 = await client.generate_content("Say 'B' in JSON")
+        response1 = await client.generate_content("Say 'A' in JSON")
+        response2 = await client.generate_content("Say 'B' in JSON")
 
-            # Different prompts should have different responses
-            assert response1 != response2
-
-        except LLMClientError as e:
-            pytest.skip(f"LLM not available: {e}")
+        # Different prompts should have different responses
+        assert response1 != response2
+        
+        # Verify LLM was called twice
+        assert mock_post.call_count == 2
 
 
 @pytest.mark.asyncio
