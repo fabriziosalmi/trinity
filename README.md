@@ -4,11 +4,13 @@
 
 Stop wasting time debugging broken layouts. Trinity generates beautiful, responsive websites from any data using AI—and automatically fixes any CSS issues before deployment.
 
+[![asciicast](https://asciinema.org/a/aPIGQHdxN2hewQgegQhGaiCBG.svg)](https://asciinema.org/a/aPIGQHdxN2hewQgegQhGaiCBG)
+
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/docker-ready-brightgreen.svg" alt="Docker"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.7.0--dev-green.svg" alt="Version"></a>
+  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.6.4-green.svg" alt="Version"></a>
 </p>
 
 <p align="center">
