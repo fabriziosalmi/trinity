@@ -21,7 +21,7 @@ Trinity uses **two separate dependency systems**:
    - `requirements.txt` - Generated from Poetry for Docker/CI compatibility
    
 2. **Node.js (npm)** - Documentation site only (VitePress)
-   - `package.json` - Documentation tooling (build/preview docs_v2/)
+   - `package.json` - Documentation tooling (build/preview docs/)
    - **Not** used for the core Trinity application
 
 **Why both?** The Python app is the product. Node.js is only for building/previewing the VitePress documentation site.
@@ -42,7 +42,7 @@ poetry shell
 # Verify installation
 trinity --version
 
-# (Optional) Install npm deps only if working on docs_v2/
+# (Optional) Install npm deps only if working on docs/
 npm install  # Only needed for VitePress documentation
 ```
 

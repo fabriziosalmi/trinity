@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'docs_v2/**'
+      - 'docs/**'
       - '.github/workflows/docs.yml'
       - 'package.json'
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs_v2/.vitepress/dist
+          path: docs/.vitepress/dist
 
   deploy:
     environment:

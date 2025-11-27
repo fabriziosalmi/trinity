@@ -103,7 +103,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/fabriziosalmi/trinity/edit/main/docs_v2/:path',
+      pattern: 'https://github.com/fabriziosalmi/trinity/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
 

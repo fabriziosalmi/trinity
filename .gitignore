@@ -108,5 +108,5 @@ mlruns/
 mlflow.db
 mlartifacts/
 node_modules/
-docs_v2/.vitepress/cache/
-docs_v2/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/dist/

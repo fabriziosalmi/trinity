@@ -3,9 +3,9 @@
   "version": "0.7.0",
   "description": "Trinity Documentation - AI-powered site generator",
   "scripts": {
-    "docs:dev": "vitepress dev docs_v2",
-    "docs:build": "vitepress build docs_v2",
-    "docs:preview": "vitepress preview docs_v2"
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [
     "documentation",
