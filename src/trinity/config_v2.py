@@ -64,6 +64,16 @@ class ImmutableTrinityConfig(BaseSettings):
     llm_max_retries: int = Field(
         default=3, description="Max LLM retry attempts", frozen=True, ge=1, le=10
     )
+    default_model_id: str = Field(
+        default="qwen2.5-coder-3b-instruct-mlx",
+        description="Default LLM model ID",
+        frozen=True,
+    )
+    lm_studio_key: str = Field(
+        default="lm-studio",
+        description="LM Studio API Key (dummy)",
+        frozen=True,
+    )
 
     # Guardian Configuration
     guardian_enabled: bool = Field(default=False, description="Enable Guardian QA", frozen=True)

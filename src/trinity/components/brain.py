@@ -18,6 +18,7 @@ except ImportError:
 
 from pydantic import BaseModel, Field, ValidationError
 
+from trinity.config_v2 import get_default_config
 from trinity.utils.logger import get_logger
 
 # Optional import for text processing
@@ -27,12 +28,6 @@ except ImportError:
     TextProcessor = None
 
 logger = get_logger(__name__)
-
-# Rule #8: No magic strings (these should come from config/settings.py in production)
-# Docker-compatible: Uses LM_STUDIO_URL env var with fallback to localhost
-DEFAULT_LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1")
-DEFAULT_LM_STUDIO_KEY = "lm-studio"  # Dummy key, LM Studio ignores it
-DEFAULT_MODEL_ID = "qwen2.5-coder-3b-instruct-mlx"
 
 
 class RepositorySchema(BaseModel):
@@ -87,9 +82,9 @@ class ContentEngine:
 
     def __init__(
         self,
-        base_url: str = DEFAULT_LM_STUDIO_URL,
-        api_key: str = DEFAULT_LM_STUDIO_KEY,
-        model_id: str = DEFAULT_MODEL_ID,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model_id: Optional[str] = None,
         max_retries: int = 3,
         enable_text_processing: bool = True,
     ):
@@ -103,13 +98,14 @@ class ContentEngine:
             max_retries: Max retry attempts on failure
             enable_text_processing: Apply post-LLM text transformations
         """
-        self.base_url = base_url
-        self.model_id = model_id
+        config = get_default_config()
+        self.base_url = base_url or config.lm_studio_url
+        self.model_id = model_id or config.default_model_id
         self.max_retries = max_retries
         self.enable_text_processing = enable_text_processing
 
         # Initialize OpenAI-compatible client
-        self.client = OpenAI(base_url=base_url, api_key=api_key)
+        self.client = OpenAI(base_url=self.base_url, api_key=api_key or config.lm_studio_key)
 
         # Initialize TextProcessor (optional)
         if self.enable_text_processing and TextProcessor is not None:

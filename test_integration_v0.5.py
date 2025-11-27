@@ -160,7 +160,7 @@ def test_cli_flag():
     import subprocess
     
     result = subprocess.run(
-        ["python", "main.py", "build", "--help"],
+        ["python", "-m", "trinity.cli", "build", "--help"],
         capture_output=True,
         text=True,
         cwd=Path(__file__).parent
@@ -175,7 +175,7 @@ def test_cli_flag():
     
     print("\n[2] Checking --neural flag in chaos command...")
     result = subprocess.run(
-        ["python", "main.py", "chaos", "--help"],
+        ["python", "-m", "trinity.cli", "chaos", "--help"],
         capture_output=True,
         text=True,
         cwd=Path(__file__).parent

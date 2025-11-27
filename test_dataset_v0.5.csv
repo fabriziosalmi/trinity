@@ -1,0 +1,2 @@
+timestamp,theme,input_char_len,input_word_count,css_signature,css_density_spacing,css_density_layout,pathological_score,active_strategy,resolved_strategy_id,is_valid,failure_reason,style_overrides_raw
+2025-11-27T16:29:15.647263+00:00,enterprise,250,50,5f3fc45b6b08,0,0,0.022,CSS_BREAK_WORD,1,1,,"{""card_description"": ""truncate text-ellipsis"", ""hero_title"": ""text-sm break-all overflow-hidden""}"

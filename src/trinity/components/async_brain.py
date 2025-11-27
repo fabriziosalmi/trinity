@@ -24,15 +24,14 @@ from typing import Any, Dict, Optional
 from pydantic import ValidationError
 
 from trinity.components.brain import (
-    DEFAULT_LM_STUDIO_URL,
-    DEFAULT_MODEL_ID,
     ContentEngineError,
     GeneratedContentSchema,
 )
+from trinity.config_v2 import get_default_config
 from trinity.utils.logger import get_logger
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from src.llm_client import AsyncLLMClient, LLMClientError
+from trinity.components.llm_client import AsyncLLMClient, LLMClientError
 
 logger = get_logger(__name__)
 
@@ -56,8 +55,8 @@ class AsyncContentEngine:
 
     def __init__(
         self,
-        base_url: str = DEFAULT_LM_STUDIO_URL,
-        model_id: str = DEFAULT_MODEL_ID,
+        base_url: Optional[str] = None,
+        model_id: Optional[str] = None,
         max_retries: int = 3,
         timeout: int = 60,
     ):
@@ -70,15 +69,16 @@ class AsyncContentEngine:
             max_retries: Max retry attempts
             timeout: Request timeout in seconds
         """
-        self.base_url = base_url
-        self.model_id = model_id
+        config = get_default_config()
+        self.base_url = base_url or config.lm_studio_url
+        self.model_id = model_id or config.default_model_id
         self.max_retries = max_retries
         self.timeout = timeout
 
         # LLM client (initialized in __aenter__)
         self.llm_client: Optional[AsyncLLMClient] = None
 
-        logger.info(f"AsyncContentEngine initialized: {base_url} ({model_id})")
+        logger.info(f"AsyncContentEngine initialized: {self.base_url} ({self.model_id})")
 
     def _get_system_prompt(self, theme: str) -> str:
         """

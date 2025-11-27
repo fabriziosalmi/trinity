@@ -4,7 +4,7 @@ Test LLM client caching functionality.
 
 import pytest
 
-from src.llm_client import AsyncLLMClient, LLMClientError
+from trinity.components.llm_client import AsyncLLMClient, LLMClientError
 
 
 @pytest.mark.asyncio

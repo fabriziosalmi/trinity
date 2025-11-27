@@ -185,10 +185,14 @@ def chaos(
     config.guardian_enabled = guardian
     engine = TrinityEngine(config, use_neural_healer=neural)
 
+    # Ensure chaos output directory exists
+    chaos_output_dir = config.output_path / "chaos"
+    chaos_output_dir.mkdir(parents=True, exist_ok=True)
+
     result = engine.build_with_self_healing(
         content=content,
         theme=theme,
-        output_filename=f"index_{theme}_chaos.html",
+        output_filename=str(chaos_output_dir / f"index_{theme}_chaos.html"),
         enable_guardian=guardian,
     )
 
@@ -468,6 +472,10 @@ def mine_generate(
     successful = 0
     failed = 0
 
+    # Ensure mining output directory exists
+    mining_output_dir = config.output_path / "mining"
+    mining_output_dir.mkdir(parents=True, exist_ok=True)
+
     with console.status("[bold green]Mining data...") as status:
         for i in range(count):
             theme = random.choice(theme_list)
@@ -493,7 +501,7 @@ def mine_generate(
             result = engine.build_with_self_healing(
                 content=content,
                 theme=theme,
-                output_filename=f"mine_{i}.html",
+                output_filename=str(mining_output_dir / f"mine_{i}.html"),
                 enable_guardian=enable_guardian,
             )
 

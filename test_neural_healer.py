@@ -149,7 +149,9 @@ def test_dataset_loading():
         
         # Extract CSS from successful fixes
         successful = df[df['is_valid'] == 1]
-        css_sequences = successful['style_overrides'].dropna().tolist()
+        # v0.5.0 uses style_overrides_raw
+        col_name = 'style_overrides_raw' if 'style_overrides_raw' in df.columns else 'style_overrides'
+        css_sequences = successful[col_name].dropna().tolist()
         
         if css_sequences:
             tokenizer.build_vocab(css_sequences, min_freq=1)
@@ -160,9 +162,10 @@ def test_dataset_loading():
         print(f"✓ Dataset loaded: {len(dataset)} samples")
         
         if len(dataset) > 0:
-            sample = dataset[0]
-            print(f"\nSample context keys: {list(sample['context'].keys())}")
-            print(f"Sample target shape: {sample['target'].shape}")
+            context, target = dataset[0]
+            # Context is a tensor in v0.5.0, not a dict
+            print(f"\nSample context shape: {context.shape}")
+            print(f"Sample target shape: {target.shape}")
         
         return True
     except Exception as e:

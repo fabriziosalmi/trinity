@@ -13,8 +13,10 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, ValidationError
 
+from trinity.utils.logger import get_logger
+
 # Rule #28: Structured logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Rule #8: No magic paths
 DEFAULT_RULES_PATH = "config/content_rules.json"

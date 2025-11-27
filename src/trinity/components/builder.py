@@ -7,7 +7,7 @@ Rule #28: Structured logging
 """
 
 import json
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -204,7 +204,7 @@ class SiteBuilder:
                 meta={
                     "generator": "Trinity v0.2.0",
                     "theme": theme,
-                    "build_date": datetime.now(UTC).strftime("%Y-%m-%d"),
+                    "build_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 },
             )
 

@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from src.llm_client import AsyncLLMClient, LLMClient, LLMClientError
+from trinity.components.llm_client import AsyncLLMClient, LLMClient, LLMClientError
 
 
 class TestAsyncLLMClient:

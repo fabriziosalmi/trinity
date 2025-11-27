@@ -151,7 +151,7 @@ serve: build ## Build and serve locally (simple HTTP server)
 
 cache-stats: ## Show cache statistics
 	@echo "$(CYAN)Cache statistics:$(RESET)"
-	@$(VENV_BIN)/python -c "import asyncio; from src.trinity.utils.cache_manager import CacheManager; asyncio.run(CacheManager(enable_redis=False).__aenter__().get_stats_async())" 2>/dev/null || echo "$(YELLOW)Cache not initialized$(RESET)"
+	@$(VENV_BIN)/python -c "import asyncio; from trinity.utils.cache_manager import CacheManager; asyncio.run(CacheManager(enable_redis=False).__aenter__().get_stats_async())" 2>/dev/null || echo "$(YELLOW)Cache not initialized$(RESET)"
 
 cache-clear: ## Clear all cache tiers
 	@echo "$(CYAN)Clearing cache...$(RESET)"
