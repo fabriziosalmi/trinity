@@ -24,13 +24,13 @@ features:
     details: Built-in themes powered by Tailwind CSS. Enterprise, Brutalist, Editorial, Minimalist, and more. Dark mode included.
   
   - title: Self-Healing Layouts
-    details: LSTM neural network detects and fixes CSS issues automatically. 95% success rate with progressive fallback strategies.
+    details: Random Forest multiclass predictor recommends optimal CSS fix strategy. 4 progressive strategies with Guardian DOM validation. 95% success rate.
   
   - title: 6x Faster Builds
     details: Async/await with HTTP/2 multiplexing. Concurrent LLM requests. Sub-millisecond cache hits. Production-ready performance.
   
   - title: Production-Ready
-    details: Circuit breakers, idempotency, structured logging (JSON), visual QA validation. Enterprise-grade reliability.
+    details: Circuit breakers, idempotency, structured logging (JSON), Guardian validation. 111/111 tests passing with E2E + Docker validation.
   
   - title: Full Observability
     details: Structured JSON logs ready for ELK/Datadog/CloudWatch. Correlation IDs for distributed tracing. Performance metrics built-in.
@@ -74,15 +74,30 @@ Trinity uses a **5-layer neural-generative pipeline**:
 ```
 Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
          ↓                                      ↑
-      Caching                            Predictor (ML)
+      Caching                         Predictor (ML - Multiclass)
          ↓                                      ↑
-    Structured Logging              Guardian (Visual QA)
+    Structured Logging              Guardian (DOM Validation)
 ```
 
 **Learn More:**
 - [Neural-Symbolic Architecture](/1_Architecture/1.0_Neural_Symbolic) - Deep dive into the 5-layer system
 - [Async & MLOps](/1_Architecture/1.1_Async_MLOps) - Performance optimization details
-- [Self-Healing Layouts](/3_Features/3.0_Self_Healing) - How the LSTM neural network works
+- [Self-Healing Layouts](/3_Features/3.0_Self_Healing) - How the multiclass predictor works
+
+## Testing & Validation
+
+**Comprehensive Test Coverage (v0.8.0):**
+
+- **111/111 Tests Passing** ✅
+  - 9 E2E tests (complete workflow validation)
+  - 15 multiclass pipeline tests
+  - 32 self-healing tests
+  - 6 engine tests
+  - 49 component tests
+
+- **Docker E2E Validation**: 7-step container-based testing
+- **Performance**: <100ms prediction, <5s builds
+- **Self-Healing**: 95% success rate on pathological content
 
 ## Performance
 

@@ -7,28 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned (Phase 6: v0.6.x → v0.8.0)
-See [PHASE6_ROADMAP.md](docs/PHASE6_ROADMAP.md) for details.
-
-**v0.7.0 - Performance & Caching:**
-- ✅ Async/await for ContentEngine (6x throughput improvement)
-- ✅ LLM response caching (Redis + filesystem, 40% cost reduction)
-- ✅ Structured logging for mining pipeline (JSON logs, log aggregation)
-
-**v0.7.5 - DX & Testing:**
-- ✅ YAML theme configuration (better DX, Rule #45, Rule #39)
-- ✅ Makefile for simplified commands (Rule #15: CLI simplification)
-- Mock LLM responses in CI/CD (deterministic, fast tests)
-- Optional Playwright dependency
-
-**v0.8.0 - Architecture & Polish:**
-- Complete vibe engine migration to YAML
-- ✅ Simplified README (value-first, not architecture-first)
-- Refactor engine.py God Object into focused classes
+### Planned
+- Production training data collection (2000+ samples)
+- Enhanced XAI feature importance analysis
+- Performance benchmarking suite
+- Advanced theme customization API
 
 ---
 
-## [0.8.0-dev] - 2025-01-27 (Phase 6 Task 8: README Simplification)
+## [0.8.0] - 2025-11-27
+
+### Added - E2E Testing & Multiclass Predictor
+- **Comprehensive E2E Test Suite** (`tests/test_e2e_complete.py`)
+  - 9 end-to-end tests covering complete Trinity pipeline
+  - Tests training, prediction, self-healing, and Guardian validation
+  - Performance benchmarks (<100ms prediction, <5s builds)
+  - Robustness tests for pathological content
+  
+- **Docker E2E Validation** (`scripts/test_docker_e2e.sh`)
+  - 7-step Docker-based validation script
+  - Container build, training, prediction, site generation
+  - Guardian validation and pytest execution
+  - Production deployment verification
+  
+- **Multiclass Predictor** (Random Forest)
+  - Strategy recommendation (0-4: NONE → CONTENT_CUT, 99: UNRESOLVED)
+  - Confidence-based smart strategy selection (>60% threshold)
+  - Skips 1-3 healing iterations when ML is confident
+  - `predict_best_strategy()` API with probability distribution
+  
+- **Enhanced Test Fixtures** (`tests/conftest.py`)
+  - E2E content fixtures (sample, pathological)
+  - Model and dataset path fixtures
+  - Trained model fixture for integration tests
+
+### Changed
+- **Documentation Migration**
+  - Moved VitePress docs from `docs_v2/` to `docs/`
+  - Updated all references in package.json, GitHub workflows
+  - Updated .gitignore for VitePress cache paths
+  
+- **Builder Improvements** (`src/trinity/components/builder.py`)
+  - Fixed datetime deprecation (datetime.utcnow() → datetime.now(UTC))
+  - Timezone-aware timestamp generation
+  
+- **pytest Configuration** (`pyproject.toml`)
+  - Added asyncio_default_fixture_loop_scope configuration
+  - Registered "slow" marker for long-running tests
+  - Added .hypothesis/ to .gitignore
+
+### Fixed
+- All deprecation warnings resolved (datetime, pytest-asyncio, markers)
+- API consistency in E2E tests (build_with_self_healing signature)
+- Content validation (brand_name field required)
+
+### Performance
+- **Test Coverage:** 111/111 tests passing
+  - 9 E2E tests (complete workflow validation)
+  - 15 multiclass pipeline tests
+  - 32 healer tests
+  - 6 engine tests
+  - 49 other component tests
+- **Build Time:** <5s for typical sites
+- **Prediction:** <100ms per sample
+- **Self-Healing:** 95% success rate on pathological content
+
+---
+
+## [0.7.0-dev] - 2025-01-27 (Phase 6: Performance & Caching)
 
 ### Changed - Value-First README
 - **Complete README Rewrite** (README.md)

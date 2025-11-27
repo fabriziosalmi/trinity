@@ -1,6 +1,24 @@
-# 🚀 Trinity Quick Reference
+# 🚀 Trinity Quick Reference (v0.8.0)
 
 ## Fast Commands (Copy-Paste Ready)
+
+### Testing
+
+```bash
+# Run all tests (111 tests)
+pytest tests/ -v
+
+# E2E tests only (9 tests)
+pytest tests/test_e2e_complete.py -v
+
+# Multiclass pipeline tests (15 tests)
+pytest tests/test_multiclass_pipeline.py -v
+
+# Docker E2E validation
+./scripts/test_docker_e2e.sh
+```
+
+### Build & Generate
 
 ### Test Single Theme Generation
 ```bash
@@ -10,6 +28,11 @@ poetry run trinity theme-gen "Cyberpunk neon pink cyan" --name test_cyber
 ### Test Build with Generated Theme
 ```bash
 poetry run trinity build --theme test_cyber --predictive
+```
+
+### Build with Self-Healing & Guardian
+```bash
+poetry run trinity build --theme brutalist --guardian --output test.html
 ```
 
 ### Fast Training Pipeline (10-15 min)

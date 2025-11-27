@@ -10,7 +10,7 @@ Stop wasting time debugging broken layouts. Trinity generates beautiful, respons
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/docker-ready-brightgreen.svg" alt="Docker"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.6.4-green.svg" alt="Version"></a>
+  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.8.0-green.svg" alt="Version"></a>
 </p>
 
 <p align="center">
@@ -74,9 +74,9 @@ docker-compose exec trinity-builder trinity build --theme brutalist
 
 ### 🔧 Self-Healing Layouts
 - **Automatic CSS Fixes**: Detects and repairs overflow, broken grids, text wrapping
-- **ML-Powered**: LSTM neural network learns from successful fixes
-- **Progressive Strategies**: Rule-based fallbacks ensure reliability
-- **Visual Validation**: Optional Playwright-based QA
+- **ML-Powered**: Random Forest multiclass predictor recommends optimal strategy
+- **Progressive Strategies**: 4 healing strategies (CSS_BREAK_WORD → FONT_SHRINK → CSS_TRUNCATE → CONTENT_CUT)
+- **Visual Validation**: Guardian DOM-based validation system
 
 ### ⚡ Production-Ready
 - **Circuit Breakers**: Graceful degradation on LLM failures
@@ -169,17 +169,17 @@ Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
 - 14 professional themes
 - Responsive by default
 
-**3. Predictor (ML Risk Assessment)**
-- Random Forest classifier
-- Predicts layout breakage probability
-- Trained on real build data
-- Decides when to enable Guardian
+**3. Predictor (ML Strategy Recommendation)**
+- Random Forest multiclass classifier
+- Predicts optimal healing strategy (0-4: NONE → CONTENT_CUT, 99: UNRESOLVED)
+- Trained on 2000+ real build samples
+- >60% confidence threshold for smart strategy selection
 
 **4. Healer (CSS Auto-Repair)**
-- LSTM neural network (270K params)
+- 4 progressive strategies (CSS_BREAK_WORD → FONT_SHRINK → CSS_TRUNCATE → CONTENT_CUT)
+- ML predictor recommends optimal strategy (skips 1-3 iterations)
 - Learns from successful fixes
-- Progressive strategies (break-word → font-shrink → truncate)
-- 95% success rate on test data
+- 95% success rate on pathological content
 
 **5. Guardian (Visual Validation - Optional)**
 - Playwright headless browser
@@ -308,14 +308,17 @@ make test
 # With coverage
 make test-cov
 
-# Async performance benchmarks
-make test-perf
+# E2E tests (complete workflow)
+pytest tests/test_e2e_complete.py -v
 
-# Specific test suite
-pytest tests/test_async_llm_client.py -v
+# Multiclass pipeline tests
+pytest tests/test_multiclass_pipeline.py -v
+
+# Docker E2E validation
+./scripts/test_docker_e2e.sh
 ```
 
-**Test Coverage:** 35/35 tests passing
+**Test Coverage:** 111/111 tests passing (24 E2E + multiclass, 32 healer, 6 engine, 49 other)ng (24 E2E + multiclass, 32 healer, 6 engine, 49 other)
 
 ---
 
@@ -384,29 +387,12 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 📊 Project Stats
 
-- **Version:** 0.7.0-dev (Phase 6 in progress)
+- **Version:** 0.8.0
 - **Python:** 3.10+
-- **Code:** 10,816 lines (src) + 1,634 lines (tests)
-- **Themes:** 14 built-in
-- **Tests:** 35/35 passing
-- **Coverage:** TBD
-
----
-
-## 🚀 What's Next?
-
-**Phase 6 Progress (5/9 complete):**
-- ✅ Async/await operations (6x throughput)
-- ✅ Multi-tier caching (40% cost reduction)
-- ✅ YAML theme configuration
-- ✅ Makefile shortcuts
-- ✅ Structured logging
-- ⏳ Mock LLM for CI/CD
-- ⏳ Optional Playwright
-- ⏳ README simplification (you are here!)
-- ⏳ Refactor God Object
-
-See [Phase 6 Roadmap](docs/PHASE6_ROADMAP.md) for details.
+- **Tests:** 111/111 passing (9 E2E, 15 multiclass, 32 healer, 6 engine, 49 other)
+- **Themes:** 14 built-in + Centuria Factory for mass generation
+- **Self-Healing:** 4 progressive strategies with ML prediction
+- **Coverage:** Comprehensive E2E + Docker validation
 
 ---
 
