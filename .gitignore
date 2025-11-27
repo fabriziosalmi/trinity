@@ -47,6 +47,7 @@ BROKEN_*.html
 
 # Testing
 .pytest_cache/
+.hypothesis/
 .coverage
 coverage.xml
 htmlcov/
