@@ -318,7 +318,7 @@ pytest tests/test_multiclass_pipeline.py -v
 ./scripts/test_docker_e2e.sh
 ```
 
-**Test Coverage:** 111/111 tests passing (24 E2E + multiclass, 32 healer, 6 engine, 49 other)ng (24 E2E + multiclass, 32 healer, 6 engine, 49 other)
+**Test Coverage:** 111/111 tests passing (24 E2E + multiclass, 32 healer, 6 engine, 49 other)
 
 ---
 
