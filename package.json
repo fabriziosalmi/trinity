@@ -1,7 +1,7 @@
 {
   "name": "trinity-core-docs",
   "version": "0.7.0",
-  "description": "Trinity Documentation - AI-powered portfolio generator",
+  "description": "Trinity Documentation - AI-powered site generator",
   "scripts": {
     "docs:dev": "vitepress dev docs_v2",
     "docs:build": "vitepress build docs_v2",

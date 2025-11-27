@@ -321,7 +321,7 @@ version: ## Show Trinity version
 	@grep "^## \[" CHANGELOG.md | head -1
 
 info: ## Show project information
-	@echo "$(CYAN)Trinity - AI Portfolio Generator$(RESET)"
+	@echo "$(CYAN)Trinity - AI Site Generator$(RESET)"
 	@echo ""
 	@echo "Version: $(shell grep '^## \[' CHANGELOG.md | head -1 | cut -d'[' -f2 | cut -d']' -f1)"
 	@echo "Python: $(shell $(PYTHON) --version)"

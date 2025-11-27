@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Trinity",
-  description: "AI-powered portfolio generator with self-healing layouts",
+  description: "AI-powered site generator with self-healing layouts",
   
   // GitHub Pages base path
   base: '/trinity/',

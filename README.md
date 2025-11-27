@@ -1,6 +1,6 @@
 # 🏛️ Trinity
 
-> **AI-powered portfolio generator that actually works in production**
+> **AI-powered site generator that actually works in production**
 
 Stop wasting time debugging broken layouts. Trinity generates beautiful, responsive websites from any data using AI—and automatically fixes any CSS issues before deployment.
 
