@@ -88,7 +88,7 @@ Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
 
 **Comprehensive Test Coverage (v0.8.0):**
 
-- **111/111 Tests Passing** ✅
+- **122/122 Tests Passing** ✅
   - 9 E2E tests (complete workflow validation)
   - 15 multiclass pipeline tests
   - 32 self-healing tests
@@ -109,6 +109,7 @@ Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
 | LLM Costs | $1.00/build | $0.60/build | **40% savings** |
 | Command Length | 64 chars | 13 chars | **70% less typing** |
 | Observability | Print statements | JSON logs | **100% better** |
+| Prediction | Binary Risk | Multiclass Strategy | **Smarter** |
 
 ## Community
 
