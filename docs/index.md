@@ -61,11 +61,11 @@ python main.py --input data/portfolio.txt --theme brutalist
 
 ## What Just Happened?
 
-1. ✅ Analyzed your GitHub repos non structured data
-2. ✅ AI generated compelling content
-3. ✅ Applied professional theme
-4. ✅ Auto-fixed any layout issues
-5. ✅ Output validated HTML
+1. Analyzed your GitHub repos non structured data
+2. AI generated compelling content
+3. Applied professional theme
+4. Auto-fixed any layout issues
+5. Output validated HTML
 
 ## Architecture Overview
 
