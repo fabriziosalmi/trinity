@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "Trinity Core"
-  text: "AI-Powered Portfolio Generator"
+  text: "AI-Powered Site Generator"
   tagline: "Stop debugging broken layouts. Let AI fix them automatically."
   actions:
     - theme: brand
@@ -61,7 +61,7 @@ python main.py --input data/portfolio.txt --theme brutalist
 
 ## What Just Happened?
 
-1. ✅ Analyzed your GitHub repos
+1. ✅ Analyzed your GitHub repos non structured data
 2. ✅ AI generated compelling content
 3. ✅ Applied professional theme
 4. ✅ Auto-fixed any layout issues
