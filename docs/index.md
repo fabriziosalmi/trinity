@@ -11,7 +11,7 @@ hero:
       link: /2_Development/2.0_Setup
     - theme: alt
       text: Architecture
-      link: /1_Architecture/1.0_Neural_Symbolic
+      link: /1_Architecture/1.0_Retry_Logic_Heuristics
     - theme: alt
       text: View on GitHub
       link: https://github.com/fabriziosalmi/trinity
@@ -80,7 +80,7 @@ Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
 ```
 
 **Learn More:**
-- [Neural-Symbolic Architecture](/1_Architecture/1.0_Neural_Symbolic) - Deep dive into the 5-layer system
+- [Retry Logic with Heuristics](/1_Architecture/1.0_Retry_Logic_Heuristics) - Deep dive into the 5-layer system
 - [Async & MLOps](/1_Architecture/1.1_Async_MLOps) - Performance optimization details
 - [Self-Healing Layouts](/3_Features/3.0_Self_Healing) - How the multiclass predictor works
 

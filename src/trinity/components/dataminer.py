@@ -190,27 +190,51 @@ class TrinityMiner:
             # v0.5.0: Serialize actual CSS overrides for LSTM training
             style_overrides_raw = self._serialize_css_overrides(css_overrides)
 
-            # Write to CSV (thread-safe append)
-            # Use QUOTE_ALL to properly escape JSON strings
-            with open(self.dataset_path, "a", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(
-                    [
-                        timestamp,
-                        theme,
-                        char_len,
-                        word_count,
-                        css_sig,
-                        css_density_spacing,   # NEW v0.8.0
-                        css_density_layout,    # NEW v0.8.0
-                        pathological_score,    # NEW v0.8.0
-                        strategy,
-                        resolved_strategy_id,  # NEW v0.8.0 (multiclass)
-                        is_valid,             # DEPRECATED
-                        guardian_reason,
-                        style_overrides_raw,
-                    ]
-                )
+            # Check for Production environment
+            import os
+            env = os.environ.get("TRINITY_ENV", "Development")
+
+            if env.lower() == "production":
+                # Structured JSON logging to stdout
+                log_entry = {
+                    "timestamp": timestamp,
+                    "event": "build_telemetry",
+                    "theme": theme,
+                    "input_char_len": char_len,
+                    "input_word_count": word_count,
+                    "css_signature": css_sig,
+                    "css_density_spacing": css_density_spacing,
+                    "css_density_layout": css_density_layout,
+                    "pathological_score": pathological_score,
+                    "active_strategy": strategy,
+                    "resolved_strategy_id": resolved_strategy_id,
+                    "is_valid": is_valid,
+                    "failure_reason": guardian_reason,
+                    "style_overrides_raw": style_overrides_raw
+                }
+                print(json.dumps(log_entry))
+            else:
+                # Write to CSV (thread-safe append)
+                # Use QUOTE_ALL to properly escape JSON strings
+                with open(self.dataset_path, "a", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(
+                        [
+                            timestamp,
+                            theme,
+                            char_len,
+                            word_count,
+                            css_sig,
+                            css_density_spacing,   # NEW v0.8.0
+                            css_density_layout,    # NEW v0.8.0
+                            pathological_score,    # NEW v0.8.0
+                            strategy,
+                            resolved_strategy_id,  # NEW v0.8.0 (multiclass)
+                            is_valid,             # DEPRECATED
+                            guardian_reason,
+                            style_overrides_raw,
+                        ]
+                    )
 
             # Log summary
             verdict_emoji = "✅" if guardian_verdict else "❌"
