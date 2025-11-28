@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive E2E Test Suite** (`tests/test_e2e_complete.py`)
   - 9 end-to-end tests covering complete Trinity pipeline
   - Tests training, prediction, self-healing, and Guardian validation
-  - Performance benchmarks (<100ms prediction, <5s builds)
+  - Performance benchmarks (&lt;100ms prediction, &lt;5s builds)
   - Robustness tests for pathological content
   
 - **Docker E2E Validation** (`scripts/test_docker_e2e.sh`)
@@ -78,8 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 32 healer tests
   - 6 engine tests
   - 49 other component tests
-- **Build Time:** <5s for typical sites
-- **Prediction:** <100ms per sample
+- **Build Time:** &lt;5s for typical sites
+- **Prediction:** &lt;100ms per sample
 - **Self-Healing:** 95% success rate on pathological content
 
 ---
@@ -117,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Timing breakdown tables
   
 - **Improved Accessibility:**
-  - Time to understand value: <5 minutes (was >15 minutes)
+  - Time to understand value: &lt;5 minutes (was >15 minutes)
   - Clear getting started path
   - Architecture details opt-in (collapsible sections)
   - Practical examples before technical details
@@ -130,7 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Performance Impact
 - **Before:** Architecture-first, intimidating for new users
-- **After:** Value-first, practical examples, <5 min to understand
+- **After:** Value-first, practical examples, &lt;5 min to understand
 - **Conversion:** Easier onboarding, clearer use cases
 
 ---
@@ -379,7 +379,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **40% Cost Reduction:** Target 80% cache hit rate for repeated prompts
 - **Sub-ms Latency:** Memory cache hits in ~0.01ms (1000x faster than LLM)
 - **Persistent Caching:** Survives restarts (Redis + filesystem)
-- **Zero Impact on Misses:** Cache check overhead < 1ms
+- **Zero Impact on Misses:** Cache check overhead &lt; 1ms
 
 ### Backward Compatibility
 - ✅ Cache enabled by default (disable with `enable_cache=False`)
@@ -581,7 +581,7 @@ See `docs/MIGRATION_GUIDE.md` for:
   - Batch size: 32
   - Learning rate: 0.001 (Adam optimizer)
   - Early stopping: 5 epochs patience
-  - CrossEntropyLoss with <PAD> ignore
+  - CrossEntropyLoss with `<PAD>` ignore
 - **Inference:**
   - Temperature sampling for creativity vs precision
   - Top-K filtering (K=20) prevents rare token hallucinations
