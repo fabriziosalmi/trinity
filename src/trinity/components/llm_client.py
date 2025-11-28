@@ -9,25 +9,29 @@ import asyncio
 import json
 import time
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING, cast
 
 try:
     import httpx
 except ImportError:
     raise ImportError("httpx required. Install with: pip install httpx")
 
-try:
+if TYPE_CHECKING:
     from trinity.utils.cache_manager import CacheManager
-
     CACHE_AVAILABLE = True
-except ImportError:
-    CACHE_AVAILABLE = False
-    CacheManager = None
+else:
+    try:
+        from trinity.utils.cache_manager import CacheManager
+
+        CACHE_AVAILABLE = True
+    except ImportError:
+        CACHE_AVAILABLE = False
+        CacheManager = None
 
 try:
     from trinity.utils.structured_logger import get_logger
 
-    logger = get_logger(__name__)
+    logger: Any = get_logger(__name__)
 except ImportError:
     import logging
 
@@ -180,7 +184,7 @@ class LLMClient:
                         # Don't fail - let validator handle it
 
                 logger.info(f"✓ LLM response received ({len(text)} chars)")
-                return text
+                return cast(str, text)
 
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
@@ -206,15 +210,15 @@ class LLMClient:
 
         raise LLMClientError("Max retries exceeded")
 
-    def close(self):
+    def close(self) -> None:
         """Close HTTP client."""
         self.client.close()
         logger.info("LLMClient closed")
 
-    def __enter__(self):
+    def __enter__(self) -> "LLMClient":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
 
 
@@ -392,7 +396,7 @@ class AsyncLLMClient:
                     except Exception as e:
                         logger.warning(f"Failed to cache response: {e}")
 
-                return text
+                return cast(str, text)
 
             except httpx.HTTPStatusError as e:
                 logger.error(f"HTTP {e.response.status_code}: {e}")
@@ -418,7 +422,7 @@ class AsyncLLMClient:
 
         raise LLMClientError("Max retries exceeded")
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "AsyncLLMClient":
         """Async context manager entry."""
         self.client = httpx.AsyncClient(
             timeout=httpx.Timeout(self.timeout),
@@ -443,7 +447,7 @@ class AsyncLLMClient:
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         if self.client:
             await self.client.aclose()
@@ -473,7 +477,7 @@ if __name__ == "__main__":
     # Async demo
     print("\n=== Async LLM Client Demo ===")
 
-    async def async_demo():
+    async def async_demo() -> None:
         async with AsyncLLMClient() as client:
             try:
                 # Single request

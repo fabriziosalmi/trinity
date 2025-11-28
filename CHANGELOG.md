@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.1] - 2025-11-27
+
+### Changed
+- **Telemetry:** Added `TRINITY_ENV` environment variable support.
+  - When set to `Production`, telemetry logs are output as structured JSON to stdout.
+  - Default behavior (CSV logging) preserved for Development environment.
+- **Documentation:** Updated README and Setup guides to reflect new telemetry configuration.
+
+---
+
 ## [0.8.0] - 2025-11-27
 
 ### Added - E2E Testing & Multiclass Predictor

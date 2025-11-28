@@ -9,7 +9,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -213,8 +213,11 @@ class TextProcessor:
         return None
 
     def _process_recursive(
-        self, data: Union[Dict, List, str, Any], theme_rules: ThemeRules, current_path: str = ""
-    ) -> Union[Dict, List, str, Any]:
+        self,
+        data: Union[Dict[str, Any], List[Any], str, Any],
+        theme_rules: ThemeRules,
+        current_path: str = "",
+    ) -> Union[Dict[str, Any], List[Any], str, Any]:
         """
         Recursively process data structure applying transformations.
 
@@ -228,19 +231,19 @@ class TextProcessor:
         """
         # Handle dictionaries
         if isinstance(data, dict):
-            result = {}
+            dict_result: Dict[str, Any] = {}
             for key, value in data.items():
                 new_path = f"{current_path}.{key}" if current_path else key
-                result[key] = self._process_recursive(value, theme_rules, new_path)
-            return result
+                dict_result[key] = self._process_recursive(value, theme_rules, new_path)
+            return dict_result
 
         # Handle lists
         elif isinstance(data, list):
-            result = []
+            list_result: List[Any] = []
             for idx, item in enumerate(data):
                 new_path = f"{current_path}[{idx}]"
-                result.append(self._process_recursive(item, theme_rules, new_path))
-            return result
+                list_result.append(self._process_recursive(item, theme_rules, new_path))
+            return list_result
 
         # Handle strings (apply transformations)
         elif isinstance(data, str):
@@ -286,7 +289,7 @@ class TextProcessor:
             processed = self._process_recursive(content, theme_rules)
 
             logger.info(f"✓ Content transformations applied ({theme})")
-            return processed
+            return cast(Dict[str, Any], processed)
 
         except Exception as e:
             logger.error(f"Content processing failed: {e}")

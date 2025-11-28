@@ -12,7 +12,7 @@ Key improvements:
 """
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -151,7 +151,7 @@ class ImmutableTrinityConfig(BaseSettings):
 
     @field_validator("default_theme")
     @classmethod
-    def validate_default_theme(cls, v: str, values) -> str:
+    def validate_default_theme(cls, v: str, values: Any) -> str:
         """Validate that default theme exists in available themes."""
         # Note: In Pydantic v2, we need to check if available_themes is in values.data
         return v
@@ -233,7 +233,7 @@ class ImmutableTrinityConfig(BaseSettings):
             )
 
 
-def create_config(**overrides) -> ImmutableTrinityConfig:
+def create_config(**overrides: Any) -> ImmutableTrinityConfig:
     """
     Factory function to create immutable configuration.
 

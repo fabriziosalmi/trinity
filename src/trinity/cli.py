@@ -7,7 +7,7 @@ Built with Typer for excellent UX and type safety.
 import json
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import typer
 from rich.console import Console
@@ -15,7 +15,7 @@ from rich.table import Table
 
 from trinity import __version__
 from trinity.config import TrinityConfig
-from trinity.engine import BuildStatus, TrinityEngine
+from trinity.engine import BuildResult, BuildStatus, TrinityEngine
 from trinity.utils.logger import setup_logger
 
 # Initialize Typer app
@@ -28,7 +28,7 @@ app = typer.Typer(
 console = Console()
 
 
-def version_callback(value: bool):
+def version_callback(value: bool) -> None:
     """Print version and exit."""
     if value:
         console.print(f"Trinity v{__version__}", style="bold green")
@@ -45,7 +45,7 @@ def main(
         callback=version_callback,
         is_eager=True,
     ),
-):
+) -> None:
     """Trinity - Build AI-powered static sites with self-healing QA."""
     pass
 
@@ -77,7 +77,7 @@ def build(
     log_level: str = typer.Option(
         "INFO", "--log-level", help="Logging level (DEBUG, INFO, WARNING, ERROR)"
     ),
-):
+) -> None:
     """
     Build a static site page.
 
@@ -160,7 +160,7 @@ def chaos(
         "--neural/--no-neural",
         help="Use Neural Healer (v0.5.0 LSTM-based) for chaos testing",
     ),
-):
+) -> None:
     """
     Run chaos test with intentionally broken content.
 
@@ -208,7 +208,7 @@ def chaos(
 
 
 @app.command()
-def themes():
+def themes() -> None:
     """List available themes."""
     config = TrinityConfig()
 
@@ -232,7 +232,7 @@ def themes():
 
 
 @app.command()
-def config_info():
+def config_info() -> None:
     """Show current Trinity configuration."""
     config = TrinityConfig()
 
@@ -255,7 +255,7 @@ def config_info():
     console.print()
 
 
-def _display_build_result(result):
+def _display_build_result(result: BuildResult) -> None:
     """Display formatted build result."""
     console.print("\n" + "=" * 60)
     console.print("[bold]BUILD RESULT[/bold]")
@@ -308,7 +308,7 @@ def _display_build_result(result):
     console.print("=" * 60 + "\n")
 
 
-def _get_mock_content():
+def _get_mock_content() -> Dict[str, Any]:
     """Get mock content for demo builds."""
     return {
         "brand_name": "Trinity",
@@ -342,7 +342,7 @@ def mine_stats(
     dataset: Optional[Path] = typer.Option(
         None, "--dataset", "-d", help="Path to training dataset CSV"
     ),
-):
+) -> None:
     """
     Show ML training dataset statistics.
 
@@ -400,7 +400,7 @@ def mine_generate(
         "-p",
         help="Ratio of pathological content (0.0 = all safe, 1.0 = all chaos)",
     ),
-):
+) -> None:
     """
     Generate synthetic training data by building random layouts.
 
@@ -438,9 +438,9 @@ def mine_generate(
     console.print(f"Target: {count} random builds")
     console.print(f"Themes: {', '.join(theme_list)}")
     console.print(f"Guardian: {'Enabled' if enable_guardian else 'Disabled'}")
-    console.print(f"Pathological Ratio: {pathological_ratio:.0%}\n")
+    console.print(f"Pathological Ratio: {pathological_ratio:.0%}")
 
-    def random_text(min_len=10, max_len=200):
+    def random_text(min_len: int = 10, max_len: int = 200) -> str:
         """Generate random text of varying length."""
         # Use MUCH shorter lengths for safe content
         if random.random() < pathological_ratio:
@@ -532,7 +532,7 @@ def train(
     output_dir: str = typer.Option(
         "models/", "--output-dir", "-o", help="Directory to save trained model"
     ),
-):
+) -> None:
     """
     Train layout risk prediction model from collected dataset.
 
@@ -618,7 +618,8 @@ def train(
         # Model location
         console.print("\n[bold]Model saved:[/bold]")
         console.print(f"  📦 {metrics['model_path']}")
-        console.print(f"  📄 {metrics['model_path'].replace('.pkl', '_metadata.json')}")
+        model_path_str = str(metrics['model_path'])
+        console.print(f"  📄 {model_path_str.replace('.pkl', '_metadata.json')}")
 
         console.print(
             "\n[dim]Next: Integrate model into TrinityEngine for real-time predictions[/dim]\n"
@@ -666,7 +667,7 @@ def theme_gen(
     output: str = typer.Option(
         "config/themes.json", "--output", "-o", help="Path to themes.json file"
     ),
-):
+) -> None:
     """
     Generate a new theme from a style description using LLM.
 

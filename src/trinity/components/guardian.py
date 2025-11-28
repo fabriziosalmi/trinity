@@ -8,9 +8,10 @@ Rule #5: Type safety and validation
 import asyncio
 import base64
 import json
+import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 try:
     from playwright.async_api import async_playwright
@@ -203,7 +204,7 @@ class TrinityGuardian:
                 if overflow_detected:
                     logger.warning("⚠️  DOM overflow detected via JavaScript")
 
-                return overflow_detected
+                return cast(bool, overflow_detected)
 
         except Exception as e:
             logger.error(f"DOM overflow check failed: {e}")
@@ -264,7 +265,10 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
                 max_tokens=500,
             )
 
-            content = response.choices[0].message.content.strip()
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Empty response from Vision AI")
+            content = content.strip()
 
             # Clean response (remove markdown if present)
             if content.startswith("```json"):
@@ -274,7 +278,7 @@ If the layout looks technically sound, return: {"status": "pass", "issues": [], 
             analysis = json.loads(content)
 
             logger.info(f"✓ Vision analysis complete: {analysis.get('status', 'unknown')}")
-            return analysis
+            return cast(Dict[str, Any], analysis)
 
         except (APIConnectionError, APIError) as e:
             logger.error(f"Qwen VL connection failed: {e}")

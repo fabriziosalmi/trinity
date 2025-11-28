@@ -18,15 +18,14 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pandas as pd
 import pytest
 
 from trinity.components.dataminer import TrinityMiner
-from trinity.components.trainer import LayoutRiskTrainer
 from trinity.components.predictor import LayoutRiskPredictor
-
+from trinity.components.trainer import LayoutRiskTrainer
 
 # === FIXTURES ===
 
@@ -45,11 +44,9 @@ def sample_content() -> Dict[str, Any]:
     return {
         "hero": {
             "title": "The Quick Brown Fox Jumps Over The Lazy Dog",
-            "subtitle": "A simple test subtitle"
+            "subtitle": "A simple test subtitle",
         },
-        "body": {
-            "text": "This is a normal paragraph with reasonable length."
-        }
+        "body": {"text": "This is a normal paragraph with reasonable length."},
     }
 
 
@@ -59,7 +56,7 @@ def pathological_content() -> Dict[str, Any]:
     return {
         "hero": {
             "title": "Supercalifragilisticexpialidocious" * 3,  # 102 chars, no breaks
-            "subtitle": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  # 34 A's
+            "subtitle": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",  # 34 A's
         }
     }
 
@@ -79,7 +76,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="NONE",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
     # Class 1: CSS_BREAK_WORD (long words)
@@ -90,7 +87,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="CSS_BREAK_WORD",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={"word-break": "break-all"}
+            css_overrides={"word-break": "break-all"},
         )
 
     # Class 2: FONT_SHRINK (medium overflow)
@@ -101,7 +98,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="FONT_SHRINK",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={"font-size": "0.9rem"}
+            css_overrides={"font-size": "0.9rem"},
         )
 
     # Class 3: CSS_TRUNCATE (ellipsis acceptable)
@@ -112,7 +109,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="CSS_TRUNCATE",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={"overflow": "hidden", "text-overflow": "ellipsis"}
+            css_overrides={"overflow": "hidden", "text-overflow": "ellipsis"},
         )
 
     # Class 4: CONTENT_CUT (nuclear option)
@@ -123,7 +120,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="CONTENT_CUT",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
     # Class 99: UNRESOLVED_FAIL (unfixable)
@@ -134,7 +131,7 @@ def miner_with_data(temp_dir) -> TrinityMiner:
             strategy="FONT_SHRINK",
             guardian_verdict=False,
             guardian_reason="Layout still broken after all attempts",
-            css_overrides={}
+            css_overrides={},
         )
 
     return miner
@@ -157,7 +154,7 @@ class TestDataMinerMulticlass:
             strategy="NONE",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -170,7 +167,7 @@ class TestDataMinerMulticlass:
             strategy="CSS_BREAK_WORD",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -183,7 +180,7 @@ class TestDataMinerMulticlass:
             strategy="FONT_SHRINK",
             guardian_verdict=False,
             guardian_reason="Still broken",
-            css_overrides={}
+            css_overrides={},
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -199,7 +196,7 @@ class TestDataMinerMulticlass:
             strategy="NONE",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -220,7 +217,7 @@ class TestDataMinerMulticlass:
             "display": "flex",
             "grid-template-columns": "grid-cols-3",
             "width": "w-full",
-            "height": "h-screen"
+            "height": "h-screen",
         }
 
         miner.log_build_event(
@@ -229,7 +226,7 @@ class TestDataMinerMulticlass:
             strategy="CSS_BREAK_WORD",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides=css_overrides
+            css_overrides=css_overrides,
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -254,8 +251,7 @@ class TestTrainerMulticlass:
 
         # Train on synthetic dataset
         model, metrics = trainer.train_from_csv(
-            csv_path=str(miner_with_data.dataset_path),
-            output_dir=str(temp_dir)
+            csv_path=str(miner_with_data.dataset_path), output_dir=str(temp_dir)
         )
 
         # Verify model trained
@@ -267,11 +263,11 @@ class TestTrainerMulticlass:
         assert "precision" in metrics
         assert "recall" in metrics
         assert "f1_score" in metrics
-        
+
         # Load metadata from saved file
         metadata_files = list(temp_dir.glob("*_metadata.json"))
         assert len(metadata_files) > 0
-        
+
         with open(metadata_files[0], "r") as f:
             metadata = json.load(f)
 
@@ -289,8 +285,7 @@ class TestTrainerMulticlass:
         """Test that feature importance is correctly ranked."""
         trainer = LayoutRiskTrainer()
         model, metrics = trainer.train_from_csv(
-            csv_path=str(miner_with_data.dataset_path),
-            output_dir=str(temp_dir)
+            csv_path=str(miner_with_data.dataset_path), output_dir=str(temp_dir)
         )
 
         metadata_files = list(temp_dir.glob("*_metadata.json"))
@@ -322,8 +317,7 @@ class TestPredictorMulticlass:
         """Train model and return predictor."""
         trainer = LayoutRiskTrainer()
         model_path, _ = trainer.train_from_csv(
-            csv_path=miner_with_data.dataset_path,
-            output_dir=temp_dir
+            csv_path=miner_with_data.dataset_path, output_dir=temp_dir
         )
 
         predictor = LayoutRiskPredictor(model_dir=str(temp_dir))
@@ -336,7 +330,7 @@ class TestPredictorMulticlass:
             theme="brutalist",
             css_density_spacing=2,
             css_density_layout=3,
-            pathological_score=0.1
+            pathological_score=0.1,
         )
 
         # Required keys
@@ -363,7 +357,7 @@ class TestPredictorMulticlass:
             theme="brutalist",
             css_density_spacing=0,
             css_density_layout=0,
-            pathological_score=0.9  # High pathological score
+            pathological_score=0.9,  # High pathological score
         )
 
         # With 100 samples, model might still recommend NONE sometimes
@@ -375,7 +369,7 @@ class TestPredictorMulticlass:
             "FONT_SHRINK",
             "CSS_TRUNCATE",
             "CONTENT_CUT",
-            "UNRESOLVED_FAIL"
+            "UNRESOLVED_FAIL",
         ]
 
     def test_predict_normal_content(self, trained_predictor, sample_content):
@@ -385,7 +379,7 @@ class TestPredictorMulticlass:
             theme="brutalist",
             css_density_spacing=2,
             css_density_layout=3,
-            pathological_score=0.05  # Low pathological score
+            pathological_score=0.05,  # Low pathological score
         )
 
         # Should recommend NONE or CSS_BREAK_WORD for normal content
@@ -405,7 +399,7 @@ class TestEngineSmartStrategySelection:
             "CSS_BREAK_WORD": 1,
             "FONT_SHRINK": 2,
             "CSS_TRUNCATE": 3,
-            "CONTENT_CUT": 4
+            "CONTENT_CUT": 4,
         }
 
         # Verify mapping
@@ -421,7 +415,7 @@ class TestEngineSmartStrategySelection:
         low_confidence_prediction = {
             "strategy_name": "FONT_SHRINK",
             "confidence": 0.45,  # <60%
-            "prediction_available": True
+            "prediction_available": True,
         }
 
         # Should fallback to attempt=1 (start from beginning)
@@ -436,7 +430,7 @@ class TestEngineSmartStrategySelection:
         high_confidence_prediction = {
             "strategy_name": "FONT_SHRINK",
             "confidence": 0.85,  # >60%
-            "prediction_available": True
+            "prediction_available": True,
         }
 
         strategy_to_attempt = {"FONT_SHRINK": 2}
@@ -464,7 +458,7 @@ class TestEdgeCases:
             theme="brutalist",
             css_density_spacing=0,
             css_density_layout=0,
-            pathological_score=0.0
+            pathological_score=0.0,
         )
 
         # Should return prediction_available=False
@@ -482,17 +476,14 @@ class TestEdgeCases:
                 strategy="NONE",
                 guardian_verdict=True,
                 guardian_reason="",
-                css_overrides={}
+                css_overrides={},
             )
 
         trainer = LayoutRiskTrainer()
 
         # Should raise InsufficientDataError
         with pytest.raises(Exception):  # Adjust to specific exception if defined
-            trainer.train_from_csv(
-                csv_path=miner.dataset_path,
-                output_dir=temp_dir
-            )
+            trainer.train_from_csv(csv_path=miner.dataset_path, output_dir=temp_dir)
 
     def test_empty_content(self, temp_dir):
         """Test miner handles empty content gracefully."""
@@ -504,7 +495,7 @@ class TestEdgeCases:
             strategy="NONE",
             guardian_verdict=True,
             guardian_reason="",
-            css_overrides={}
+            css_overrides={},
         )
 
         df = pd.read_csv(miner.dataset_path)
@@ -525,10 +516,7 @@ class TestPerformance:
         import time
 
         trainer = LayoutRiskTrainer()
-        trainer.train_from_csv(
-            csv_path=miner_with_data.dataset_path,
-            output_dir=temp_dir
-        )
+        trainer.train_from_csv(csv_path=miner_with_data.dataset_path, output_dir=temp_dir)
 
         predictor = LayoutRiskPredictor(model_dir=str(temp_dir))
 
@@ -538,7 +526,7 @@ class TestPerformance:
             theme="brutalist",
             css_density_spacing=2,
             css_density_layout=3,
-            pathological_score=0.1
+            pathological_score=0.1,
         )
         elapsed = time.time() - start
 
@@ -551,22 +539,23 @@ class TestPerformance:
 
         # Generate 1000 samples
         for i in range(1000):
-            strategy = ["NONE", "CSS_BREAK_WORD", "FONT_SHRINK", "CSS_TRUNCATE", "CONTENT_CUT"][i % 5]
+            strategy = ["NONE", "CSS_BREAK_WORD", "FONT_SHRINK", "CSS_TRUNCATE", "CONTENT_CUT"][
+                i % 5
+            ]
             miner.log_build_event(
                 theme="brutalist",
                 content={"hero": {"title": f"Sample {i}"}},
                 strategy=strategy,
                 guardian_verdict=True,
                 guardian_reason="",
-                css_overrides={}
+                css_overrides={},
             )
 
         trainer = LayoutRiskTrainer()
 
         # Should complete without errors
         model, metrics = trainer.train_from_csv(
-            csv_path=str(miner.dataset_path),
-            output_dir=str(temp_dir)
+            csv_path=str(miner.dataset_path), output_dir=str(temp_dir)
         )
 
         assert model is not None

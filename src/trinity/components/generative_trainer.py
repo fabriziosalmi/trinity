@@ -18,13 +18,13 @@ Training Flow:
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 from trinity.ml.models import LSTMStyleGenerator
 from trinity.ml.tokenizer import TailwindTokenizer
@@ -33,7 +33,7 @@ from trinity.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class CSSFixDataset(Dataset):
+class CSSFixDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
     """
     Dataset for CSS fix generation training.
 
@@ -67,7 +67,7 @@ class CSSFixDataset(Dataset):
 
         assert len(self.contexts) == len(self.targets), "Context-target mismatch"
 
-    def _extract_contexts(self, df: pd.DataFrame) -> List[Dict]:
+    def _extract_contexts(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
         """
         Extract context features from dataframe.
 

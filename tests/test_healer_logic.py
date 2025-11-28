@@ -84,9 +84,7 @@ class TestProgressiveStrategyEscalation:
         assert "text-3xl" in result.style_overrides.get("heading_primary", "")
         assert "text-xl" in result.style_overrides.get("heading_secondary", "")
 
-    def test_attempt_3_uses_truncate_strategy(
-        self, healer, sample_guardian_report, sample_content
-    ):
+    def test_attempt_3_uses_truncate_strategy(self, healer, sample_guardian_report, sample_content):
         """
         Attempt 3 ALWAYS uses CSS_TRUNCATE (ellipsis).
         NOT random - adds truncate/line-clamp classes.
@@ -115,9 +113,7 @@ class TestProgressiveStrategyEscalation:
 class TestBreakWordStrategy:
     """Test CSS_BREAK_WORD strategy logic (not random z-index injection)."""
 
-    def test_break_all_injected_for_pathological_strings(
-        self, healer, sample_guardian_report
-    ):
+    def test_break_all_injected_for_pathological_strings(self, healer, sample_guardian_report):
         """
         break-all is SPECIFICALLY for strings without spaces (e.g., 'AAAAAA...').
         This is a deliberate choice, not random CSS.
@@ -137,9 +133,7 @@ class TestBreakWordStrategy:
         assert not result.content_modified
         assert result.modified_content is None
 
-    def test_break_word_targets_correct_theme_classes(
-        self, healer, sample_guardian_report
-    ):
+    def test_break_word_targets_correct_theme_classes(self, healer, sample_guardian_report):
         """
         Verify we target theme_classes keys that match templates.
         NOT random keys - these match the actual template structure.
@@ -190,9 +184,7 @@ class TestFontShrinkStrategy:
 class TestTruncateStrategy:
     """Test CSS_TRUNCATE strategy uses correct Tailwind utilities."""
 
-    def test_truncate_uses_tailwind_line_clamp(
-        self, healer, sample_guardian_report
-    ):
+    def test_truncate_uses_tailwind_line_clamp(self, healer, sample_guardian_report):
         """
         Uses Tailwind's line-clamp utility (NOT random max-height hacks).
         line-clamp-3 is deliberate: 3 lines is readable but contained.
@@ -202,9 +194,7 @@ class TestTruncateStrategy:
         assert "truncate" in result.style_overrides["heading_primary"]
         assert "line-clamp-3" in result.style_overrides["body_text"]
 
-    def test_truncate_reduces_font_sizes_further(
-        self, healer, sample_guardian_report
-    ):
+    def test_truncate_reduces_font_sizes_further(self, healer, sample_guardian_report):
         """
         Strategy 3 reduces fonts MORE than Strategy 2.
         text-3xl → text-2xl (headings), text-base → text-sm (body).
@@ -220,9 +210,7 @@ class TestTruncateStrategy:
 class TestContentCutStrategy:
     """Test CONTENT_CUT (nuclear option) as last resort."""
 
-    def test_content_cut_actually_modifies_content(
-        self, healer, sample_content
-    ):
+    def test_content_cut_actually_modifies_content(self, healer, sample_content):
         """
         Strategy 4 is the ONLY strategy that modifies content.
         This is the last resort when CSS fixes fail.
@@ -266,9 +254,7 @@ class TestContentCutStrategy:
 class TestDeterminism:
     """Test that healer behavior is deterministic (same input = same output)."""
 
-    def test_same_input_produces_same_output(
-        self, healer, sample_guardian_report, sample_content
-    ):
+    def test_same_input_produces_same_output(self, healer, sample_guardian_report, sample_content):
         """
         CRITICAL: Same attempt number + same input = IDENTICAL output.
         This proves the healer is NOT random.
@@ -300,9 +286,7 @@ class TestDeterminism:
 class TestNoRandomZIndex:
     """Test that we do NOT inject random z-index: 9999 or similar hacks."""
 
-    def test_no_z_index_in_any_strategy(
-        self, healer, sample_guardian_report, sample_content
-    ):
+    def test_no_z_index_in_any_strategy(self, healer, sample_guardian_report, sample_content):
         """
         CRITICAL: Verify we do NOT use z-index hacks.
         All fixes are deliberate CSS utilities, not random stacking contexts.
@@ -315,9 +299,7 @@ class TestNoRandomZIndex:
                 assert "z-index" not in css_classes.lower()
                 assert "z-" not in css_classes  # No Tailwind z-N classes either
 
-    def test_no_important_flags(
-        self, healer, sample_guardian_report, sample_content
-    ):
+    def test_no_important_flags(self, healer, sample_guardian_report, sample_content):
         """
         Verify we do NOT use !important hacks.
         All CSS follows proper cascade, no specificity hacks.

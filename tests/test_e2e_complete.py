@@ -39,17 +39,14 @@ class TestE2ECompleteWorkflow:
         """Generate sample content for testing"""
         return {
             "brand_name": "Test Portfolio",
-            "hero": {
-                "title": "Test Portfolio",
-                "subtitle": "Software Engineer"
-            },
+            "hero": {"title": "Test Portfolio", "subtitle": "Software Engineer"},
             "body": {
                 "sections": [
                     {"title": "About", "content": "Software engineer with 5 years experience."},
                     {"title": "Skills", "content": "Python, JavaScript, Docker, Kubernetes"},
-                    {"title": "Projects", "content": "Built scalable microservices"}
+                    {"title": "Projects", "content": "Built scalable microservices"},
                 ]
-            }
+            },
         }
 
     @pytest.fixture
@@ -58,17 +55,14 @@ class TestE2ECompleteWorkflow:
         long_text = "very long content " * 500  # 10,000+ chars
         return {
             "brand_name": "Pathological Test",
-            "hero": {
-                "title": "Pathological Test",
-                "subtitle": "Long content test"
-            },
+            "hero": {"title": "Pathological Test", "subtitle": "Long content test"},
             "body": {
                 "sections": [
                     {"title": "Section 1", "content": long_text},
                     {"title": "Section 2", "content": long_text},
-                    {"title": "Section 3", "content": long_text}
+                    {"title": "Section 3", "content": long_text},
                 ]
-            }
+            },
         }
 
     def test_data_mining_workflow(self, temp_output_dir, sample_content):
@@ -78,7 +72,7 @@ class TestE2ECompleteWorkflow:
             pytest.skip("Training dataset not found")
 
         miner = TrinityMiner(dataset_path=dataset_path)
-        
+
         # Test logging a build event
         miner.log_build_event(
             theme="brutalist",
@@ -86,11 +80,12 @@ class TestE2ECompleteWorkflow:
             strategy="NONE",
             guardian_verdict=True,
             guardian_reason="Test passed",
-            css_overrides={}
+            css_overrides={},
         )
-        
+
         # Validate event was logged
         import pandas as pd
+
         df = pd.read_csv(dataset_path)
         assert len(df) > 0
         assert df.iloc[-1]["theme"] == "brutalist"
@@ -102,13 +97,12 @@ class TestE2ECompleteWorkflow:
             pytest.skip("Training dataset not found")
 
         trainer = LayoutRiskTrainer()
-        
+
         # Train model
         model, metrics = trainer.train_from_csv(
-            csv_path=str(dataset_path),
-            output_dir=str(temp_model_dir)
+            csv_path=str(dataset_path), output_dir=str(temp_model_dir)
         )
-        
+
         # Validate model and metrics
         assert model is not None
         assert metrics is not None
@@ -121,7 +115,7 @@ class TestE2ECompleteWorkflow:
         """Test prediction on normal and pathological content"""
         model_path = Path(__file__).parent.parent / "models"
         predictor = LayoutRiskPredictor(model_dir=str(model_path))
-        
+
         if not predictor.model:
             pytest.skip("No trained model available")
 
@@ -146,7 +140,7 @@ class TestE2ECompleteWorkflow:
             content=sample_content,
             theme="brutalist",
             output_filename=output_file,
-            enable_guardian=False
+            enable_guardian=False,
         )
 
         # Validate result
@@ -158,16 +152,16 @@ class TestE2ECompleteWorkflow:
     def test_multiple_themes(self, temp_output_dir, sample_content):
         """Test build with multiple themes"""
         themes = ["brutalist", "enterprise"]
-        
+
         for theme in themes:
             output_file = f"test_{theme}.html"
-            
+
             engine = TrinityEngine()
             result = engine.build_with_self_healing(
                 content=sample_content,
                 theme=theme,
                 output_filename=output_file,
-                enable_guardian=False
+                enable_guardian=False,
             )
 
             assert result.status.name == "SUCCESS", f"Build failed for theme: {theme}"
@@ -187,10 +181,9 @@ class TestE2EPerformance:
             "hero": {"title": "Performance Test", "subtitle": "Speed check"},
             "body": {
                 "sections": [
-                    {"title": f"Section {i}", "content": f"Content {i}" * 50}
-                    for i in range(10)
+                    {"title": f"Section {i}", "content": f"Content {i}" * 50} for i in range(10)
                 ]
-            }
+            },
         }
 
         output_file = "perf_test.html"
@@ -198,10 +191,7 @@ class TestE2EPerformance:
         start = time.time()
         engine = TrinityEngine()
         result = engine.build_with_self_healing(
-            content=content,
-            theme="brutalist",
-            output_filename=output_file,
-            enable_guardian=False
+            content=content, theme="brutalist", output_filename=output_file, enable_guardian=False
         )
         duration = time.time() - start
 
@@ -215,12 +205,12 @@ class TestE2EPerformance:
         content = {
             "brand_name": "Perf Test",
             "hero": {"title": "Test", "subtitle": "Perf"},
-            "body": {"sections": [{"title": "Test", "content": "Test content"}]}
+            "body": {"sections": [{"title": "Test", "content": "Test content"}]},
         }
 
         model_path = Path(__file__).parent.parent / "models"
         predictor = LayoutRiskPredictor(model_dir=str(model_path))
-        
+
         if not predictor.model:
             pytest.skip("No trained model available")
 
@@ -240,17 +230,14 @@ class TestE2ERobustness:
         content = {
             "brand_name": "Empty Test",
             "hero": {"title": "Empty", "subtitle": "Test"},
-            "body": {"sections": []}
+            "body": {"sections": []},
         }
-        
+
         output_file = "empty_test.html"
 
         engine = TrinityEngine()
         result = engine.build_with_self_healing(
-            content=content,
-            theme="brutalist",
-            output_filename=output_file,
-            enable_guardian=False
+            content=content, theme="brutalist", output_filename=output_file, enable_guardian=False
         )
 
         # Should handle gracefully
@@ -259,15 +246,15 @@ class TestE2ERobustness:
     def test_corrupted_model_handling(self):
         """Test handling when model is unavailable"""
         predictor = LayoutRiskPredictor(model_dir="/nonexistent/path")
-        
+
         content = {
             "brand_name": "Corrupted Model Test",
             "hero": {"title": "Test", "subtitle": "Test"},
-            "body": {"sections": [{"title": "Test", "content": "Content"}]}
+            "body": {"sections": [{"title": "Test", "content": "Content"}]},
         }
 
         # Should handle gracefully without crashing
         result = predictor.predict_best_strategy(content, theme="brutalist")
-        
+
         # Should return fallback strategy
         assert "strategy_id" in result

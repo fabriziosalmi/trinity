@@ -9,7 +9,7 @@ Rule #28: Structured logging
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 
@@ -135,11 +135,11 @@ class SiteBuilder:
             if isinstance(theme_config, dict) and "classes" in theme_config:
                 # YAML format with metadata
                 logger.info(f"Loaded theme: {theme_name} (YAML)")
-                return theme_config["classes"]
+                return cast(Dict[str, str], theme_config["classes"])
             else:
                 # JSON format (legacy)
                 logger.info(f"Loaded theme: {theme_name} (JSON legacy)")
-                return theme_config
+                return cast(Dict[str, str], theme_config)
 
         except (yaml.YAMLError, json.JSONDecodeError) as e:
             logger.error(f"Invalid theme config format: {e}")

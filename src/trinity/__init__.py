@@ -10,7 +10,7 @@ A deterministic static site builder that combines:
 - ML-powered predictive models (Risk Assessor, Style Generator)
 """
 
-__version__ = "0.2.0"
+__version__ = "0.8.1"
 __author__ = "Trinity Team"
 
 from trinity.components.brain import ContentEngine, ContentEngineError

@@ -10,7 +10,7 @@ Stop wasting time debugging broken layouts. Trinity generates beautiful, respons
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/docker-ready-brightgreen.svg" alt="Docker"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.8.0-green.svg" alt="Version"></a>
+  <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.8.1-green.svg" alt="Version"></a>
 </p>
 
 <p align="center">
@@ -390,7 +390,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 📊 Project Stats
 
-- **Version:** 0.8.0
+- **Version:** 0.8.1
 - **Python:** 3.10+
 - **Tests:** 111/111 passing (9 E2E, 15 multiclass, 32 healer, 6 engine, 49 other)
 - **Themes:** 14 built-in + Centuria Factory for mass generation

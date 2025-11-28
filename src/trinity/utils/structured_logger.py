@@ -35,10 +35,10 @@ import logging.config
 import os
 import sys
 import uuid
-from contextvars import ContextVar
+from contextvars import ContextVar, Token
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 # Correlation ID context
 _correlation_id: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
@@ -74,7 +74,7 @@ class StructuredFormatter(logging.Formatter):
             log_data["correlation_id"] = correlation_id
 
         # Add exception info if present
-        if record.exc_info:
+        if record.exc_info and record.exc_info[0]:
             log_data["exception"] = {
                 "type": record.exc_info[0].__name__,
                 "message": str(record.exc_info[1]),
@@ -172,8 +172,8 @@ class StructuredLogger(logging.Logger):
     """
 
     def _log_with_context(
-        self, level: int, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs
-    ):
+        self, level: int, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any
+    ) -> None:
         """Log with structured extra fields."""
         if extra:
             # Store extra fields in a dedicated attribute
@@ -183,27 +183,27 @@ class StructuredLogger(logging.Logger):
 
         super()._log(level, msg, args, **kwargs)
 
-    def debug(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs):
+    def debug(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Log debug message with optional structured context."""
         self._log_with_context(logging.DEBUG, msg, extra, *args, **kwargs)
 
-    def info(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs):
+    def info(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Log info message with optional structured context."""
         self._log_with_context(logging.INFO, msg, extra, *args, **kwargs)
 
-    def warning(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs):
+    def warning(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Log warning message with optional structured context."""
         self._log_with_context(logging.WARNING, msg, extra, *args, **kwargs)
 
-    def error(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs):
+    def error(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Log error message with optional structured context."""
         self._log_with_context(logging.ERROR, msg, extra, *args, **kwargs)
 
-    def critical(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args, **kwargs):
+    def critical(self, msg: str, extra: Optional[Dict[str, Any]] = None, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Log critical message with optional structured context."""
         self._log_with_context(logging.CRITICAL, msg, extra, *args, **kwargs)
 
-    def correlation_context(self, correlation_id: Optional[str] = None):
+    def correlation_context(self, correlation_id: Optional[str] = None) -> "_CorrelationContext":
         """
         Context manager for correlation ID.
 
@@ -222,13 +222,13 @@ class _CorrelationContext:
 
     def __init__(self, correlation_id: Optional[str] = None):
         self.correlation_id = correlation_id or f"corr-{uuid.uuid4().hex[:8]}"
-        self.token = None
+        self.token: Optional[Token[Optional[str]]] = None
 
-    def __enter__(self):
+    def __enter__(self) -> str:
         self.token = _correlation_id.set(self.correlation_id)
         return self.correlation_id
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any) -> None:
         if self.token:
             _correlation_id.reset(self.token)
 
@@ -251,7 +251,7 @@ def get_logger(name: str) -> StructuredLogger:
         logger = get_logger(__name__)
         logger.info("server_started", extra={"port": 8000})
     """
-    return logging.getLogger(name)
+    return cast(StructuredLogger, logging.getLogger(name))
 
 
 def configure_logging(
@@ -259,7 +259,7 @@ def configure_logging(
     log_format: str = "human",  # "human" or "json"
     log_file: Optional[Path] = None,
     config_file: Optional[Path] = None,
-):
+) -> None:
     """
     Configure logging system.
 
@@ -289,6 +289,7 @@ def configure_logging(
     log_level = getattr(logging, level.upper(), logging.INFO)
 
     # Choose formatter
+    formatter: logging.Formatter
     if log_format == "json":
         formatter = StructuredFormatter()
     else:
@@ -319,7 +320,7 @@ def configure_logging(
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
-def setup_default_logging():
+def setup_default_logging() -> None:
     """
     Setup default logging based on environment.
 

@@ -6,10 +6,11 @@ Rule #5: Type safety with Pydantic validation
 """
 
 import json
+import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, cast
 
 try:
     from openai import APIConnectionError, APIError, OpenAI
@@ -22,10 +23,14 @@ from trinity.config_v2 import get_default_config
 from trinity.utils.logger import get_logger
 
 # Optional import for text processing
-try:
-    from trinity.utils.text_processor import TextProcessor
-except ImportError:
-    TextProcessor = None
+if TYPE_CHECKING:
+    from trinity.utils.text_processor import TextProcessor, TextProcessorError
+else:
+    try:
+        from trinity.utils.text_processor import TextProcessor, TextProcessorError
+    except ImportError:
+        TextProcessor = None
+        TextProcessorError = None
 
 logger = get_logger(__name__)
 
@@ -108,6 +113,7 @@ class ContentEngine:
         self.client = OpenAI(base_url=self.base_url, api_key=api_key or config.lm_studio_key)
 
         # Initialize TextProcessor (optional)
+        self.text_processor: Optional["TextProcessor"] = None
         if self.enable_text_processing and TextProcessor is not None:
             try:
                 self.text_processor = TextProcessor()
@@ -271,7 +277,7 @@ class ContentEngine:
         logger.info(f"🧠 Connecting to LM Studio at {self.base_url} (theme: {theme})")
 
         # Rule #7: Retry logic with exponential backoff
-        last_error = None
+        last_error: Optional[Exception] = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"LLM generation attempt {attempt}/{self.max_retries}")
@@ -290,7 +296,12 @@ class ContentEngine:
                     timeout=60,  # 60s timeout
                 )
 
-                content_str = response.choices[0].message.content.strip()
+                content_str = response.choices[0].message.content
+                if content_str is None:
+                    logger.error("Empty response from LLM")
+                    continue
+
+                content_str = content_str.strip()
 
                 # Clean response
                 content_str = self._clean_llm_response(content_str)
@@ -314,7 +325,7 @@ class ContentEngine:
                     content_dict = validated.model_dump()
 
                     # Apply text transformations (The Enforcer)
-                    if self.text_processor:
+                    if self.text_processor is not None and TextProcessorError is not None:
                         try:
                             content_dict = self.text_processor.process_content(content_dict, theme)
                             logger.info("✓ Text transformations applied")
@@ -346,11 +357,11 @@ class ContentEngine:
                 last_error = e
                 continue
 
-                # All retries failed
-                raise ContentEngineError(
-                    f"Failed to generate content after {self.max_retries} attempts. "
-                    f"Last error: {last_error}"
-                )
+        # All retries failed
+        raise ContentEngineError(
+            f"Failed to generate content after {self.max_retries} attempts. "
+            f"Last error: {last_error}"
+        )
 
     def generate_theme_from_vibe(self, vibe_description: str) -> Dict[str, str]:
         """
@@ -416,7 +427,7 @@ Output ONLY the JSON object."""
 
         logger.info(f"🎨 Generating theme from vibe: {vibe_description}")
 
-        last_error = None
+        last_error: Optional[Exception] = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 logger.info(f"Theme generation attempt {attempt}/{self.max_retries}")
@@ -435,7 +446,12 @@ Output ONLY the JSON object."""
                     timeout=45,
                 )
 
-                theme_str = response.choices[0].message.content.strip()
+                theme_str = response.choices[0].message.content
+                if theme_str is None:
+                    logger.error("Empty response from LLM")
+                    continue
+
+                theme_str = theme_str.strip()
                 theme_str = self._clean_llm_response(theme_str)
 
                 logger.debug(f"Generated theme JSON: {theme_str[:200]}...")
@@ -473,11 +489,11 @@ Output ONLY the JSON object."""
                     continue
 
                 logger.info(f"✓ Theme generated successfully: {len(theme_config)} components")
-                return theme_config
+                return cast(Dict[str, str], theme_config)
 
             except json.JSONDecodeError as e:
                 logger.error(
-                    f"Invalid JSON from LLM: {theme_str[:300] if 'theme_str' in locals() else 'N/A'}"
+                    f"Invalid JSON from LLM: {theme_str[:300] if 'theme_str' in locals() and theme_str else 'N/A'}"
                 )
                 last_error = e
                 continue
@@ -525,7 +541,7 @@ Output ONLY the JSON object."""
             if fallback_path and Path(fallback_path).exists():
                 logger.info(f"Loading fallback content from {fallback_path}")
                 with open(fallback_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    return cast(Dict[str, Any], json.load(f))
             else:
                 logger.critical("No fallback available!")
                 raise

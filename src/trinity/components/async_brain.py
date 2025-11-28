@@ -19,7 +19,7 @@ import json
 # Import async LLM client
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union, cast
 
 from pydantic import ValidationError
 
@@ -59,7 +59,7 @@ class AsyncContentEngine:
         model_id: Optional[str] = None,
         max_retries: int = 3,
         timeout: int = 60,
-    ):
+    ) -> None:
         """
         Initialize async content engine.
 
@@ -240,7 +240,7 @@ Return ONLY valid JSON with this structure:
 
         raise ContentEngineError(f"Max retries exceeded: {last_error}")
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "AsyncContentEngine":
         """Async context manager entry."""
         # Initialize async LLM client
         # Note: Ollama uses different endpoint format than OpenAI
@@ -256,7 +256,7 @@ Return ONLY valid JSON with this structure:
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         if self.llm_client:
             await self.llm_client.__aexit__(exc_type, exc_val, exc_tb)
@@ -265,7 +265,7 @@ Return ONLY valid JSON with this structure:
 # Demo
 if __name__ == "__main__":
 
-    async def demo():
+    async def demo() -> None:
         """Demo async content generation."""
         print("=== Async Content Engine Demo ===")
 
@@ -293,13 +293,15 @@ if __name__ == "__main__":
 
                 tasks = [engine.generate_content_async(str(sample_path), theme) for theme in themes]
 
-                results = await asyncio.gather(*tasks, return_exceptions=True)
+                results: Any = await asyncio.gather(*tasks, return_exceptions=True)
 
                 for theme, result in zip(themes, results):
-                    if isinstance(result, Exception):
+                    if isinstance(result, BaseException):
                         print(f"{theme}: ERROR - {result}")
                     else:
-                        print(f"{theme}: ✓ {result['brand_name']} ({len(result['repos'])} repos)")
+                        # result is Dict[str, Any]
+                        res_dict = result
+                        print(f"{theme}: ✓ {res_dict['brand_name']} ({len(res_dict['repos'])} repos)")
 
         except ContentEngineError as e:
             print(f"Error: {e}")

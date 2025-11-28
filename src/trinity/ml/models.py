@@ -178,9 +178,9 @@ class LSTMStyleGenerator(nn.Module):
                 decoder_input = logits.argmax(dim=-1)
 
         # Stack outputs: [batch, seq_len, vocab_size]
-        outputs = torch.cat(outputs, dim=1)
+        stacked_outputs = torch.cat(outputs, dim=1)
 
-        return outputs
+        return stacked_outputs
 
     @torch.no_grad()
     def generate(
@@ -224,7 +224,7 @@ class LSTMStyleGenerator(nn.Module):
         )
 
         # Track generated sequences
-        generated = [[] for _ in range(batch_size)]
+        generated: List[List[int]] = [[] for _ in range(batch_size)]
         finished = [False] * batch_size
 
         hidden = (h0, c0)
@@ -250,7 +250,7 @@ class LSTMStyleGenerator(nn.Module):
             # Update sequences
             for i in range(batch_size):
                 if not finished[i]:
-                    token_id = next_tokens[i].item()
+                    token_id = int(next_tokens[i].item())
 
                     if token_id == eos_token_idx:
                         finished[i] = True

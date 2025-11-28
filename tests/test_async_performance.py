@@ -64,30 +64,35 @@ class TestAsyncPerformance:
     async def test_async_single_generation(self, sample_portfolio_file, mocker):
         """Test async single content generation."""
         # Mock AsyncLLMClient
-        mock_response = json.dumps({
-            "brand_name": "Test Brand",
-            "tagline": "Test Tagline",
-            "hero": {
-                "title": "Test Title",
-                "subtitle": "Test Subtitle",
-                "cta_primary": {"label": "Go", "url": "#"},
-                "cta_secondary": {"label": "Back", "url": "#"}
-            },
-            "repos": [
-                {
-                    "name": "repo1",
-                    "description": "desc1",
-                    "url": "http://repo1",
-                    "stars": 10,
-                    "language": "Python",
-                    "tags": ["tag1"]
-                }
-            ],
-            "menu_items": [],
-            "cta": {"label": "Click", "url": "#"}
-        })
-        
-        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", return_value=mock_response)
+        mock_response = json.dumps(
+            {
+                "brand_name": "Test Brand",
+                "tagline": "Test Tagline",
+                "hero": {
+                    "title": "Test Title",
+                    "subtitle": "Test Subtitle",
+                    "cta_primary": {"label": "Go", "url": "#"},
+                    "cta_secondary": {"label": "Back", "url": "#"},
+                },
+                "repos": [
+                    {
+                        "name": "repo1",
+                        "description": "desc1",
+                        "url": "http://repo1",
+                        "stars": 10,
+                        "language": "Python",
+                        "tags": ["tag1"],
+                    }
+                ],
+                "menu_items": [],
+                "cta": {"label": "Click", "url": "#"},
+            }
+        )
+
+        mocker.patch(
+            "trinity.components.llm_client.AsyncLLMClient.generate_content",
+            return_value=mock_response,
+        )
 
         async with AsyncContentEngine() as engine:
             result = await engine.generate_content_async(sample_portfolio_file, "brutalist")
@@ -103,30 +108,35 @@ class TestAsyncPerformance:
         themes = ["brutalist", "hacker", "minimalist"]
 
         # Mock AsyncLLMClient
-        mock_response = json.dumps({
-            "brand_name": "Test Brand",
-            "tagline": "Test Tagline",
-            "hero": {
-                "title": "Test Title",
-                "subtitle": "Test Subtitle",
-                "cta_primary": {"label": "Go", "url": "#"},
-                "cta_secondary": {"label": "Back", "url": "#"}
-            },
-            "repos": [
-                {
-                    "name": "repo1",
-                    "description": "desc1",
-                    "url": "http://repo1",
-                    "stars": 10,
-                    "language": "Python",
-                    "tags": ["tag1"]
-                }
-            ],
-            "menu_items": [],
-            "cta": {"label": "Click", "url": "#"}
-        })
-        
-        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", return_value=mock_response)
+        mock_response = json.dumps(
+            {
+                "brand_name": "Test Brand",
+                "tagline": "Test Tagline",
+                "hero": {
+                    "title": "Test Title",
+                    "subtitle": "Test Subtitle",
+                    "cta_primary": {"label": "Go", "url": "#"},
+                    "cta_secondary": {"label": "Back", "url": "#"},
+                },
+                "repos": [
+                    {
+                        "name": "repo1",
+                        "description": "desc1",
+                        "url": "http://repo1",
+                        "stars": 10,
+                        "language": "Python",
+                        "tags": ["tag1"],
+                    }
+                ],
+                "menu_items": [],
+                "cta": {"label": "Click", "url": "#"},
+            }
+        )
+
+        mocker.patch(
+            "trinity.components.llm_client.AsyncLLMClient.generate_content",
+            return_value=mock_response,
+        )
 
         async with AsyncContentEngine() as engine:
             # Generate all themes concurrently
@@ -156,34 +166,36 @@ class TestAsyncPerformance:
         num_requests = 3
         theme = "minimalist"
         delay = 0.1
-        
-        mock_content = json.dumps({
-            "brand_name": "Test Brand",
-            "tagline": "Test Tagline",
-            "hero": {
-                "title": "Test Title",
-                "subtitle": "Test Subtitle",
-                "cta_primary": {"label": "Go", "url": "#"},
-                "cta_secondary": {"label": "Back", "url": "#"}
-            },
-            "repos": [
-                {
-                    "name": "repo1",
-                    "description": "desc1",
-                    "url": "http://repo1",
-                    "stars": 10,
-                    "language": "Python",
-                    "tags": ["tag1"]
-                }
-            ],
-            "menu_items": [],
-            "cta": {"label": "Click", "url": "#"}
-        })
+
+        mock_content = json.dumps(
+            {
+                "brand_name": "Test Brand",
+                "tagline": "Test Tagline",
+                "hero": {
+                    "title": "Test Title",
+                    "subtitle": "Test Subtitle",
+                    "cta_primary": {"label": "Go", "url": "#"},
+                    "cta_secondary": {"label": "Back", "url": "#"},
+                },
+                "repos": [
+                    {
+                        "name": "repo1",
+                        "description": "desc1",
+                        "url": "http://repo1",
+                        "stars": 10,
+                        "language": "Python",
+                        "tags": ["tag1"],
+                    }
+                ],
+                "menu_items": [],
+                "cta": {"label": "Click", "url": "#"},
+            }
+        )
 
         # Mock Sync ContentEngine (OpenAI client)
         mock_openai_resp = mocker.Mock()
         mock_openai_resp.choices = [mocker.Mock(message=mocker.Mock(content=mock_content))]
-        
+
         def sync_side_effect(*args, **kwargs):
             time.sleep(delay)
             return mock_openai_resp
@@ -195,7 +207,10 @@ class TestAsyncPerformance:
             await asyncio.sleep(delay)
             return mock_content
 
-        mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", side_effect=async_side_effect)
+        mocker.patch(
+            "trinity.components.llm_client.AsyncLLMClient.generate_content",
+            side_effect=async_side_effect,
+        )
 
         # Sync benchmark
         print("\n=== Sync Performance Benchmark ===")
@@ -292,46 +307,50 @@ async def test_high_concurrency(sample_portfolio_file, mocker):
     """
     num_requests = 10
     theme = "minimalist"
-    delay = 0.05 # Faster delay for high concurrency test
+    delay = 0.05  # Faster delay for high concurrency test
 
     print(f"\n=== High Concurrency Test ({num_requests} requests) ===")
-    
-    mock_content = json.dumps({
-        "brand_name": "Test Brand",
-        "tagline": "Test Tagline",
-        "hero": {
-            "title": "Test Title",
-            "subtitle": "Test Subtitle",
-            "cta_primary": {"label": "Go", "url": "#"},
-            "cta_secondary": {"label": "Back", "url": "#"}
-        },
-        "repos": [
-            {
-                "name": "repo1",
-                "description": "desc1",
-                "url": "http://repo1",
-                "stars": 10,
-                "language": "Python",
-                "tags": ["tag1"]
-            }
-        ],
-        "menu_items": [],
-        "cta": {"label": "Click", "url": "#"}
-    })
+
+    mock_content = json.dumps(
+        {
+            "brand_name": "Test Brand",
+            "tagline": "Test Tagline",
+            "hero": {
+                "title": "Test Title",
+                "subtitle": "Test Subtitle",
+                "cta_primary": {"label": "Go", "url": "#"},
+                "cta_secondary": {"label": "Back", "url": "#"},
+            },
+            "repos": [
+                {
+                    "name": "repo1",
+                    "description": "desc1",
+                    "url": "http://repo1",
+                    "stars": 10,
+                    "language": "Python",
+                    "tags": ["tag1"],
+                }
+            ],
+            "menu_items": [],
+            "cta": {"label": "Click", "url": "#"},
+        }
+    )
 
     # Mock Async ContentEngine (AsyncLLMClient)
     async def async_side_effect(*args, **kwargs):
         await asyncio.sleep(delay)
         return mock_content
 
-    mocker.patch("trinity.components.llm_client.AsyncLLMClient.generate_content", side_effect=async_side_effect)
+    mocker.patch(
+        "trinity.components.llm_client.AsyncLLMClient.generate_content",
+        side_effect=async_side_effect,
+    )
 
     start = time.time()
 
     async with AsyncContentEngine() as engine:
         tasks = [
-            engine.generate_content_async(sample_portfolio_file, theme)
-            for _ in range(num_requests)
+            engine.generate_content_async(sample_portfolio_file, theme) for _ in range(num_requests)
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -352,8 +371,6 @@ async def test_high_concurrency(sample_portfolio_file, mocker):
 
         # Should achieve at least 5 req/s (vs ~1 req/s sync)
         throughput = num_requests / duration
-        assert (
-            throughput >= 5.0
-        ), f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
+        assert throughput >= 5.0, f"Throughput too low: {throughput:.1f} req/s (expected >= 5.0)"
 
         print(f"✓ High concurrency test PASSED ({throughput:.1f} req/s)")

@@ -13,7 +13,7 @@ Phase: v0.5.0 (Generative Style Engine)
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set, cast
 
 import torch
 
@@ -81,6 +81,7 @@ class NeuralHealer:
                 logger.warning(f"Failed to load vocabulary: {e}")
 
         # Fallback to heuristic healer if model not available
+        self.heuristic_healer: Optional[Any] = None
         if not self.model or not self.tokenizer:
             if fallback_to_heuristic:
                 from trinity.components.healer import SmartHealer
@@ -89,13 +90,11 @@ class NeuralHealer:
                 logger.info("⚠️  Neural model unavailable, using heuristic fallback")
             else:
                 raise RuntimeError("Neural model not loaded and fallback disabled")
-        else:
-            self.heuristic_healer = None
 
         # Whitelist of valid Tailwind CSS classes (anti-hallucination)
         self.valid_tailwind_classes = self._build_class_whitelist()
 
-    def _build_class_whitelist(self) -> set:
+    def _build_class_whitelist(self) -> Set[str]:
         """
         Build whitelist of valid Tailwind classes.
 
@@ -225,9 +224,9 @@ class NeuralHealer:
     def heal_layout(
         self,
         guardian_report: Dict[str, Any],
-        content: Dict,
+        content: Dict[str, Any],
         attempt: int,
-        context: Optional[Dict] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> HealingResult:
         """
         Generate CSS fix using neural model.
@@ -245,7 +244,7 @@ class NeuralHealer:
         if not self.model or not self.tokenizer:
             if self.heuristic_healer:
                 logger.debug("🔄 Using heuristic fallback")
-                return self.heuristic_healer.heal_layout(guardian_report, content, attempt)
+                return cast(HealingResult, self.heuristic_healer.heal_layout(guardian_report, content, attempt))
             else:
                 raise RuntimeError("Neural model and heuristic fallback unavailable")
 
@@ -289,7 +288,7 @@ class NeuralHealer:
         if not valid_classes:
             logger.warning("⚠️  No valid classes generated, using fallback")
             if self.heuristic_healer:
-                return self.heuristic_healer.heal_layout(guardian_report, content, attempt)
+                return cast(HealingResult, self.heuristic_healer.heal_layout(guardian_report, content, attempt))
             valid_classes = ["text-sm", "truncate"]  # Safe default
 
         final_css = " ".join(valid_classes)

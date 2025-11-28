@@ -14,7 +14,7 @@ async def test_cache_basic(mocker):
     mock_response = mocker.Mock()
     mock_response.json.return_value = {"response": '{"message": "Hello Cache"}'}
     mock_response.status_code = 200
-    
+
     # Mock the post method
     mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
 
@@ -30,9 +30,10 @@ async def test_cache_basic(mocker):
 
         # Responses should be identical (from cache)
         assert response1 == response2
-        
+
         # Verify LLM was called only once
         assert mock_post.call_count == 1
+
 
 @pytest.mark.asyncio
 async def test_cache_disabled():
@@ -41,6 +42,7 @@ async def test_cache_disabled():
         # Cache should not be initialized
         assert client.cache is None
 
+
 @pytest.mark.asyncio
 async def test_cache_bypass(mocker):
     """Test cache bypass with use_cache=False."""
@@ -48,7 +50,7 @@ async def test_cache_bypass(mocker):
     mock_response = mocker.Mock()
     mock_response.json.return_value = {"response": '{"message": "Random"}'}
     mock_response.status_code = 200
-    
+
     # Mock the post method
     mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
 
@@ -62,9 +64,10 @@ async def test_cache_bypass(mocker):
         # Responses might be different (random)
         assert response1 is not None
         assert response2 is not None
-        
+
         # Verify LLM was called twice
         assert mock_post.call_count == 2
+
 
 @pytest.mark.asyncio
 async def test_cache_different_prompts(mocker):
@@ -73,10 +76,10 @@ async def test_cache_different_prompts(mocker):
     mock_response = mocker.Mock()
     mock_response.json.side_effect = [
         {"response": '{"message": "A"}'},
-        {"response": '{"message": "B"}'}
+        {"response": '{"message": "B"}'},
     ]
     mock_response.status_code = 200
-    
+
     # Mock the post method
     mock_post = mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
 
@@ -86,7 +89,7 @@ async def test_cache_different_prompts(mocker):
 
         # Different prompts should have different responses
         assert response1 != response2
-        
+
         # Verify LLM was called twice
         assert mock_post.call_count == 2
 

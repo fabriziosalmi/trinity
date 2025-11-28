@@ -30,7 +30,7 @@ class TestAsyncLLMClient:
         mock_response = mocker.Mock()
         mock_response.json.return_value = {"response": '{"message": "Hello"}'}
         mock_response.status_code = 200
-        
+
         # Mock the post method
         mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
 
@@ -49,7 +49,7 @@ class TestAsyncLLMClient:
         mock_response = mocker.Mock()
         mock_response.json.return_value = {"response": '{"message": "Response"}'}
         mock_response.status_code = 200
-        
+
         # Mock the post method
         mocker.patch("httpx.AsyncClient.post", return_value=mock_response)
 
@@ -155,7 +155,7 @@ class TestSyncBackwardCompatibility:
         mock_response = mocker.Mock()
         mock_response.json.return_value = {"response": '{"message": "Hello"}'}
         mock_response.status_code = 200
-        
+
         # Mock the post method
         mocker.patch("httpx.Client.post", return_value=mock_response)
 

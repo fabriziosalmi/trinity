@@ -7,7 +7,7 @@ BEFORE rendering, enabling smart pre-emptive healing.
 Architecture (v0.8.0):
     Input: (content, theme, css_density, pathological_score) → Feature Engineering
     Model: Trained Random Forest Multiclass Classifier (.pkl from trainer.py)
-    Output: Best strategy recommendation (0=NONE, 1=BREAK_WORD, 2=FONT_SHRINK, 
+    Output: Best strategy recommendation (0=NONE, 1=BREAK_WORD, 2=FONT_SHRINK,
                                           3=TRUNCATE, 4=CONTENT_CUT)
 
     Multiclass Output:
@@ -31,13 +31,13 @@ Rule #66: Load model once per execution (Singleton pattern).
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import joblib
+import joblib  # type: ignore
 import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
+import pandas as pd  # type: ignore
+from sklearn.ensemble import RandomForestClassifier  # type: ignore
+from sklearn.preprocessing import LabelEncoder  # type: ignore
 
 from trinity.utils.logger import get_logger
 
@@ -133,14 +133,14 @@ class LayoutRiskPredictor:
             logger.info(f"   F1-Score: {f1_score}")
 
     def _prepare_features(
-        self, 
-        content: Dict[str, Any], 
-        theme: str, 
+        self,
+        content: Dict[str, Any],
+        theme: str,
         css_signature: str = "NONE",
         css_density_spacing: int = 0,
         css_density_layout: int = 0,
-        pathological_score: float = 0.0
-    ) -> Optional[list]:
+        pathological_score: float = 0.0,
+    ) -> Optional[List[Any]]:
         """
         Prepare features for prediction (v0.8.0: MUST match Trainer preprocessing).
 
@@ -154,7 +154,7 @@ class LayoutRiskPredictor:
 
         Returns:
             Feature list matching trainer's feature_columns:
-            [char_len, word_count, css_density_spacing, css_density_layout, 
+            [char_len, word_count, css_density_spacing, css_density_layout,
              pathological_score, theme_encoded, strategy_encoded]
             or None if encoding fails
         """
@@ -195,13 +195,13 @@ class LayoutRiskPredictor:
         # [input_char_len, input_word_count, css_density_spacing, css_density_layout,
         #  pathological_score, theme_encoded, strategy_encoded]
         return [
-            char_len, 
-            word_count, 
+            char_len,
+            word_count,
             css_density_spacing,
             css_density_layout,
             pathological_score,
-            theme_encoded, 
-            strategy_encoded
+            theme_encoded,
+            strategy_encoded,
         ]
 
     def predict_risk(
@@ -220,8 +220,10 @@ class LayoutRiskPredictor:
             - risk_score: 0.0 - 1.0 (probability of failure)
             - prediction_available: True if model loaded, False if fallback
         """
-        logger.warning("⚠️  predict_risk() is DEPRECATED. Use predict_best_strategy() for multiclass.")
-        
+        logger.warning(
+            "⚠️  predict_risk() is DEPRECATED. Use predict_best_strategy() for multiclass."
+        )
+
         # Rule #7: Graceful degradation if model not loaded
         if not self.is_loaded or self.model is None:
             logger.debug("Predictor in fallback mode (no model)")
@@ -237,9 +239,13 @@ class LayoutRiskPredictor:
 
             # Predict probability with DataFrame (eliminates sklearn warnings)
             feature_names = [
-                "input_char_len", "input_word_count", 
-                "css_density_spacing", "css_density_layout", "pathological_score",
-                "theme_encoded", "active_strategy_encoded"
+                "input_char_len",
+                "input_word_count",
+                "css_density_spacing",
+                "css_density_layout",
+                "pathological_score",
+                "theme_encoded",
+                "active_strategy_encoded",
             ]
             X = pd.DataFrame([features], columns=feature_names)
             proba = self.model.predict_proba(X)[0]
@@ -258,12 +264,12 @@ class LayoutRiskPredictor:
             return (0.5, False)  # Fallback to neutral
 
     def predict_best_strategy(
-        self, 
-        content: Dict[str, Any], 
+        self,
+        content: Dict[str, Any],
         theme: str,
         css_density_spacing: int = 0,
         css_density_layout: int = 0,
-        pathological_score: float = 0.0
+        pathological_score: float = 0.0,
     ) -> Dict[str, Any]:
         """
         Predict best healing strategy using multiclass model (v0.8.0).
@@ -290,7 +296,7 @@ class LayoutRiskPredictor:
             2: "FONT_SHRINK",
             3: "CSS_TRUNCATE",
             4: "CONTENT_CUT",
-            99: "UNRESOLVED_FAIL"
+            99: "UNRESOLVED_FAIL",
         }
 
         # Rule #7: Graceful degradation if model not loaded
@@ -301,14 +307,13 @@ class LayoutRiskPredictor:
                 "strategy_name": "CSS_BREAK_WORD",
                 "confidence": 0.5,
                 "probabilities": {},
-                "prediction_available": False
+                "prediction_available": False,
             }
 
         try:
             # Prepare features
             features = self._prepare_features(
-                content, theme, "NONE",
-                css_density_spacing, css_density_layout, pathological_score
+                content, theme, "NONE", css_density_spacing, css_density_layout, pathological_score
             )
 
             if features is None:
@@ -318,17 +323,21 @@ class LayoutRiskPredictor:
                     "strategy_name": "CSS_BREAK_WORD",
                     "confidence": 0.5,
                     "probabilities": {},
-                    "prediction_available": False
+                    "prediction_available": False,
                 }
 
             # Multiclass prediction with DataFrame (eliminates sklearn warnings)
             feature_names = [
-                "input_char_len", "input_word_count", 
-                "css_density_spacing", "css_density_layout", "pathological_score",
-                "theme_encoded", "active_strategy_encoded"
+                "input_char_len",
+                "input_word_count",
+                "css_density_spacing",
+                "css_density_layout",
+                "pathological_score",
+                "theme_encoded",
+                "active_strategy_encoded",
             ]
             X = pd.DataFrame([features], columns=feature_names)
-            
+
             proba = self.model.predict_proba(X)[0]
             predicted_class = self.model.predict(X)[0]
 
@@ -340,14 +349,12 @@ class LayoutRiskPredictor:
 
             strategy_id = int(predicted_class)
             strategy_name = STRATEGY_MAP.get(strategy_id, "UNKNOWN")
-            
+
             # Get confidence from correct position in proba array
             class_index = list(self.model.classes_).index(predicted_class)
             confidence = float(proba[class_index]) if class_index < len(proba) else 0.5
 
-            logger.info(
-                f"🔮 Recommended strategy: {strategy_name} (confidence: {confidence:.2%})"
-            )
+            logger.info(f"🔮 Recommended strategy: {strategy_name} (confidence: {confidence:.2%})")
             logger.debug(f"   All probabilities: {probabilities}")
 
             return {
@@ -355,7 +362,7 @@ class LayoutRiskPredictor:
                 "strategy_name": strategy_name,
                 "confidence": confidence,
                 "probabilities": probabilities,
-                "prediction_available": True
+                "prediction_available": True,
             }
 
         except Exception as e:
@@ -365,7 +372,7 @@ class LayoutRiskPredictor:
                 "strategy_name": "CSS_BREAK_WORD",
                 "confidence": 0.5,
                 "probabilities": {},
-                "prediction_available": False
+                "prediction_available": False,
             }
 
     def get_recommendation(self, risk_score: float) -> Dict[str, Any]:

@@ -8,7 +8,7 @@ Install: pip install hypothesis
 """
 
 import pytest
-from hypothesis import assume, given, settings, Verbosity
+from hypothesis import Verbosity, assume, given, settings
 from hypothesis import strategies as st
 from hypothesis.strategies import dictionaries, floats, integers, text
 

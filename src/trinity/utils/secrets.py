@@ -25,7 +25,7 @@ Usage:
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, cast
 
 from trinity.exceptions import ConfigurationError
 from trinity.utils.logger import get_logger
@@ -34,7 +34,7 @@ logger = get_logger(__name__)
 
 # Try to import keyring (optional dependency)
 try:
-    import keyring
+    import keyring  # type: ignore
 
     KEYRING_AVAILABLE = True
 except ImportError:
@@ -107,7 +107,7 @@ class SecretsManager:
         # Try keyring first (most secure)
         if self.prefer_keyring:
             try:
-                value = keyring.get_password(self.SERVICE_NAME, key_normalized)
+                value = cast(Optional[str], keyring.get_password(self.SERVICE_NAME, key_normalized))
                 if value:
                     logger.debug(f"Retrieved secret '{key}' from keyring")
                     return value
@@ -225,7 +225,7 @@ class SecretsManager:
         logger.warning("list_secrets() not fully implemented")
         return []
 
-    def get_backend_info(self) -> dict:
+    def get_backend_info(self) -> dict[str, Any]:
         """
         Get information about the active backend.
 

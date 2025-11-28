@@ -51,7 +51,7 @@ class IdempotentResult:
         """Check if result has expired."""
         return datetime.now() > self.expires_at
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
         return {
             "key": self.key,
@@ -62,7 +62,7 @@ class IdempotentResult:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "IdempotentResult":
+    def from_dict(cls, data: dict[str, Any]) -> "IdempotentResult":
         """Deserialize from dictionary."""
         return cls(
             key=data["key"],
@@ -123,7 +123,7 @@ class IdempotencyKeyManager:
             f"ttl={default_ttl}s, persistence={enable_persistence}"
         )
 
-    def generate_key(self, **kwargs) -> str:
+    def generate_key(self, **kwargs: Any) -> str:
         """
         Generate idempotency key from operation parameters.
 
@@ -333,7 +333,7 @@ def idempotent(
     manager: IdempotencyKeyManager,
     key_params: Optional[list[str]] = None,
     ttl: Optional[int] = None,
-):
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to make a function idempotent.
 
@@ -357,9 +357,9 @@ def idempotent(
         >>> assert result1 == result2
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Build key parameters
             if key_params:
                 # Extract specified parameters

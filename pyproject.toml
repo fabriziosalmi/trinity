@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "trinity-core"
-version = "0.6.4"
+version = "0.8.1"
 description = "AI-powered static site generator with neural CSS generation and self-healing QA"
 authors = [
     {name = "Trinity Team"}

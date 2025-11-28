@@ -6,10 +6,13 @@ Replaces generic 'except Exception' blocks with domain-specific exceptions.
 """
 
 
+from typing import Any
+
+
 class TrinityError(Exception):
     """Base exception for all Trinity errors."""
 
-    def __init__(self, message: str, details: dict = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         self.message = message
         self.details = details or {}
         super().__init__(self.message)

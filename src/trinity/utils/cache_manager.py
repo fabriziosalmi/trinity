@@ -28,14 +28,14 @@ import logging
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 logger = logging.getLogger(__name__)
 
 
 # Optional Redis support
 try:
-    import redis.asyncio as aioredis
+    import redis.asyncio as aioredis  # type: ignore
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -60,12 +60,12 @@ class CacheEntry:
             return False  # No expiration
         return time.time() - self.created_at > self.ttl
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "CacheEntry":
+    def from_dict(cls, data: dict[str, Any]) -> "CacheEntry":
         """Create from dictionary."""
         return cls(**data)
 
@@ -149,7 +149,7 @@ class MemoryCache:
         logger.info(f"MemoryCache CLEAR: {count} entries removed")
         return count
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         total_hits = sum(e.hits for e in self._cache.values())
         total_size = sum(e.size_bytes for e in self._cache.values())
@@ -284,7 +284,7 @@ class FilesystemCache:
         logger.info(f"FilesystemCache CLEAR: {count} files removed")
         return count
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         files = list(self.cache_dir.rglob("*.json"))
         total_size = sum(f.stat().st_size for f in files)
@@ -358,6 +358,9 @@ class RedisCache:
         if self.client is None:
             await self.connect()
 
+        if self.client is None:
+            return None
+
         try:
             redis_key = self._make_key(key)
             data = await self.client.get(redis_key)
@@ -385,6 +388,9 @@ class RedisCache:
         """Set value in Redis cache."""
         if self.client is None:
             await self.connect()
+
+        if self.client is None:
+            return
 
         try:
             entry = CacheEntry(
@@ -414,6 +420,9 @@ class RedisCache:
         if self.client is None:
             await self.connect()
 
+        if self.client is None:
+            return 0
+
         try:
             pattern = f"{self.key_prefix}*"
             keys = []
@@ -424,7 +433,7 @@ class RedisCache:
             if keys:
                 count = await self.client.delete(*keys)
                 logger.info(f"RedisCache CLEAR: {count} keys removed")
-                return count
+                return int(count)
 
             return 0
 
@@ -432,10 +441,13 @@ class RedisCache:
             logger.error(f"RedisCache clear error: {e}")
             return 0
 
-    async def get_stats_async(self) -> dict:
+    async def get_stats_async(self) -> dict[str, Any]:
         """Get cache statistics."""
         if self.client is None:
             await self.connect()
+
+        if self.client is None:
+            return {"tier": "redis", "error": "Not connected"}
 
         try:
             pattern = f"{self.key_prefix}*"
@@ -450,7 +462,7 @@ class RedisCache:
             return {
                 "tier": "redis",
                 "entries": len(keys),
-                "redis_memory_used": info.get("used_memory", 0),
+                "redis_memory_used": info.get("used_memory", 0) if info else 0,
                 "redis_url": self.redis_url.split("@")[-1],  # Hide credentials
             }
 
@@ -583,7 +595,7 @@ class CacheManager:
 
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def clear_async(self) -> dict:
+    async def clear_async(self) -> dict[str, int]:
         """Clear all cache tiers."""
         memory_count = self.memory.clear()
         filesystem_count = self.filesystem.clear()
@@ -600,9 +612,9 @@ class CacheManager:
         logger.info(f"CacheManager CLEAR: {result}")
         return result
 
-    async def get_stats_async(self) -> dict:
+    async def get_stats_async(self) -> dict[str, Any]:
         """Get statistics from all cache tiers."""
-        stats = {"memory": self.memory.get_stats(), "filesystem": self.filesystem.get_stats()}
+        stats: dict[str, Any] = {"memory": self.memory.get_stats(), "filesystem": self.filesystem.get_stats()}
 
         if self.redis:
             try:
@@ -612,13 +624,13 @@ class CacheManager:
 
         return stats
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "CacheManager":
         """Async context manager entry."""
         if self.redis:
             await self.redis.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         if self.redis:
             await self.redis.disconnect()
@@ -627,14 +639,15 @@ class CacheManager:
 # Demo
 if __name__ == "__main__":
 
-    async def demo():
+    async def demo() -> None:
         print("=== CacheManager Demo ===\n")
 
         # Initialize cache (memory + filesystem, no Redis)
         async with CacheManager(enable_redis=False) as cache:
             # Generate cache key
             prompt = "Generate a brutalist portfolio"
-            key = CacheManager.hash_prompt(prompt, model="llama3.2:3b")
+            _key = CacheManager.hash_prompt(prompt, model="llama3.2:3b")
+            key: str = _key
 
             print(f"Cache key: {key[:16]}...\n")
 
@@ -652,7 +665,8 @@ if __name__ == "__main__":
             # Second access (hit)
             print("3. Second access (cache hit):")
             value = await cache.get_async(key)
-            print(f"   Result: {value[:50]}...\n")
+            if value:
+                print(f"   Result: {value[:50]}...\n")
 
             # Stats
             print("4. Cache statistics:")

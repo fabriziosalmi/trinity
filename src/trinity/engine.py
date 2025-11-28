@@ -8,7 +8,7 @@ Implements the Self-Healing Loop with intelligent fix strategies.
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -37,7 +37,7 @@ class BuildStatus(str, Enum):
 
 class BuildResult(BaseModel):
     """Structured build result."""
-    
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     status: BuildStatus
@@ -76,6 +76,7 @@ class TrinityEngine:
         self.validator = ContentValidator()
 
         # Healer: Neural (v0.5.0 LSTM) or Smart (heuristic)
+        self.healer: Union[NeuralHealer, SmartHealer]
         if use_neural_healer:
             self.healer = NeuralHealer.from_default_paths(fallback_to_heuristic=True)
             logger.info("🧠 Neural Healer activated (LSTM-based CSS generation)")
@@ -157,26 +158,27 @@ class TrinityEngine:
         if enable_guardian and self.config.predictive_enabled:
             # v0.8.0: Calculate density features for multiclass prediction
             css_density_spacing = 0  # TODO: Extract from theme
-            css_density_layout = 0   # TODO: Extract from theme
-            
+            css_density_layout = 0  # TODO: Extract from theme
+
             # Calculate pathological score from content
             from trinity.components.dataminer import TrinityMiner
+
             miner = TrinityMiner()
             pathological_score = miner._calculate_pathological_score(content)
-            
+
             # Get multiclass strategy recommendation
             prediction = self.predictor.predict_best_strategy(
                 content=content,
                 theme=theme,
                 css_density_spacing=css_density_spacing,
                 css_density_layout=css_density_layout,
-                pathological_score=pathological_score
+                pathological_score=pathological_score,
             )
 
             if prediction["prediction_available"]:
                 strategy_name = prediction["strategy_name"]
                 confidence = prediction["confidence"]
-                
+
                 logger.info(
                     f"🔮 Neural Predictor: Recommends {strategy_name} "
                     f"(confidence: {confidence:.0%})"
@@ -188,17 +190,17 @@ class TrinityEngine:
                         f"⚡ Skipping to recommended strategy: {strategy_name} "
                         f"(predicted by multiclass model)"
                     )
-                    
+
                     # Map strategy name to attempt number for healer
                     strategy_to_attempt = {
                         "CSS_BREAK_WORD": 1,
                         "FONT_SHRINK": 2,
                         "CSS_TRUNCATE": 3,
-                        "CONTENT_CUT": 4
+                        "CONTENT_CUT": 4,
                     }
-                    
+
                     recommended_attempt = strategy_to_attempt.get(strategy_name, 1)
-                    
+
                     # Create mock guardian report for pre-emptive healing
                     mock_report = {
                         "approved": False,
@@ -207,13 +209,13 @@ class TrinityEngine:
                         "issues": [f"Multiclass model recommends {strategy_name}"],
                         "fix_suggestion": strategy_name.lower(),
                     }
-                    
+
                     preemptive_fix = self.healer.heal_layout(
                         guardian_report=mock_report,
                         content=content,
                         attempt=recommended_attempt,  # Use ML-recommended strategy
                     )
-                    
+
                     if preemptive_fix.style_overrides:
                         current_style_overrides = preemptive_fix.style_overrides
                         fixes_applied.append(
@@ -322,7 +324,7 @@ class TrinityEngine:
 
                             healing_context = {"theme": theme, "error_type": error_type}
 
-                            healing_result = self.healer.heal_layout(
+                            healing_result = cast(NeuralHealer, self.healer).heal_layout(
                                 guardian_report=report,
                                 content=current_content,
                                 attempt=attempt,
@@ -341,13 +343,14 @@ class TrinityEngine:
                         logger.info(f"   {healing_result.description}")
 
                         # Update state based on healing result
-                        if healing_result.content_modified:
+                        if healing_result.content_modified and healing_result.modified_content:
                             # Nuclear option: content was modified
                             current_content = healing_result.modified_content
                             logger.warning("⚠️  Content modified (nuclear option)")
                         else:
                             # CSS strategy: update style overrides
-                            current_style_overrides.update(healing_result.style_overrides)
+                            if healing_result.style_overrides:
+                                current_style_overrides.update(healing_result.style_overrides)
 
                         fixes_applied.append(f"{healing_result.strategy.value} (attempt {attempt})")
                         logger.info(
@@ -415,7 +418,7 @@ class TrinityEngine:
         try:
             # Initialize ContentEngine
             engine = ContentEngine(
-                lm_studio_url=self.config.lm_studio_url, timeout=self.config.llm_timeout
+                base_url=self.config.lm_studio_url
             )
 
             # Generate content

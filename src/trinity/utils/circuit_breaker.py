@@ -183,7 +183,7 @@ class CircuitBreaker:
                 self._state = CircuitState.OPEN
                 self._stats.state_changes += 1
 
-    def _call(self, func: Callable, *args, **kwargs) -> Any:
+    def _call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """
         Execute function with circuit breaker protection.
 
@@ -254,7 +254,7 @@ class CircuitBreaker:
             )
             raise
 
-    def __call__(self, func: Callable) -> Callable:
+    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """
         Decorator interface for circuit breaker.
 
@@ -265,12 +265,12 @@ class CircuitBreaker:
         """
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return self._call(func, *args, **kwargs)
 
         return wrapper
 
-    def call(self, func: Callable, *args, **kwargs) -> Any:
+    def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """
         Explicit call interface for circuit breaker.
 
@@ -279,7 +279,7 @@ class CircuitBreaker:
         """
         return self._call(func, *args, **kwargs)
 
-    async def call_async(self, func: Callable, *args, **kwargs) -> Any:
+    async def call_async(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """
         Async version of circuit breaker call.
 
@@ -350,7 +350,7 @@ class CircuitBreaker:
         self._last_failure_time = None
         self._stats.state_changes += 1
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """
         Get current circuit breaker status.
 
@@ -387,10 +387,10 @@ class CircuitBreakerRegistry:
     Enables monitoring and management of all circuit breakers in the application.
     """
 
-    _instance = None
+    _instance: Optional["CircuitBreakerRegistry"] = None
     _breakers: dict[str, CircuitBreaker] = {}
 
-    def __new__(cls):
+    def __new__(cls) -> "CircuitBreakerRegistry":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -404,7 +404,7 @@ class CircuitBreakerRegistry:
         """Get circuit breaker by name."""
         return self._breakers.get(name)
 
-    def get_all_status(self) -> dict[str, dict]:
+    def get_all_status(self) -> dict[str, dict[str, Any]]:
         """Get status of all registered circuit breakers."""
         return {name: breaker.get_status() for name, breaker in self._breakers.items()}
 

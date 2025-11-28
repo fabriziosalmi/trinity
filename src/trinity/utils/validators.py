@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    from html5lib import parse
-    from html5lib.treewalkers import getTreeWalker
+    from html5lib import parse  # type: ignore
+    from html5lib.treewalkers import getTreeWalker  # type: ignore
     from pydantic import BaseModel, Field, field_validator
     from pydantic import ValidationError as PydanticValidationError
 except ImportError:
