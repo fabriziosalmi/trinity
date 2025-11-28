@@ -19,7 +19,7 @@ export default defineConfig({
     
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Architecture', link: '/1_Architecture/1.0_Neural_Symbolic' },
+                { text: 'Architecture', link: '/1_Architecture/1.0_Retry_Logic_Heuristics' },
       { text: 'Development', link: '/2_Development/2.0_Setup' },
       { text: 'Features', link: '/3_Features/3.0_Self_Healing' },
       { text: 'GitHub', link: 'https://github.com/fabriziosalmi/trinity' }
@@ -32,7 +32,7 @@ export default defineConfig({
         items: [
           { 
             text: 'Neural-Symbolic System', 
-            link: '/1_Architecture/1.0_Neural_Symbolic' 
+            link: '/1_Architecture/1.0_Retry_Logic_Heuristics' 
           },
           { 
             text: 'Async & MLOps', 
