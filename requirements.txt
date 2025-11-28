@@ -8,7 +8,7 @@ pydantic-settings>=2.7.0
 PyYAML==6.0.2  # For prompts.yaml
 
 # LLM Integration
-requests==2.32.3
+requests==2.32.4
 httpx[http2]==0.27.2  # HTTP/2 support for async performance
 openai>=1.54.0
 
