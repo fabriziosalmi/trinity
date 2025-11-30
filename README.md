@@ -348,7 +348,7 @@ We welcome contributions! Here's how to get started:
 
 ```bash
 # 1. Fork and clone
-git clone https://github.com/YOUR_USERNAME/trinity.git
+git clone https://github.com/fabriziosalmi/trinity.git
 cd trinity
 
 # 2. Setup development environment
