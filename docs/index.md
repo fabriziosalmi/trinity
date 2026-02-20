@@ -3,11 +3,11 @@ layout: home
 
 hero:
   name: "Trinity"
-  text: "AI-Powered Site Generator"
-  tagline: "Stop debugging broken layouts. Let AI fix them automatically."
+  text: "Static Site Generator with LLM Content and Self-Healing Layouts"
+  tagline: "Generate pages from structured data, apply themes, and auto-fix layout issues."
   actions:
     - theme: brand
-      text: Quick Start
+      text: Setup Guide
       link: /2_Development/2.0_Setup
     - theme: alt
       text: Architecture
@@ -17,99 +17,85 @@ hero:
       link: https://github.com/fabriziosalmi/trinity
 
 features:
-  - title: AI-Powered Content
-    details: Generate compelling content with local LLMs (Ollama, LlamaCPP) or cloud providers (OpenAI, Claude, Gemini). 40% cost savings with multi-tier caching.
+  - title: LLM Content Generation
+    details: Read structured JSON input or generate content with local LLMs (Ollama, LM Studio) or cloud providers (OpenAI). Responses are cached to avoid redundant API calls.
   
-  - title: 14 Professional Themes
-    details: Built-in themes powered by Tailwind CSS. Enterprise, Brutalist, Editorial, Minimalist, and more. Dark mode included.
+  - title: 14 Built-in Themes
+    details: Themes defined in config/themes.yaml using Tailwind CSS. Includes enterprise, brutalist, editorial, artistic, tech, retro, and more. New themes can be generated with the theme-gen command.
   
   - title: Self-Healing Layouts
-    details: Random Forest multiclass predictor recommends optimal CSS fix strategy. 4 progressive strategies with Guardian DOM validation. 95% success rate.
+    details: Guardian (Playwright) detects DOM overflow and the SmartHealer applies progressive CSS strategies. An optional Random Forest predictor can pre-select the strategy. Guardian is disabled by default.
   
-  - title: 6x Faster Builds
-    details: Async/await with HTTP/2 multiplexing. Concurrent LLM requests. Sub-millisecond cache hits. Production-ready performance.
+  - title: Async LLM Client
+    details: Async/await HTTP client for concurrent LLM requests. Multi-tier caching (memory, optional Redis, filesystem). Circuit breaker for fail-fast error handling.
   
-  - title: Production-Ready
-    details: Circuit breakers, idempotency, structured logging (JSON), Guardian validation. 111/111 tests passing with E2E + Docker validation.
+  - title: ML Predictor (optional)
+    details: Train a Random Forest classifier on local build data with trinity train. Use it to predict healing strategies before rendering. Requires collecting training data first.
   
-  - title: Full Observability
-    details: Structured JSON logs ready for ELK/Datadog/CloudWatch. Correlation IDs for distributed tracing. Performance metrics built-in.
+  - title: Structured Logging
+    details: JSON-formatted logs when TRINITY_ENV=Production. Correlation IDs for request tracing. Human-readable format in development mode.
 ---
 
-## Why Trinity?
+## What Trinity Does
 
-| Feature | Traditional SSG | Trinity |
-|---------|----------------|--------------|
-| **Content** | Manual writing | AI-powered |
-| **Layout Issues** | Debug after deploy | Auto-detected & fixed |
-| **Themes** | Write CSS yourself | 14 built-in professional themes |
-| **Performance** | Synchronous | Async (6x faster) |
-| **Caching** | Manual | Multi-tier (40% cost savings) |
-| **Observability** | Print statements | Structured JSON logging |
+Trinity is a Python CLI tool that:
+
+1. Takes structured JSON input (or raw text for LLM-generated content)
+2. Renders HTML using Jinja2 templates and a selected Tailwind CSS theme
+3. Optionally validates the rendered layout using Guardian (Playwright DOM inspection)
+4. Applies progressive CSS fixes if overflow issues are detected
+5. Writes the output HTML file
+
+Guardian and the ML predictor are disabled by default; they require explicit flags and setup.
 
 ## Quick Start
 
 ```bash
-# Install
+# Install dependencies
 pip install -r requirements.txt
 
-# Generate portfolio
-python main.py --input data/portfolio.txt --theme brutalist
+# Build with static JSON content
+trinity build --input data/input_content.json --theme brutalist
 
-# That's it! Open output/index.html
+# Build with LLM content generation (requires running LLM endpoint)
+trinity build --input data/raw_portfolio.txt --llm --theme enterprise
+
+# Enable Guardian layout validation
+trinity build --input data/input_content.json --guardian --theme brutalist
 ```
 
-## What Just Happened?
+## Architecture
 
-1. Analyzed your GitHub repos non structured data
-2. AI generated compelling content
-3. Applied professional theme
-4. Auto-fixed any layout issues
-5. Output validated HTML
-
-## Architecture Overview
-
-Trinity uses a **5-layer neural-generative pipeline**:
+Trinity uses a layered pipeline:
 
 ```
 Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
          ↓                                      ↑
-      Caching                         Predictor (ML - Multiclass)
+      Caching                         Predictor (ML, optional)
          ↓                                      ↑
-    Structured Logging              Guardian (DOM Validation)
+    Structured Logging              Guardian (DOM Validation, optional)
 ```
 
 **Learn More:**
-- [Retry Logic with Heuristics](/1_Architecture/1.0_Retry_Logic_Heuristics) - Deep dive into the 5-layer system
-- [Async & MLOps](/1_Architecture/1.1_Async_MLOps) - Performance optimization details
-- [Self-Healing Layouts](/3_Features/3.0_Self_Healing) - How the multiclass predictor works
+- [Retry Logic with Heuristics](/1_Architecture/1.0_Retry_Logic_Heuristics) - Pipeline details
+- [Async and MLOps](/1_Architecture/1.1_Async_MLOps) - Caching and async client
+- [Self-Healing Layouts](/3_Features/3.0_Self_Healing) - Guardian and SmartHealer
 
-## Testing & Validation
+## Testing
 
-**Comprehensive Test Coverage (v0.8.0):**
+```bash
+make test
+make test-cov
+pytest tests/test_e2e_complete.py -v
+pytest tests/test_multiclass_pipeline.py -v
+```
 
-- **122/122 Tests Passing** ✅
-  - 9 E2E tests (complete workflow validation)
-  - 15 multiclass pipeline tests
-  - 32 self-healing tests
-  - 6 engine tests
-  - 49 component tests
+## Limitations
 
-- **Docker E2E Validation**: 7-step container-based testing
-- **Performance**: <100ms prediction, <5s builds
-- **Self-Healing**: 95% success rate on pathological content
-
-## Performance
-
-**Phase 6 Improvements:**
-
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Throughput | 5 req/sec | 30 req/sec | **6x faster** |
-| LLM Costs | $1.00/build | $0.60/build | **40% savings** |
-| Command Length | 64 chars | 13 chars | **70% less typing** |
-| Observability | Print statements | JSON logs | **100% better** |
-| Prediction | Binary Risk | Multiclass Strategy | **Smarter** |
+- Guardian requires Playwright and browser binaries to be installed separately
+- The ML predictor requires training data collected via `trinity mine-generate` before it has a model to load
+- LLM content generation requires a running LLM endpoint (Ollama, LM Studio, or cloud API key)
+- Themes in `config/themes.yaml` are available for rendering; the default `available_themes` config lists only `enterprise`, `brutalist`, and `editorial`
 
 ## Community
 

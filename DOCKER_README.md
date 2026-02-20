@@ -95,7 +95,7 @@ REM View at http://localhost:8080
 ### Build with LLM Content
 ```bash
 ./dev.sh build-llm editorial
-# Generates AI-powered content using LM Studio
+# Generates content using LM Studio
 ```
 
 ### Run Guardian QA Test

@@ -1,8 +1,6 @@
-# 🏛️ Trinity
+# Trinity
 
-> **AI-powered site generator that actually works in production**
-
-Stop wasting time debugging broken layouts. Trinity generates beautiful, responsive websites from any data using AI—and automatically fixes any CSS issues before deployment.
+A static site generator that uses LLMs to produce content and applies CSS self-healing strategies to fix layout issues.
 
 [![asciicast](https://asciinema.org/a/aPIGQHdxN2hewQgegQhGaiCBG.svg)](https://asciinema.org/a/aPIGQHdxN2hewQgegQhGaiCBG)
 
@@ -13,404 +11,220 @@ Stop wasting time debugging broken layouts. Trinity generates beautiful, respons
   <a href="https://github.com/fabriziosalmi/trinity/releases"><img src="https://img.shields.io/badge/version-0.8.1-green.svg" alt="Version"></a>
 </p>
 
-<p align="center">
-  <a href="#-quick-start">🚀 Quick Start</a> •
-  <a href="#-features">✨ Features</a> •
-  <a href="#-why-trinity">🎯 Why Trinity?</a> •
-  <a href="#-examples">📚 Examples</a> •
-  <a href="https://fabriziosalmi.github.io/trinity/">📖 Documentation</a>
-</p>
-
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# Install
+# Install dependencies
 pip install -r requirements.txt
 
-# Generate your portfolio
-python main.py --input data/input_content.json --theme brutalist --output portfolio.html
+# Build with static JSON content
+trinity build --input data/input_content.json --theme brutalist --output portfolio.html
 
-# That's it! Open portfolio.html in your browser
+# Build with LLM-generated content (requires a running LLM endpoint)
+trinity build --input data/raw_portfolio.txt --llm --theme enterprise
+
+# Enable Guardian layout validation and self-healing
+trinity build --input data/input_content.json --theme brutalist --guardian
 ```
 
-**What just happened?**
-1. ✅ Trinity analyzed your GitHub repos
-2. ✅ AI generated compelling content
-3. ✅ Applied a professional theme
-4. ✅ Automatically fixed any layout issues
-5. ✅ Output validated, production-ready HTML
+Open the output HTML file in a browser. If `--guardian` is not specified, builds complete without visual validation.
 
 <details>
-<summary><b>📦 Try it with Docker</b></summary>
+<summary>Docker</summary>
 
 ```bash
-# Clone and start
 git clone https://github.com/fabriziosalmi/trinity.git
 cd trinity
-./dev.sh start
-
-# Build inside container
-docker-compose exec trinity-builder trinity build --theme brutalist
+docker-compose up -d
 ```
 </details>
 
 ---
 
-## ✨ Features
+## Features
 
-### 🤖 AI-Powered Content Generation
-- **Local LLM Support**: Ollama, LlamaCPP, LM Studio
-- **Cloud LLMs**: OpenAI, Claude, Gemini (via API)
-- **Smart Caching**: 40% cost reduction on repeated builds
-- **Async Operations**: 6x faster with concurrent requests
+### Content Generation
+- Reads structured JSON input or raw text files
+- Optionally generates content via a local or cloud LLM (Ollama, LM Studio, OpenAI)
+- Validates generated content with Pydantic schemas before rendering
+- Filesystem-based LLM response caching (memory and filesystem tiers; Redis is optional)
 
-### 🎨 Professional Themes
-- **14 Built-in Themes**: Enterprise, Brutalist, Editorial, Minimalist, Hacker, and more
-- **Tailwind CSS**: Modern, responsive design out of the box
-- **Dark Mode**: Auto-switching based on user preference
-- **Customizable**: YAML configuration for easy theming
+### Themes
+- 14 built-in themes defined in `config/themes.yaml`: `artistic_01`, `artistic_02`, `brutalist`, `chaotic_01`, `chaotic_02`, `editorial`, `enterprise`, `historical_01`, `historical_02`, `professional_01`, `professional_02`, `retro_arcade`, `tech_01`, `tech_02`
+- All themes use Tailwind CSS classes rendered via Jinja2 templates
+- New themes can be generated from a text description using the `trinity theme-gen` command (requires a running LLM)
 
-### 🔧 Self-Healing Layouts
-- **Automatic CSS Fixes**: Detects and repairs overflow, broken grids, text wrapping
-- **ML-Powered**: Random Forest multiclass predictor recommends optimal strategy
-- **Progressive Strategies**: 4 healing strategies (CSS_BREAK_WORD → FONT_SHRINK → CSS_TRUNCATE → CONTENT_CUT)
-- **Visual Validation**: Guardian DOM-based validation system
+### Self-Healing Layouts (optional, requires `--guardian`)
+- Guardian uses Playwright to load the rendered page and detect DOM overflow
+- When overflow is detected, the SmartHealer applies one of four progressive CSS strategies: `CSS_BREAK_WORD`, `FONT_SHRINK`, `CSS_TRUNCATE`, `CONTENT_CUT`
+- An optional ML predictor (Random Forest, trained on local build data) can suggest which strategy to apply before Guardian runs; the model must be trained locally with `trinity train`
+- An LSTM-based Neural Healer (`--neural`) is available as an alternative to the rule-based SmartHealer
+- Guardian requires Playwright and its browser dependencies; it is disabled by default
 
-### ⚡ Production-Ready
-- **Circuit Breakers**: Graceful degradation on LLM failures
-- **Idempotency**: Same input = same output (deterministic builds)
-- **Structured Logging**: JSON logs ready for ELK/Datadog/CloudWatch (stdout in Production)
-- **Immutable Config**: Type-safe, validated settings
-
----
-
-## 🎯 Why Trinity?
-
-| Feature | Traditional SSG | Trinity |
-|---------|----------------|--------------|
-| **Content Generation** | Manual writing | AI-powered (GPT, Claude, local LLMs) |
-| **Layout Issues** | Debug after deploy | Auto-detected and fixed |
-| **Themes** | Write CSS yourself | 14 professional themes built-in |
-| **Performance** | Synchronous builds | Async (6x faster) |
-| **Caching** | Manual implementation | Built-in multi-tier (40% cost savings) |
-| **Observability** | Print statements | Structured JSON logging |
-| **Reliability** | Hope it works | Circuit breakers + idempotency |
-| **Setup Time** | Hours of config | 5 minutes to first build |
+### Reliability
+- Circuit breaker on LLM requests (fails fast after repeated errors)
+- Structured logging (JSON format when `TRINITY_ENV=Production`)
+- Pydantic-based type-safe configuration
 
 ---
 
-## 📚 Examples
-
-### Portfolio Site
-```bash
-# From GitHub repos to portfolio in one command
-python main.py --input data/portfolio.txt --theme enterprise
-```
-
-**Output:** Professional portfolio with:
-- Hero section with AI-generated tagline
-- Project cards with descriptions
-- Tech stack badges
-- Responsive grid layout
-- Dark mode support
-
-### Personal Blog
-```bash
-# Generate blog landing page
-python main.py --input blog_posts.json --theme editorial
-```
-
-**Features:**
-- Clean, readable typography
-- Featured post highlighting
-- Category organization
-- Mobile-first design
-
-### Developer Documentation
-```bash
-# Technical documentation site
-python main.py --input api_docs.json --theme minimalist
-```
-
-**Optimized for:**
-- Code snippet display
-- API reference layout
-- Search-friendly structure
-- Fast load times
-
----
-
-## 🛠️ How It Works
-
-<details>
-<summary><b>For the curious: Architecture overview</b></summary>
-
-Trinity uses a multi-layer pipeline:
-
-```
-Input → Brain (LLM) → Skeleton (Theme) → Healer (CSS Fixes) → Output
-         ↓                                      ↑
-      Caching                            Predictor (ML)
-         ↓                                      ↑
-    Structured Logging              Guardian (Visual QA)
-```
-
-**1. Brain (Content Generation)**
-- LLM generates content from your data
-- Pydantic schema validation
-- Theme-aware prompts
-- Async operations for speed
-
-**2. Skeleton (Theme Application)**
-- Jinja2 templates
-- Tailwind CSS styling
-- 14 professional themes
-- Responsive by default
-
-**3. Predictor (ML Strategy Recommendation)**
-- Random Forest multiclass classifier
-- Predicts optimal healing strategy (0-4: NONE → CONTENT_CUT, 99: UNRESOLVED)
-- Trained on 2000+ real build samples
-- >60% confidence threshold for smart strategy selection
-
-**4. Healer (CSS Auto-Repair)**
-- 4 progressive strategies (CSS_BREAK_WORD → FONT_SHRINK → CSS_TRUNCATE → CONTENT_CUT)
-- ML predictor recommends optimal strategy (skips 1-3 iterations)
-- Learns from successful fixes
-- 95% success rate on pathological content
-
-**5. Guardian (Visual Validation - Optional)**
-- Playwright headless browser
-- DOM overflow detection
-- Can be disabled for faster builds
-
-For detailed architecture, see [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-
-</details>
-
----
-
-## 📊 Performance
-
-**Phase 6 Improvements (v0.7.0):**
-
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Throughput | 5 req/sec | 30 req/sec | **6x faster** |
-| LLM Costs | $1.00/build | $0.60/build | **40% savings** |
-| Command Length | 64 chars | 13 chars | **70% less typing** |
-| Observability | Print statements | JSON logs | **100% better** |
-
-**Features:**
-- ✅ Async/await with HTTP/2 multiplexing
-- ✅ Multi-tier caching (memory → Redis → filesystem)
-- ✅ Structured logging for aggregation
-- ✅ Makefile shortcuts (`make test`, `make build`)
-
----
-
-## 🎨 Available Themes
+## Available Themes
 
 ```bash
-# Professional
---theme enterprise      # Corporate, clean, trustworthy
---theme minimalist      # Simple, elegant, focused
-
-# Creative
---theme brutalist       # Bold, raw, attention-grabbing
---theme editorial       # Magazine-style, readable
-
-# Technical
---theme hacker          # Terminal-inspired, monospace
---theme tech_01         # Modern tech aesthetic
-
-# And 8 more...
+# List available themes
+trinity themes
 ```
 
-Preview all themes: `python main.py --list-themes`
+Themes are defined in `config/themes.yaml`. The default set includes:
+
+| Theme | Description |
+|-------|-------------|
+| enterprise | Corporate, clean design |
+| brutalist | Bold, raw aesthetic |
+| editorial | Magazine-style layout |
+| artistic_01 | Creative gradient design |
+| tech_01 | Modern tech aesthetic |
+| retro_arcade | Retro gaming style |
+| ... | (14 themes total) |
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
-### Basic Setup
+### Environment Variables
+
 ```bash
-# Use local LLM (recommended)
-export LLM_PROVIDER=ollama
-export LLM_MODEL=qwen2.5-coder:7b
+# LLM endpoint (LM Studio default)
+export TRINITY_LM_STUDIO_URL=http://localhost:1234/v1
 
-# Or cloud LLMs
-export OPENAI_API_KEY=your_key
-export LLM_PROVIDER=openai
+# OpenAI API key (if using OpenAI)
+export TRINITY_OPENAI_API_KEY=your_key
 
-# Production Telemetry
-export TRINITY_ENV=Production  # Enable JSON logs to stdout
+# Enable JSON logging
+export TRINITY_ENV=Production
 ```
 
-### Advanced Configuration
-```yaml
-# config/settings.yaml
-llm:
-  provider: ollama
-  model: qwen2.5-coder:7b
-  temperature: 0.2
-  cache_enabled: true
-  cache_ttl: 3600
+### Settings
 
-themes:
-  default: brutalist
-  dark_mode: auto
+Key settings in `config/settings.yaml` or via `TRINITY_*` environment variables:
 
-healer:
-  enable_neural: true
-  max_attempts: 3
-  strategies:
-    - CSS_BREAK_WORD
-    - FONT_SHRINK
-    - CSS_TRUNCATE
-```
-
-See [Configuration Guide](docs/CONFIGURATION.md) for all options.
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `lm_studio_url` | `http://localhost:1234/v1` | LLM API endpoint |
+| `guardian_enabled` | `false` | Enable Guardian layout validation |
+| `predictive_enabled` | `true` | Enable ML-based strategy prediction |
+| `max_retries` | `3` | Max self-healing attempts |
+| `default_theme` | `enterprise` | Default theme name |
 
 ---
 
-## 📖 Documentation
+## CLI Reference
 
-### Getting Started
-- [Installation Guide](docs/INSTALLATION.md) - Detailed setup instructions
-- [Quick Start Tutorial](docs/QUICKSTART.md) - Your first portfolio in 5 minutes
-- [CLI Reference](docs/CLI.md) - Complete command documentation
+```bash
+# Build a site page
+trinity build --input <file> --theme <name> [--llm] [--guardian] [--neural]
 
-### Phase 6 Features
-- [Async Guide](docs/ASYNC_GUIDE.md) - Async/await migration and performance
-- [Caching Guide](docs/CACHING.md) - Multi-tier cache configuration
-- [Logging Guide](docs/LOGGING_GUIDE.md) - Structured logging and observability
-- [Makefile Guide](docs/MAKEFILE_GUIDE.md) - Development workflow shortcuts
+# Run chaos test with intentionally broken content
+trinity chaos --theme <name>
 
-### Advanced Topics
-- [Architecture Overview](docs/ARCHITECTURE.md) - System design and components
-- [Neural Healer](docs/NEURAL_SYMBOLIC_ARCHITECTURE.md) - ML-powered CSS fixing
-- [Theme Development](docs/CENTURIA_FACTORY_SUMMARY.md) - Creating custom themes
-- [Security Policy](SECURITY.md) - Vulnerability reporting
+# List available themes
+trinity themes
 
-### Development
-- [Contributing Guide](CONTRIBUTING.md) - Development setup and guidelines
-- [Changelog](CHANGELOG.md) - Version history and release notes
-- [Phase 6 Roadmap](docs/PHASE6_ROADMAP.md) - Future features and improvements
+# Show current configuration
+trinity config-info
+
+# Collect ML training data via random builds
+trinity mine-generate --count 100
+
+# Train layout risk predictor from collected data
+trinity train
+
+# Generate a new theme from a style description (requires LLM)
+trinity theme-gen "description" --name <name>
+```
 
 ---
 
-## 🧪 Testing
+## Documentation
+
+- [Architecture: Retry Logic and Heuristics](docs/1_Architecture/1.0_Retry_Logic_Heuristics.md)
+- [Architecture: Async and MLOps](docs/1_Architecture/1.1_Async_MLOps.md)
+- [Setup Guide](docs/2_Development/2.0_Setup.md)
+- [Code Quality](docs/2_Development/2.1_Code_Quality.md)
+- [Self-Healing Layouts](docs/3_Features/3.0_Self_Healing.md)
+- [Centuria Theme Factory](docs/3_Features/3.1_Centuria_Factory.md)
+- [LLM Response Caching](docs/4_LLM_Agents/4.0_LLM_Caching.md)
+- [Docker Guide](DOCKER_README.md)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Security Policy](SECURITY.md)
+
+---
+
+## Testing
 
 ```bash
 # Run all tests
 make test
 
-# With coverage
+# With coverage report
 make test-cov
 
-# E2E tests (complete workflow)
+# E2E tests
 pytest tests/test_e2e_complete.py -v
 
 # Multiclass pipeline tests
 pytest tests/test_multiclass_pipeline.py -v
-
-# Docker E2E validation
-./scripts/test_docker_e2e.sh
 ```
-
-**Test Coverage:** 111/111 tests passing (24 E2E + multiclass, 32 healer, 6 engine, 49 other)
 
 ---
 
-## 🐳 Docker Deployment
+## Docker
 
 ```bash
-# Build image
 make docker-build
-
-# Run container
 make docker-run
-
-# Development mode with live reload
-make docker-dev
 ```
 
-See [Docker Guide](DOCKER_README.md) for production deployment.
+See [DOCKER_README.md](DOCKER_README.md) for details.
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how to get started:
+## Contributing
 
 ```bash
-# 1. Fork and clone
 git clone https://github.com/fabriziosalmi/trinity.git
 cd trinity
-
-# 2. Setup development environment
 make setup
-
-# 3. Create feature branch
-git checkout -b feature/amazing-feature
-
-# 4. Make changes and test
+git checkout -b feature/your-feature
 make test
 make format
 make lint
-
-# 5. Commit and push
-git commit -m "feat: add amazing feature"
-git push origin feature/amazing-feature
-
-# 6. Open Pull Request
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## 📝 License
+## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- **LLM Providers**: Ollama, OpenAI, Anthropic, Google
-- **Frameworks**: Jinja2, Tailwind CSS, PyTorch
-- **Tools**: Playwright, Pydantic, httpx
-- **Community**: All contributors and users
-
----
-
-## 📊 Project Stats
-
-- **Version:** 0.8.1
-- **Python:** 3.10+
-- **Tests:** 111/111 passing (9 E2E, 15 multiclass, 32 healer, 6 engine, 49 other)
-- **Themes:** 14 built-in + Centuria Factory for mass generation
-- **Self-Healing:** 4 progressive strategies with ML prediction
-- **Coverage:** Comprehensive E2E + Docker validation
+- LLM integration: Ollama, OpenAI, LM Studio
+- Templating: Jinja2, Tailwind CSS
+- ML: scikit-learn, PyTorch
+- Validation: Playwright, Pydantic, httpx
 
 ---
 
-## 💬 Support
+## Support
 
-- **Issues**: [GitHub Issues](https://github.com/fabriziosalmi/trinity/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/fabriziosalmi/trinity/discussions)
-- **Security**: [SECURITY.md](SECURITY.md)
-
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/fabriziosalmi">@fabriziosalmi</a>
-</p>
-
-<p align="center">
-  <i>Generate beautiful portfolios. Let AI do the heavy lifting.</i>
-</p>
+- [GitHub Issues](https://github.com/fabriziosalmi/trinity/issues)
+- [GitHub Discussions](https://github.com/fabriziosalmi/trinity/discussions)
+- [Security Policy](SECURITY.md)

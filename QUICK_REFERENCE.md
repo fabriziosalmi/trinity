@@ -1,17 +1,17 @@
-# 🚀 Trinity Quick Reference (v0.8.0)
+# Trinity Quick Reference (v0.8.0)
 
 ## Fast Commands (Copy-Paste Ready)
 
 ### Testing
 
 ```bash
-# Run all tests (111 tests)
+# Run all tests
 pytest tests/ -v
 
-# E2E tests only (9 tests)
+# E2E tests only
 pytest tests/test_e2e_complete.py -v
 
-# Multiclass pipeline tests (15 tests)
+# Multiclass pipeline tests
 pytest tests/test_multiclass_pipeline.py -v
 
 # Docker E2E validation
@@ -35,12 +35,12 @@ poetry run trinity build --theme test_cyber --predictive
 poetry run trinity build --theme brutalist --guardian --output test.html
 ```
 
-### Fast Training Pipeline (10-15 min)
+### Fast Training Pipeline
 ```bash
 ./scripts/fast_training.sh
 ```
 
-### Production Training Pipeline (2-3 hours)
+### Production Training Pipeline
 ```bash
 ./scripts/nightly_training.sh
 ```
@@ -89,25 +89,13 @@ poetry run trinity mine-generate --count 1000 --guardian
 
 ## Expected Metrics
 
-### With 3 Themes (Current)
-- F1-Score: 0.918
-- Precision: 0.867
-- Recall: 0.975
-
-### With 100 Themes (After nightly_training.sh)
-- F1-Score: **0.95+**
-- Precision: **0.90+**
-- Recall: **0.98+**
+Model performance depends on the amount and diversity of training data collected. With limited training data (e.g., 3 themes, few samples), the predictor may not meet the quality thresholds required to train.
 
 ---
 
 ## File Locations
 
-- Themes: `config/themes.json`
+- Themes: `config/themes.yaml`
 - Training data: `data/training_dataset.csv`
 - Trained models: `models/*.pkl`
 - Model metadata: `models/*_metadata.json`
-
----
-
-**Remember:** The goal is not perfect code. The goal is a model that understands DOM physics. 🔥
